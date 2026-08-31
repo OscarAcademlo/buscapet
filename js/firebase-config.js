@@ -365,14 +365,36 @@ var BuscapetFirebase = window.BuscapetFirebase = {
     const authBadgeEl = document.getElementById('user-auth-status-badge');
     const loggedInBox = document.getElementById('auth-logged-in-view');
     const guestBox = document.getElementById('auth-guest-view');
-    const sidebarAdminWidget = document.getElementById('sidebar-admin-widget');
+    const sidebarAdminContainer = document.getElementById('sidebar-admin-container');
     const authAdminBtn = document.getElementById('auth-admin-btn');
     const isMasterAdmin = this.isAdmin();
 
-    // El botón del Panel Admin solo se muestra si el usuario es oscarns@gmail.com
-    if (sidebarAdminWidget) {
-      sidebarAdminWidget.style.display = isMasterAdmin ? 'block' : 'none';
+    // Inyección 100% dinámica del widget solo para oscarns@gmail.com
+    if (sidebarAdminContainer) {
+      if (isMasterAdmin) {
+        sidebarAdminContainer.innerHTML = `
+          <div class="sidebar-widget" style="background: linear-gradient(135deg, rgba(255, 170, 0, 0.12) 0%, rgba(255, 170, 0, 0.03) 100%); border: 1.5px solid rgba(255, 170, 0, 0.4); border-radius: var(--radius-lg); padding: 14px 16px; box-shadow: 0 4px 16px rgba(255, 170, 0, 0.1);">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(255, 170, 0, 0.2); display: flex; align-items: center; justify-content: center; color: #FFAA00; font-size: 15px; flex-shrink: 0;">
+                  <i class="fa-solid fa-crown"></i>
+                </div>
+                <div>
+                  <div style="font-size: 13px; font-weight: 800; color: #FFAA00; line-height: 1.2;">Panel OscarSoft</div>
+                  <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600;">Administrador Master</div>
+                </div>
+              </div>
+              <button type="button" style="padding: 7px 14px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 8px rgba(255, 170, 0, 0.35);" onclick="BuscapetApp.openAdminPanel()">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        sidebarAdminContainer.innerHTML = '';
+      }
     }
+
     if (authAdminBtn) {
       authAdminBtn.style.display = isMasterAdmin ? 'block' : 'none';
     }

@@ -64,18 +64,18 @@
   <!-- ========================================================================
        2. HERO BANNER & OFFICIAL STORE BADGES (PRÓXIMAMENTE)
        ======================================================================== -->
-  <section class="hero-banner-section">
-    <div class="hero-content-wrapper">
-      <div class="hero-badge-tag">
+  <section class="hero-banner-section" style="text-align: center; display: flex; justify-content: center; align-items: center; width: 100%;">
+    <div class="hero-content-wrapper" style="margin: 0 auto; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+      <div class="hero-badge-tag" style="margin: 0 auto 12px auto; display: inline-flex; align-self: center; text-align: center;">
         <i class="fa-solid fa-heart-pulse"></i> Red Social Solidaria &bull; 100% Gratuita
       </div>
-      <h1 class="hero-main-title">Reuniendo Mascotas con sus Familias</h1>
-      <p class="hero-subtitle">
+      <h1 class="hero-main-title" style="margin: 0 auto 8px auto; text-align: center; align-self: center; width: 100%;">Reuniendo Mascotas con sus Familias</h1>
+      <p class="hero-subtitle" style="margin: 0 auto 20px auto; text-align: center; align-self: center; width: 100%;">
         Publica reportes con fotos, geolocalización en mapa y comunícate directamente con tu comunidad local en tiempo real.
       </p>
 
       <!-- App Store & Google Play Badges (Próximamente) -->
-      <div class="store-badges-container">
+      <div class="store-badges-container" style="margin: 0 auto 16px auto; display: flex; justify-content: center; align-items: center; gap: 14px;">
         <!-- Apple App Store -->
         <a href="#" class="store-badge-card" onclick="alert('¡Próximamente en Apple App Store para iPhone y iPad!'); return false;">
           <i class="fa-brands fa-apple store-icon" style="color: #fff;"></i>
@@ -96,7 +96,7 @@
       </div>
 
       <!-- 4 Quick Action Cards in Hero -->
-      <div class="hero-action-grid">
+      <div class="hero-action-grid" style="margin: 12px auto 0 auto;">
         <button class="hero-card-action card-lost" onclick="BuscapetApp.showLost()">
           <i class="fa-solid fa-magnifying-glass-location"></i>
           <span>🔍 Ver Perdidos</span>
@@ -132,12 +132,23 @@
 
         <div class="form-group" style="margin-bottom: 8px;">
           <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">País:</label>
-          <select id="sidebar-country-select" class="form-select" style="font-size: 12px; padding: 8px 10px;"></select>
+          <select id="sidebar-country-select" class="form-select" style="font-size: 12px; padding: 8px 10px;" onchange="BuscapetApp.onSidebarCountryChange()">
+            <option value="">🌎 Todos los Países (Todo el mundo)</option>
+            <option value="AR">🇦🇷 Argentina</option>
+            <option value="CL">🇨🇱 Chile</option>
+            <option value="UY">🇺🇾 Uruguay</option>
+            <option value="MX">🇲🇽 México</option>
+            <option value="CO">🇨🇴 Colombia</option>
+            <option value="PE">🇵🇪 Perú</option>
+            <option value="BR">🇧🇷 Brasil</option>
+            <option value="ES">🇪🇸 España</option>
+            <option value="US">🇺🇸 Estados Unidos</option>
+          </select>
         </div>
 
         <div class="form-group" style="margin-bottom: 8px;">
           <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">Provincia / Estado:</label>
-          <select id="sidebar-state-select" class="form-select" style="font-size: 12px; padding: 8px 10px;">
+          <select id="sidebar-state-select" class="form-select" style="font-size: 12px; padding: 8px 10px;" onchange="BuscapetApp.onSidebarStateChange()">
             <option value="">Todos los Estados/Provincias</option>
           </select>
         </div>
@@ -219,23 +230,8 @@
         </button>
       </div>
 
-      <!-- OscarSoft Admin Panel Widget (SOLO VISIBLE CUANDO oscarns@gmail.com INICIA SESIÓN) -->
-      <div id="sidebar-admin-widget" class="sidebar-widget" style="display: none; background: linear-gradient(135deg, rgba(255, 170, 0, 0.12) 0%, rgba(255, 170, 0, 0.03) 100%); border: 1.5px solid rgba(255, 170, 0, 0.4); border-radius: var(--radius-lg); padding: 14px 16px; box-shadow: 0 4px 16px rgba(255, 170, 0, 0.1);">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(255, 170, 0, 0.2); display: flex; align-items: center; justify-content: center; color: #FFAA00; font-size: 15px; flex-shrink: 0;">
-              <i class="fa-solid fa-crown"></i>
-            </div>
-            <div>
-              <div style="font-size: 13px; font-weight: 800; color: #FFAA00; line-height: 1.2;">Panel OscarSoft</div>
-              <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600;">Administrador Master</div>
-            </div>
-          </div>
-          <button type="button" style="padding: 7px 14px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 8px rgba(255, 170, 0, 0.35); transition: transform 0.2s ease;" onclick="BuscapetApp.openAdminPanel()">
-            <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar
-          </button>
-        </div>
-      </div>
+      <!-- Dynamic Admin Container (SOLO INYECTADO POR JS CUANDO oscarns@gmail.com ESTÁ LOGUEADO) -->
+      <div id="sidebar-admin-container"></div>
     </aside>
 
   </main>
