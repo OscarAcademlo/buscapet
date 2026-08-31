@@ -738,10 +738,17 @@ var BuscapetApp = window.BuscapetApp = {
     localStorage.setItem('buscapet_payment_settings', JSON.stringify(this.paymentSettings));
     this.updateDynamicPaymentUI();
 
+    if (window.BuscapetFirebase && BuscapetFirebase.db) {
+      try {
+        BuscapetFirebase.db.collection('settings').doc('payment').set(this.paymentSettings);
+      } catch (e) {}
+    }
+
     BuscapetNotifications.showPushBanner(
-      '¡Configuración Guardada!',
-      `Alias "${this.paymentSettings.alias}" y datos de cobro actualizados en toda la app.`
+      '¡Configuración Guardada! ✅',
+      `Alias "${this.paymentSettings.alias}" y cobros actualizados.`
     );
+    alert('¡Cambios guardados con éxito en vivo!');
   },
 
   updateDynamicPaymentUI() {

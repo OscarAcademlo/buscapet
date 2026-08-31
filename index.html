@@ -465,53 +465,103 @@
     </div>
   </div>
 
-  <!-- DONATION MODAL -->
+  <!-- DONATION MODAL (MERCAOD PAGO & PAYPAL) -->
   <div id="donation-modal" class="modal-backdrop">
-    <div class="sheet-modal">
+    <div class="sheet-modal" style="max-width: 440px;">
       <div class="sheet-header">
         <h3 class="sheet-title"><i class="fa-solid fa-mug-hot" style="color:#FFAA00"></i> Apoyar a Buscapet</h3>
         <button class="icon-btn" onclick="BuscapetApp.closeDonationModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="sheet-body">
-        <div style="background:var(--bg-main); border:1px solid var(--border); padding:12px; border-radius:8px; margin-bottom:12px;">
-          <div style="font-weight:800; color:#009EE3; font-size:12px;">🇦🇷 Argentina (Mercado Pago):</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-            <span id="mp-alias-text">buscapet.oscarsoft</span>
-            <button class="btn-copy-sm" style="background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" onclick="BuscapetApp.copyDonationData('buscapet.oscarsoft', 'Alias')">Copiar Alias</button>
+        <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4; text-align: center;">
+          Tu donación solidaria nos ayuda a costear servidores, mapas y mantener Buscapet 100% gratuita para todas las mascotas.
+        </p>
+
+        <!-- Mercado Pago Box -->
+        <div style="background: var(--bg-main); border: 1px solid var(--border); padding: 12px 14px; border-radius: 8px; margin-bottom: 12px;">
+          <div style="font-weight: 800; color: #009EE3; font-size: 12.5px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-building-columns"></i> 🇦🇷 Argentina (Mercado Pago / Banco):
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+            <div>
+              <div style="font-size: 11px; color: var(--text-muted);">Alias:</div>
+              <strong id="mp-alias-text" style="font-size: 13.5px; color: var(--text-main);">oscar.stella.mp</strong>
+            </div>
+            <button class="btn-copy-sm" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;" onclick="BuscapetApp.copyDonationData(document.getElementById('mp-alias-text').textContent, 'Alias')">
+              <i class="fa-regular fa-copy"></i> Copiar Alias
+            </button>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+            Titular: <span id="mp-holder-text" style="color: var(--text-main); font-weight: 600;">Oscar Nicolás Stella</span>
           </div>
         </div>
-        <div style="background:var(--bg-main); border:1px solid var(--border); padding:12px; border-radius:8px;">
-          <div style="font-weight:800; color:#00457C; font-size:12px;">🌎 Internacional (PayPal):</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-            <span id="paypal-email-text">oscarns@gmail.com</span>
-            <button class="btn-copy-sm" style="background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" onclick="BuscapetApp.copyDonationData('oscarns@gmail.com', 'PayPal')">Copiar Email</button>
+
+        <!-- PayPal Box -->
+        <div style="background: var(--bg-main); border: 1px solid var(--border); padding: 12px 14px; border-radius: 8px;">
+          <div style="font-weight: 800; color: #0079C1; font-size: 12.5px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-brands fa-paypal"></i> 🌎 Internacional (PayPal):
           </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+            <div>
+              <div style="font-size: 11px; color: var(--text-muted);">Email PayPal:</div>
+              <strong id="paypal-email-text" style="font-size: 13px; color: var(--text-main);">oscarns@gmail.com</strong>
+            </div>
+            <button class="btn-copy-sm" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;" onclick="BuscapetApp.copyDonationData(document.getElementById('paypal-email-text').textContent, 'PayPal')">
+              <i class="fa-regular fa-copy"></i> Copiar Email
+            </button>
+          </div>
+          <a href="https://www.paypal.com/paypalme/oscarns" target="_blank" rel="noopener" class="btn-primary-action" style="background: #0079C1; color: #fff; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12.5px; font-weight: 800; margin-top: 10px; padding: 9px; box-shadow: none;">
+            <i class="fa-brands fa-paypal"></i> Donar con PayPal
+          </a>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ADMIN MASTER PANEL MODAL -->
+  <!-- ADMIN MASTER PANEL MODAL (OSCARSOFT) -->
   <div id="admin-panel-modal" class="modal-backdrop">
-    <div class="sheet-modal" style="max-width: 600px;">
+    <div class="sheet-modal" style="max-width: 580px;">
       <div class="sheet-header">
-        <h3 class="sheet-title"><i class="fa-solid fa-crown" style="color:#FFAA00"></i> Panel de Administrador (OscarSoft)</h3>
+        <h3 class="sheet-title"><i class="fa-solid fa-crown" style="color:#FFAA00"></i> Admin Master &bull; OscarSoft</h3>
         <button class="icon-btn" onclick="BuscapetApp.closeAdminPanel()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="sheet-body">
         <!-- Settings Form -->
-        <div style="background:var(--bg-main); padding:12px; border-radius:8px; border:1px solid var(--border); margin-bottom:14px;">
-          <div style="font-size:12px; font-weight:800; color:#FFAA00; margin-bottom:8px;">Configuración de Alias y Cobros:</div>
-          <input type="text" id="admin-setting-alias" class="form-control" placeholder="Alias MP" style="margin-bottom:6px; font-size:12px;">
-          <input type="text" id="admin-setting-holder" class="form-control" placeholder="Titular" style="margin-bottom:6px; font-size:12px;">
-          <input type="text" id="admin-setting-ars" class="form-control" placeholder="Monto ARS" style="margin-bottom:6px; font-size:12px;">
-          <input type="email" id="admin-setting-paypal" class="form-control" placeholder="Email PayPal" style="margin-bottom:8px; font-size:12px;">
-          <button class="btn-primary-action" style="background:#FFAA00; color:#000; font-size:12px; padding:8px;" onclick="BuscapetApp.savePaymentSettings()">Guardar Cambios</button>
+        <div style="background: var(--bg-card); padding: 14px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 14px;">
+          <div style="font-size: 12.5px; font-weight: 800; color: #FFAA00; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-gear"></i> Configuración de Alias de Cobro y Precios:
+          </div>
+
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label class="form-label" style="font-size: 11.5px;">Alias Mercado Pago / Banco (Argentina)</label>
+            <input type="text" id="admin-setting-alias" class="form-control" placeholder="oscar.stella.mp" value="oscar.stella.mp">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label class="form-label" style="font-size: 11.5px;">Titular de la Cuenta</label>
+            <input type="text" id="admin-setting-holder" class="form-control" placeholder="Oscar Nicolás Stella" value="Oscar Nicolás Stella">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label class="form-label" style="font-size: 11.5px;">Monto Publicidad en ARS (30 días)</label>
+            <input type="text" id="admin-setting-ars" class="form-control" placeholder="$12.000 ARS" value="$12.000 ARS">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label" style="font-size: 11.5px;">Email PayPal (Internacional)</label>
+            <input type="email" id="admin-setting-paypal" class="form-control" placeholder="oscarns@gmail.com" value="oscarns@gmail.com">
+          </div>
+
+          <button class="btn-primary-action" style="background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; font-weight: 800; font-size: 13px; padding: 10px;" onclick="BuscapetApp.savePaymentSettings()">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios en Vivo
+          </button>
         </div>
 
         <!-- Ad Requests List -->
-        <div style="font-size:12.5px; font-weight:800; margin-bottom:8px;">Solicitudes de Publicidad y Anuncios Activos:</div>
-        <div id="admin-ad-requests-list-box" style="max-height:220px; overflow-y:auto;"></div>
+        <div style="font-size: 12.5px; font-weight: 800; margin-bottom: 8px; color: var(--text-main);">
+          <i class="fa-solid fa-bullhorn" style="color:#00D084;"></i> Anuncios y Renovación (30 Días):
+        </div>
+        <div id="admin-ad-requests-list-box" style="max-height: 220px; overflow-y: auto;"></div>
       </div>
     </div>
   </div>
