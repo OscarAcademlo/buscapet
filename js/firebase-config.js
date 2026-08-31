@@ -180,7 +180,7 @@ var BuscapetFirebase = window.BuscapetFirebase = {
   isAdmin() {
     if (!this.currentUser) return false;
     const email = (this.currentUser.email || '').toLowerCase().trim();
-    return email === 'oscarns@gmail.com' || this.currentUser.role === 'admin';
+    return email === 'oscarns@gmail.com';
   },
 
   isLoggedIn() {
@@ -197,52 +197,51 @@ var BuscapetFirebase = window.BuscapetFirebase = {
       return;
     }
 
-    const displayName = cleanEmail.toLowerCase() === 'oscarns@gmail.com' ? 'Oscar (Admin)' : cleanEmail.split('@')[0];
+    const isMaster = cleanEmail.toLowerCase() === 'oscarns@gmail.com';
+    const displayName = isMaster ? 'Oscar (Admin Master)' : cleanEmail.split('@')[0];
 
     try {
-      if (typeof firebase !== 'undefined' && firebase.auth) {
-        if (cleanPass) {
-          const userCredential = await firebase.auth().signInWithEmailAndPassword(cleanEmail, cleanPass);
-          const user = userCredential.user;
-          this.currentUser = {
-            uid: user.uid,
-            displayName: user.displayName || displayName,
-            email: user.email,
-            photoURL: user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-            role: cleanEmail.toLowerCase() === 'oscarns@gmail.com' ? 'admin' : 'user'
-          };
-          this.saveUser();
-          this.updateUserUI();
-          this.closeAuthModal();
-          BuscapetNotifications.showPushBanner('¡Sesión Iniciada!', `Bienvenido, ${this.currentUser.displayName}`);
-          if (this.pendingAction) {
-            const action = this.pendingAction;
-            this.pendingAction = null;
-            action();
-          }
-          return;
+      if (typeof firebase !== 'undefined' && firebase.auth && cleanPass) {
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(cleanEmail, cleanPass);
+        const user = userCredential.user;
+        this.currentUser = {
+          uid: user.uid,
+          displayName: user.displayName || displayName,
+          email: user.email,
+          photoURL: user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
+          role: isMaster ? 'admin' : 'user'
+        };
+        this.saveUser();
+        this.updateUserUI();
+        this.closeAuthModal();
+        BuscapetNotifications.showPushBanner('¡Sesión Iniciada!', `Bienvenido, ${this.currentUser.displayName}`);
+        if (this.pendingAction) {
+          const action = this.pendingAction;
+          this.pendingAction = null;
+          action();
         }
+        return;
       }
     } catch (error) {
-      console.warn('Firebase login detail:', error);
+      console.warn('Firebase login notice:', error);
       if (error.code === 'auth/wrong-password') {
-        alert('Contraseña incorrecta. Por favor verifica los datos.');
+        alert('Contraseña incorrecta. Por favor verifica tus datos.');
         return;
       }
     }
 
-    // Fallback inmediato garantizado
+    // Fallback garantizado
     this.currentUser = {
-      uid: 'usr-' + Date.now(),
+      uid: isMaster ? 'usr-admin-oscar' : 'usr-' + Date.now(),
       displayName: displayName,
       email: cleanEmail,
       photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-      role: cleanEmail.toLowerCase() === 'oscarns@gmail.com' ? 'admin' : 'user'
+      role: isMaster ? 'admin' : 'user'
     };
     this.saveUser();
     this.updateUserUI();
     this.closeAuthModal();
-    BuscapetNotifications.showPushBanner('¡Sesión Iniciada!', `Bienvenido a Buscapet, ${this.currentUser.displayName}`);
+    BuscapetNotifications.showPushBanner('¡Sesión Iniciada!', `Bienvenido, ${this.currentUser.displayName}`);
 
     if (this.pendingAction) {
       const action = this.pendingAction;
@@ -263,7 +262,8 @@ var BuscapetFirebase = window.BuscapetFirebase = {
       return;
     }
 
-    const displayName = cleanName || (cleanEmail.toLowerCase() === 'oscarns@gmail.com' ? 'Oscar (Admin)' : cleanEmail.split('@')[0]);
+    const isMaster = cleanEmail.toLowerCase() === 'oscarns@gmail.com';
+    const displayName = cleanName || (isMaster ? 'Oscar (Admin Master)' : cleanEmail.split('@')[0]);
 
     try {
       if (typeof firebase !== 'undefined' && firebase.auth && cleanPass && cleanPass.length >= 6) {
@@ -278,7 +278,7 @@ var BuscapetFirebase = window.BuscapetFirebase = {
           email: u.email,
           phone: cleanPhone,
           photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-          role: cleanEmail.toLowerCase() === 'oscarns@gmail.com' ? 'admin' : 'user'
+          role: isMaster ? 'admin' : 'user'
         };
         this.saveUser();
         this.updateUserUI();
@@ -299,14 +299,14 @@ var BuscapetFirebase = window.BuscapetFirebase = {
       }
     }
 
-    // Registro seguro local inmediato
+    // Registro seguro local
     this.currentUser = {
-      uid: 'usr-' + Date.now(),
+      uid: isMaster ? 'usr-admin-oscar' : 'usr-' + Date.now(),
       displayName: displayName,
       email: cleanEmail,
       phone: cleanPhone,
       photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
-      role: cleanEmail.toLowerCase() === 'oscarns@gmail.com' ? 'admin' : 'user'
+      role: isMaster ? 'admin' : 'user'
     };
     this.saveUser();
     this.updateUserUI();
@@ -365,6 +365,17 @@ var BuscapetFirebase = window.BuscapetFirebase = {
     const authBadgeEl = document.getElementById('user-auth-status-badge');
     const loggedInBox = document.getElementById('auth-logged-in-view');
     const guestBox = document.getElementById('auth-guest-view');
+    const sidebarAdminWidget = document.getElementById('sidebar-admin-widget');
+    const authAdminBtn = document.getElementById('auth-admin-btn');
+    const isMasterAdmin = this.isAdmin();
+
+    // El botón del Panel Admin solo se muestra si el usuario es oscarns@gmail.com
+    if (sidebarAdminWidget) {
+      sidebarAdminWidget.style.display = isMasterAdmin ? 'block' : 'none';
+    }
+    if (authAdminBtn) {
+      authAdminBtn.style.display = isMasterAdmin ? 'block' : 'none';
+    }
 
     if (this.isLoggedIn()) {
       avatarEls.forEach(el => {
@@ -374,7 +385,11 @@ var BuscapetFirebase = window.BuscapetFirebase = {
         if (this.currentUser && this.currentUser.displayName) el.textContent = this.currentUser.displayName;
       });
       if (authBadgeEl) {
-        authBadgeEl.innerHTML = `<span style="color:var(--success); font-weight:700;"><i class="fa-solid fa-circle-check"></i> Conectado como ${this.currentUser.displayName} (${this.currentUser.email || ''})</span>`;
+        if (isMasterAdmin) {
+          authBadgeEl.innerHTML = `<span style="color:#FFAA00; font-weight:800;"><i class="fa-solid fa-crown"></i> Administrador Master (oscarns@gmail.com)</span>`;
+        } else {
+          authBadgeEl.innerHTML = `<span style="color:var(--success); font-weight:700;"><i class="fa-solid fa-circle-check"></i> Conectado como ${this.currentUser.displayName}</span>`;
+        }
       }
       if (loggedInBox) loggedInBox.style.display = 'block';
       if (guestBox) guestBox.style.display = 'none';

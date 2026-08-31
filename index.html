@@ -219,8 +219,8 @@
         </button>
       </div>
 
-      <!-- OscarSoft Admin Panel Widget -->
-      <div class="sidebar-widget" style="border: 1.5px dashed #FFAA00; background: rgba(255, 170, 0, 0.06); padding: 10px 14px;">
+      <!-- OscarSoft Admin Panel Widget (SOLO VISIBLE CUANDO oscarns@gmail.com INICIA SESIÓN) -->
+      <div id="sidebar-admin-widget" class="sidebar-widget" style="display: none; border: 1.5px dashed #FFAA00; background: rgba(255, 170, 0, 0.06); padding: 10px 14px;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <div style="font-size: 12.5px; font-weight: 800; color: #FFAA00; display: flex; align-items: center; gap: 6px;">
             <i class="fa-solid fa-crown"></i> Panel OscarSoft
@@ -532,7 +532,7 @@
           <div id="user-auth-status-badge" style="font-size: 13px; margin-bottom: 20px;"></div>
 
           <div style="display: flex; flex-direction: column; gap: 10px; max-width: 320px; margin: 0 auto;">
-            <button class="btn-primary-action" style="background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; font-weight: 800;" onclick="BuscapetApp.openAdminPanel()">
+            <button id="auth-admin-btn" class="btn-primary-action" style="display: none; background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; font-weight: 800;" onclick="BuscapetApp.openAdminPanel()">
               <i class="fa-solid fa-crown"></i> Abrir Panel de Administrador
             </button>
             <button class="btn-primary-action" style="background: var(--bg-input); border: 1px solid var(--danger); color: var(--danger); box-shadow: none;" onclick="BuscapetFirebase.logout()">
