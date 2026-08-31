@@ -1169,7 +1169,11 @@ var BuscapetApp = window.BuscapetApp = {
   }
 };
 
-// Initialize app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
+// Initialize app when DOM is ready (supports fast cache & dynamic loads)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    BuscapetApp.init();
+  });
+} else {
   BuscapetApp.init();
-});
+}
