@@ -107,6 +107,7 @@ var BuscapetApp = window.BuscapetApp = {
   },
 
   // =========================================================================
+  // =========================================================================
   // LOCATION SELECTOR & CASCADING DROPDOWNS
   // =========================================================================
 
@@ -115,26 +116,32 @@ var BuscapetApp = window.BuscapetApp = {
     const filterCountrySelect = document.getElementById('filter-country-select');
     const reportCountrySelect = document.getElementById('report-country');
 
-    const optionsHtml = `
+    const filterOptionsHtml = `
+      <option value="">🌎 Todos los Países (Todo el mundo)</option>
+      ${countries.map(c => `<option value="${c.code}" ${c.code === 'AR' ? 'selected' : ''}>${c.flag} ${c.name}</option>`).join('')}
+    `;
+
+    const reportOptionsHtml = `
       <option value="">Seleccionar País...</option>
       ${countries.map(c => `<option value="${c.code}" ${c.code === 'AR' ? 'selected' : ''}>${c.flag} ${c.name}</option>`).join('')}
     `;
 
     if (filterCountrySelect) {
-      filterCountrySelect.innerHTML = optionsHtml;
-      filterCountrySelect.addEventListener('change', () => this.onFilterCountryChange());
+      filterCountrySelect.innerHTML = filterOptionsHtml;
+      filterCountrySelect.onchange = () => this.onFilterCountryChange();
       this.onFilterCountryChange(); // Trigger initial
     }
 
     if (reportCountrySelect) {
-      reportCountrySelect.innerHTML = optionsHtml;
-      reportCountrySelect.addEventListener('change', () => this.onReportCountryChange());
+      reportCountrySelect.innerHTML = reportOptionsHtml;
+      reportCountrySelect.onchange = () => this.onReportCountryChange();
       this.onReportCountryChange();
     }
   },
 
   onFilterCountryChange() {
-    const countryCode = document.getElementById('filter-country-select').value;
+    const filterCountry = document.getElementById('filter-country-select');
+    const countryCode = filterCountry ? filterCountry.value : '';
     const stateSelect = document.getElementById('filter-state-select');
     const citySelect = document.getElementById('filter-city-select');
 
@@ -152,19 +159,33 @@ var BuscapetApp = window.BuscapetApp = {
       ${states.map(s => `<option value="${s.name}">${s.name}</option>`).join('')}
     `;
     citySelect.innerHTML = '<option value="">Todas las Ciudades</option>';
+    stateSelect.onchange = () => this.onFilterStateChange();
+  },
 
-    stateSelect.onchange = () => {
-      const stateName = stateSelect.value;
-      const cities = BuscapetLocations.getCitiesByState(countryCode, stateName);
-      citySelect.innerHTML = `
-        <option value="">Todas las Ciudades</option>
-        ${cities.map(c => `<option value="${c}">${c}</option>`).join('')}
-      `;
-    };
+  onFilterStateChange() {
+    const filterCountry = document.getElementById('filter-country-select');
+    const countryCode = filterCountry ? filterCountry.value : '';
+    const stateSelect = document.getElementById('filter-state-select');
+    const citySelect = document.getElementById('filter-city-select');
+
+    if (!stateSelect || !citySelect) return;
+
+    const stateName = stateSelect.value;
+    if (!stateName) {
+      citySelect.innerHTML = '<option value="">Todas las Ciudades</option>';
+      return;
+    }
+
+    const cities = BuscapetLocations.getCitiesByState(countryCode, stateName);
+    citySelect.innerHTML = `
+      <option value="">Todas las Ciudades</option>
+      ${cities.map(c => `<option value="${c}">${c}</option>`).join('')}
+    `;
   },
 
   onReportCountryChange() {
-    const countryCode = document.getElementById('report-country').value;
+    const reportCountry = document.getElementById('report-country');
+    const countryCode = reportCountry ? reportCountry.value : 'AR';
     const stateSelect = document.getElementById('report-state');
     const citySelect = document.getElementById('report-city');
 
@@ -176,15 +197,28 @@ var BuscapetApp = window.BuscapetApp = {
       ${states.map(s => `<option value="${s.name}">${s.name}</option>`).join('')}
     `;
     citySelect.innerHTML = '<option value="">Seleccionar Ciudad...</option>';
+    stateSelect.onchange = () => this.onReportStateChange();
+  },
 
-    stateSelect.onchange = () => {
-      const stateName = stateSelect.value;
-      const cities = BuscapetLocations.getCitiesByState(countryCode, stateName);
-      citySelect.innerHTML = `
-        <option value="">Seleccionar Ciudad...</option>
-        ${cities.map(c => `<option value="${c}">${c}</option>`).join('')}
-      `;
-    };
+  onReportStateChange() {
+    const reportCountry = document.getElementById('report-country');
+    const countryCode = reportCountry ? reportCountry.value : 'AR';
+    const stateSelect = document.getElementById('report-state');
+    const citySelect = document.getElementById('report-city');
+
+    if (!stateSelect || !citySelect) return;
+
+    const stateName = stateSelect.value;
+    if (!stateName) {
+      citySelect.innerHTML = '<option value="">Seleccionar Ciudad...</option>';
+      return;
+    }
+
+    const cities = BuscapetLocations.getCitiesByState(countryCode, stateName);
+    citySelect.innerHTML = `
+      <option value="">Seleccionar Ciudad...</option>
+      ${cities.map(c => `<option value="${c}">${c}</option>`).join('')}
+    `;
   },
 
   handleLocationSearch(query) {
@@ -198,12 +232,12 @@ var BuscapetApp = window.BuscapetApp = {
 
     const matches = BuscapetLocations.searchLocation(query);
     if (matches.length === 0) {
-      resultsContainer.innerHTML = '<div style="font-size:12px; color:var(--text-muted); padding:8px 0;">No se encontraron ubicaciones.</div>';
+      resultsContainer.innerHTML = '<div style="font-size:12px; color:var(--text-muted); padding:8px 0;">No se encontraron ubicaciones para esa búsqueda.</div>';
       return;
     }
 
     resultsContainer.innerHTML = matches.map(m => `
-      <div class="chat-thread-item" style="padding:8px 12px; margin-bottom:4px;" onclick="BuscapetApp.selectQuickLocation('${m.countryCode}', '${m.stateName}', '${m.cityName}')">
+      <div class="chat-thread-item" style="padding:8px 12px; margin-bottom:4px; cursor:pointer;" onclick="BuscapetApp.selectQuickLocation('${m.countryCode}', '${m.stateName.replace(/'/g, "\\'")}', '${m.cityName.replace(/'/g, "\\'")}')">
         <i class="fa-solid fa-location-dot" style="color:var(--primary);"></i>
         <span style="font-size:13px; font-weight:600;">${m.cityName}, ${m.stateName} (${m.flag} ${m.countryName})</span>
       </div>
@@ -212,55 +246,89 @@ var BuscapetApp = window.BuscapetApp = {
 
   showLost() {
     BuscapetFeed.filterByType('lost');
-    document.querySelectorAll('.category-tabs .tab-pill').forEach(b => {
-      b.classList.toggle('active', b.classList.contains('pill-lost'));
+    document.querySelectorAll('.category-tabs .tab-pill, .filter-category-list .filter-cat-btn, .nav-center-menu .nav-link-btn').forEach(b => {
+      b.classList.remove('active');
+      if (b.classList.contains('pill-lost') || b.textContent.includes('Perdidos')) {
+        b.classList.add('active');
+      }
     });
-    this.openLocationModal();
   },
 
   showAdoptions() {
     BuscapetFeed.filterByType('adopt');
-    document.querySelectorAll('.category-tabs .tab-pill').forEach(b => {
-      b.classList.toggle('active', b.classList.contains('pill-adopt'));
+    document.querySelectorAll('.category-tabs .tab-pill, .filter-category-list .filter-cat-btn, .nav-center-menu .nav-link-btn').forEach(b => {
+      b.classList.remove('active');
+      if (b.classList.contains('pill-adopt') || b.textContent.includes('Adopciones')) {
+        b.classList.add('active');
+      }
     });
-    this.openLocationModal();
   },
 
   selectQuickLocation(countryCode, stateName, cityName) {
+    // Sync dropdowns in modal
+    const filterCountry = document.getElementById('filter-country-select');
+    if (filterCountry) {
+      filterCountry.value = countryCode;
+      this.onFilterCountryChange();
+    }
+    const filterState = document.getElementById('filter-state-select');
+    if (filterState) {
+      filterState.value = stateName;
+      if (filterState.onchange) filterState.onchange();
+    }
+    const filterCity = document.getElementById('filter-city-select');
+    if (filterCity) {
+      filterCity.value = cityName;
+    }
+
     this.applyLocationFilter(countryCode, stateName, cityName);
     this.closeLocationModal();
   },
 
   applyLocationFilter(countryCode, stateName, cityName) {
-    const country = countryCode || document.getElementById('filter-country-select')?.value;
-    const state = stateName !== undefined ? stateName : document.getElementById('filter-state-select')?.value;
-    const city = cityName !== undefined ? cityName : document.getElementById('filter-city-select')?.value;
+    const country = countryCode !== undefined ? countryCode : (document.getElementById('filter-country-select')?.value || '');
+    const state = stateName !== undefined ? stateName : (document.getElementById('filter-state-select')?.value || '');
+    const city = cityName !== undefined ? cityName : (document.getElementById('filter-city-select')?.value || '');
 
     BuscapetFeed.filterByLocation(country, state, city);
 
-    // Update Header Location Pill
-    const pill = document.getElementById('header-location-pill');
-    if (pill) {
-      const countryObj = BuscapetLocations.countries.find(c => c.code === country);
-      const flag = countryObj ? countryObj.flag : '🌎';
-      if (city) {
-        pill.textContent = `${flag} ${city}`;
-      } else if (state) {
-        pill.textContent = `${flag} ${state}`;
-      } else if (countryObj) {
-        pill.textContent = `${flag} ${countryObj.name}`;
-      } else {
-        pill.textContent = '🌎 Todo el mundo';
-      }
+    // Update Header and Sidebar Location Pills
+    const pills = document.querySelectorAll('#header-location-pill');
+    const countryObj = BuscapetLocations.countries.find(c => c.code === country);
+    const flag = countryObj ? countryObj.flag : '🌎';
+    let pillLabel = '🌎 Todas las ubicaciones';
+    if (city) {
+      pillLabel = `${flag} ${city}`;
+    } else if (state) {
+      pillLabel = `${flag} ${state}`;
+    } else if (countryObj) {
+      pillLabel = `${flag} ${countryObj.name}`;
     }
+
+    pills.forEach(pill => {
+      pill.textContent = pillLabel;
+    });
 
     this.closeLocationModal();
   },
 
   resetLocationFilter() {
+    const filterCountry = document.getElementById('filter-country-select');
+    const filterState = document.getElementById('filter-state-select');
+    const filterCity = document.getElementById('filter-city-select');
+    const searchInput = document.getElementById('location-search-input');
+    const searchResults = document.getElementById('location-search-results');
+
+    if (filterCountry) filterCountry.value = '';
+    if (filterState) filterState.innerHTML = '<option value="">Todos los Estados/Provincias</option>';
+    if (filterCity) filterCity.innerHTML = '<option value="">Todas las Ciudades</option>';
+    if (searchInput) searchInput.value = '';
+    if (searchResults) searchResults.innerHTML = '';
+
     BuscapetFeed.filterByLocation('', '', '');
-    const pill = document.getElementById('header-location-pill');
-    if (pill) pill.textContent = '🌎 Todo el mundo';
+    document.querySelectorAll('#header-location-pill').forEach(pill => {
+      pill.textContent = '🌎 Todas las ubicaciones';
+    });
     this.closeLocationModal();
   },
 

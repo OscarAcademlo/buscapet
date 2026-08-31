@@ -42,7 +42,16 @@ var BuscapetFeed = window.BuscapetFeed = {
       },
       likes: 24,
       liked: false,
-      shares: 18
+      shares: 18,
+      comments: [
+        {
+          id: 'cmt-1',
+          userName: 'Sofía Romero',
+          userAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+          text: '¡Lo compartí en el grupo de vecinos de Caballito! Ojalá aparezca pronto 🙏',
+          time: 'Hace 1 hora'
+        }
+      ]
     },
     {
       id: 'pet-2',
@@ -76,7 +85,16 @@ var BuscapetFeed = window.BuscapetFeed = {
       },
       likes: 42,
       liked: false,
-      shares: 31
+      shares: 31,
+      comments: [
+        {
+          id: 'cmt-2',
+          userName: 'Gonzalo Paz',
+          userAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+          text: 'Tiene carita de estar bien cuidada, seguro su familia la está buscando.',
+          time: 'Hace 3 horas'
+        }
+      ]
     },
     {
       id: 'pet-3',
@@ -110,7 +128,16 @@ var BuscapetFeed = window.BuscapetFeed = {
       },
       likes: 89,
       liked: true,
-      shares: 64
+      shares: 64,
+      comments: [
+        {
+          id: 'cmt-3',
+          userName: 'Valeria Rivas',
+          userAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
+          text: 'Atentos en la zona de Las Lomas. ¡Compartido!',
+          time: 'Ayer'
+        }
+      ]
     },
     {
       id: 'pet-4',
@@ -143,7 +170,8 @@ var BuscapetFeed = window.BuscapetFeed = {
       },
       likes: 15,
       liked: false,
-      shares: 12
+      shares: 12,
+      comments: []
     },
     {
       id: 'pet-5',
@@ -177,7 +205,16 @@ var BuscapetFeed = window.BuscapetFeed = {
       },
       likes: 56,
       liked: true,
-      shares: 48
+      shares: 48,
+      comments: [
+        {
+          id: 'cmt-5',
+          userName: 'Esteban Conti',
+          userAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80',
+          text: '¡Hermosa Luna! Ya mandé mensaje para consultar requisitos de adopción ❤️',
+          time: 'Hace 40 min'
+        }
+      ]
     }
   ],
 
@@ -245,6 +282,7 @@ var BuscapetFeed = window.BuscapetFeed = {
       likes: 0,
       liked: false,
       shares: 0,
+      comments: [],
       date: 'Recién publicado'
     };
     this.posts.unshift(post);
@@ -265,9 +303,9 @@ var BuscapetFeed = window.BuscapetFeed = {
   },
 
   filterByLocation(countryCode = '', stateName = '', cityName = '') {
-    this.selectedCountry = countryCode;
-    this.selectedState = stateName;
-    this.selectedCity = cityName;
+    this.selectedCountry = countryCode || '';
+    this.selectedState = stateName || '';
+    this.selectedCity = cityName || '';
     this.render();
   },
 
@@ -300,6 +338,78 @@ var BuscapetFeed = window.BuscapetFeed = {
     }
   },
 
+  toggleComments(postId) {
+    const section = document.getElementById(`comments-section-${postId}`);
+    if (section) {
+      const isHidden = section.style.display === 'none' || !section.style.display;
+      section.style.display = isHidden ? 'block' : 'none';
+      if (isHidden) {
+        const input = document.getElementById(`comment-input-${postId}`);
+        if (input) input.focus();
+      }
+    }
+  },
+
+  submitComment(postId) {
+    const input = document.getElementById(`comment-input-${postId}`);
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+
+    const post = this.posts.find(p => p.id === postId);
+    if (!post) return;
+
+    if (!Array.isArray(post.comments)) {
+      post.comments = [];
+    }
+
+    const currentUser = window.BuscapetFirebase ? BuscapetFirebase.currentUser : null;
+    const comment = {
+      id: 'cmt-' + Date.now(),
+      userName: currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Vecino Solidario',
+      userAvatar: currentUser?.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      text: text,
+      time: 'Recién publicado'
+    };
+
+    post.comments.push(comment);
+    input.value = '';
+    this.save();
+
+    if (window.BuscapetFirebase && BuscapetFirebase.savePostToFirestore) {
+      BuscapetFirebase.savePostToFirestore(post);
+    }
+
+    // Append to UI list dynamically
+    const list = document.getElementById(`comments-list-${postId}`);
+    if (list) {
+      const item = document.createElement('div');
+      item.className = 'comment-item';
+      item.innerHTML = `
+        <img src="${comment.userAvatar}" alt="${comment.userName}" class="comment-avatar">
+        <div class="comment-bubble">
+          <div class="comment-author-time">
+            <span class="comment-author">${comment.userName}</span>
+            <span class="comment-time">${comment.time}</span>
+          </div>
+          <div class="comment-text">${comment.text}</div>
+        </div>
+      `;
+      list.appendChild(item);
+      list.scrollTop = list.scrollHeight;
+    }
+
+    // Update count span
+    const countSpan = document.getElementById(`comment-count-${postId}`);
+    if (countSpan) {
+      countSpan.textContent = post.comments.length;
+    }
+
+    if (window.BuscapetNotifications) {
+      BuscapetNotifications.showPushBanner('Comentario Publicado', `Tu comentario en "${post.petName}" fue agregado.`);
+    }
+  },
+
   render() {
     const container = document.getElementById('feed-posts-container');
     if (!container) return;
@@ -317,25 +427,40 @@ var BuscapetFeed = window.BuscapetFeed = {
 
     // Filter by Country if selected
     if (this.selectedCountry) {
-      const matchCountry = filtered.filter(p => p.location && p.location.countryCode === this.selectedCountry);
-      if (matchCountry.length > 0) filtered = matchCountry;
+      filtered = filtered.filter(p => p.location && p.location.countryCode === this.selectedCountry);
     }
 
     // Filter by State if selected
     if (this.selectedState) {
-      const matchState = filtered.filter(p => p.location && p.location.stateName === this.selectedState);
-      if (matchState.length > 0) filtered = matchState;
+      filtered = filtered.filter(p => p.location && p.location.stateName === this.selectedState);
     }
 
     // Filter by City if selected
     if (this.selectedCity) {
-      const matchCity = filtered.filter(p => p.location && p.location.cityName === this.selectedCity);
-      if (matchCity.length > 0) filtered = matchCity;
+      filtered = filtered.filter(p => p.location && p.location.cityName === this.selectedCity);
     }
 
-    // Always ensure at least initialPosts render if nothing matched
     if (filtered.length === 0) {
-      filtered = [...this.initialPosts];
+      const countryObj = BuscapetLocations.countries.find(c => c.code === this.selectedCountry);
+      const locLabel = this.selectedCity || this.selectedState || (countryObj ? countryObj.name : 'esta ubicación');
+      container.innerHTML = `
+        <div class="empty-feed-card" style="text-align:center; padding:45px 20px; background:var(--bg-card); border-radius:var(--radius-lg); border:1px dashed var(--border); margin:16px 0;">
+          <div style="font-size:42px; margin-bottom:12px;">🐾</div>
+          <h3 style="font-size:17px; font-weight:800; color:var(--text-main); margin-bottom:6px;">No hay reportes en ${locLabel}</h3>
+          <p style="font-size:13px; color:var(--text-muted); max-width:380px; margin:0 auto 18px; line-height:1.4;">
+            No encontramos publicaciones con los filtros actuales. Sé el primero en crear un reporte solidario en esta zona o restablece los filtros.
+          </p>
+          <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+            <button class="btn-primary-action" style="width:auto; padding:9px 16px; font-size:12.5px; background:var(--bg-input); color:var(--text-main); border:1px solid var(--border);" onclick="BuscapetApp.resetLocationFilter()">
+              <i class="fa-solid fa-earth-americas"></i> Ver Todas las Ubicaciones
+            </button>
+            <button class="btn-primary-action" style="width:auto; padding:9px 16px; font-size:12.5px; background:var(--primary);" onclick="BuscapetApp.openCreateModal('lost')">
+              <i class="fa-solid fa-plus-circle"></i> Publicar Mascota
+            </button>
+          </div>
+        </div>
+      `;
+      return;
     }
 
     let htmlContent = '';
@@ -410,6 +535,7 @@ var BuscapetFeed = window.BuscapetFeed = {
     const isAdopted = post.type === 'adopted' || post.adopted;
     const cfg = isReunited ? statusConfig.reunited : (isAdopted ? statusConfig.adopted : (statusConfig[post.type] || statusConfig.lost));
     const photos = post.photos && post.photos.length > 0 ? post.photos : ['https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=800&q=80'];
+    const commentsList = Array.isArray(post.comments) ? post.comments : [];
 
     // Check if logged in user is the owner or admin
     const currentUser = window.BuscapetFirebase ? BuscapetFirebase.currentUser : null;
@@ -467,12 +593,6 @@ var BuscapetFeed = window.BuscapetFeed = {
             `).join('')}
           </div>
 
-          ${post.isSample ? `
-            <div class="sample-image-badge">
-              <i class="fa-solid fa-camera"></i> Imagen de muestra
-            </div>
-          ` : ''}
-
           ${photos.length > 1 ? `
             <button class="carousel-btn carousel-prev" onclick="BuscapetFeed.prevSlide('${post.id}')" aria-label="Foto anterior">
               <i class="fa-solid fa-chevron-left"></i>
@@ -493,6 +613,10 @@ var BuscapetFeed = window.BuscapetFeed = {
             <button class="action-btn ${post.liked ? 'liked' : ''}" onclick="BuscapetFeed.toggleLike('${post.id}')" title="Me gusta / Apoyar">
               <i class="${post.liked ? 'fa-solid fa-heart' : 'fa-regular fa-heart'}"></i>
               <span style="font-size: 13px;">${post.likes}</span>
+            </button>
+            <button class="action-btn" onclick="BuscapetFeed.toggleComments('${post.id}')" title="Ver comentarios">
+              <i class="fa-regular fa-comment"></i>
+              <span id="comment-count-${post.id}" style="font-size: 13px;">${commentsList.length}</span>
             </button>
             <button class="action-btn" onclick="BuscapetFeed.sharePost('${post.id}')" title="Compartir">
               <i class="fa-solid fa-share-nodes"></i>
@@ -522,7 +646,7 @@ var BuscapetFeed = window.BuscapetFeed = {
           </div>
         </div>
 
-        <!-- Post Details & Comment -->
+        <!-- Post Details & Description -->
         <div class="post-details">
           <h4 class="pet-headline">${post.petName}</h4>
           <div class="pet-tags">
@@ -533,6 +657,34 @@ var BuscapetFeed = window.BuscapetFeed = {
           <p class="post-caption">${post.description}</p>
           <div class="location-snippet">
             <i class="fa-solid fa-map-pin"></i> ${post.location.address || `${post.location.cityName}, ${post.location.stateName}`}
+          </div>
+        </div>
+
+        <!-- Interactive Comments Section -->
+        <div id="comments-section-${post.id}" class="comments-section" style="display: none;">
+          <div class="comments-list" id="comments-list-${post.id}">
+            ${commentsList.length === 0 ? `
+              <div class="no-comments-msg" style="font-size:12px; color:var(--text-muted); text-align:center; padding:8px 0;">
+                Sé el primero en dejar un comentario o aportar información sobre ${post.petName}.
+              </div>
+            ` : commentsList.map(c => `
+              <div class="comment-item">
+                <img src="${c.userAvatar}" alt="${c.userName}" class="comment-avatar">
+                <div class="comment-bubble">
+                  <div class="comment-author-time">
+                    <span class="comment-author">${c.userName}</span>
+                    <span class="comment-time">${c.time}</span>
+                  </div>
+                  <div class="comment-text">${c.text}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="comment-input-row">
+            <input type="text" id="comment-input-${post.id}" class="comment-input" placeholder="Escribe un comentario..." onkeypress="if(event.key==='Enter') BuscapetFeed.submitComment('${post.id}')">
+            <button class="btn-send-comment" onclick="BuscapetFeed.submitComment('${post.id}')" title="Enviar comentario">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
           </div>
         </div>
       </article>
@@ -625,3 +777,4 @@ var BuscapetFeed = window.BuscapetFeed = {
     if (counter) counter.textContent = `${state.index + 1}/${slides.length}`;
   }
 };
+
