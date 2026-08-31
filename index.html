@@ -220,13 +220,19 @@
       </div>
 
       <!-- OscarSoft Admin Panel Widget (SOLO VISIBLE CUANDO oscarns@gmail.com INICIA SESIÓN) -->
-      <div id="sidebar-admin-widget" class="sidebar-widget" style="display: none; border: 1.5px dashed #FFAA00; background: rgba(255, 170, 0, 0.06); padding: 10px 14px;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div style="font-size: 12.5px; font-weight: 800; color: #FFAA00; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-crown"></i> Panel OscarSoft
+      <div id="sidebar-admin-widget" class="sidebar-widget" style="display: none; background: linear-gradient(135deg, rgba(255, 170, 0, 0.12) 0%, rgba(255, 170, 0, 0.03) 100%); border: 1.5px solid rgba(255, 170, 0, 0.4); border-radius: var(--radius-lg); padding: 14px 16px; box-shadow: 0 4px 16px rgba(255, 170, 0, 0.1);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(255, 170, 0, 0.2); display: flex; align-items: center; justify-content: center; color: #FFAA00; font-size: 15px; flex-shrink: 0;">
+              <i class="fa-solid fa-crown"></i>
+            </div>
+            <div>
+              <div style="font-size: 13px; font-weight: 800; color: #FFAA00; line-height: 1.2;">Panel OscarSoft</div>
+              <div style="font-size: 10.5px; color: var(--text-muted); font-weight: 600;">Administrador Master</div>
+            </div>
           </div>
-          <button type="button" style="padding: 4px 12px; font-size: 11px; font-weight: 800; background: rgba(255, 170, 0, 0.2); color: #FFAA00; border: 1px solid #FFAA00; border-radius: 4px; cursor: pointer;" onclick="BuscapetApp.openAdminPanel()">
-            Entrar
+          <button type="button" style="padding: 7px 14px; font-size: 11.5px; font-weight: 800; background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; border: none; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 8px rgba(255, 170, 0, 0.35); transition: transform 0.2s ease;" onclick="BuscapetApp.openAdminPanel()">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Entrar
           </button>
         </div>
       </div>
