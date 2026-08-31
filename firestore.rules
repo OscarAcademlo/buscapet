@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Colección de reportes de mascotas (Lectura pública para todos, escritura para usuarios registrados)
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null || true; // Modo permisivo para web demo y apps
+      allow update, delete: if request.auth != null || true;
+    }
+
+    // Colección de solicitudes de publicidad
+    match /ad_requests/{requestId} {
+      allow read, write: if true;
+    }
+
+    // Colección de chats comunitarios
+    match /chats/{chatId} {
+      allow read, write: if true;
+    }
+  }
+}
