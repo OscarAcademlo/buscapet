@@ -1283,7 +1283,9 @@ body {
 
 @media (max-width: 1024px) {
   .web-main-layout {
-    grid-template-columns: 240px 1fr;
+    grid-template-columns: 260px 1fr;
+    gap: 16px;
+    padding: 16px 14px;
   }
   .web-sidebar-right {
     display: none;
@@ -1294,20 +1296,97 @@ body {
 }
 
 @media (max-width: 768px) {
+  /* Navbar */
+  .web-navbar {
+    padding: 10px 12px;
+  }
+  .nav-container {
+    gap: 8px;
+  }
+  .nav-center-menu {
+    display: none;
+  }
+  .nav-right-actions {
+    gap: 8px;
+  }
+  .nav-right-actions .btn-primary-action span,
+  .nav-right-actions .btn-donate-nav span {
+    font-size: 12px;
+  }
+  .brand-box .name {
+    font-size: 18px;
+  }
+
+  /* Hero Section */
+  .hero-banner-section {
+    padding: 22px 14px 18px !important;
+  }
+  .hero-badge-tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    margin-bottom: 8px !important;
+  }
+  .hero-main-title {
+    font-size: 22px !important;
+    line-height: 1.25;
+    margin-bottom: 6px !important;
+  }
+  .hero-subtitle {
+    font-size: 13px !important;
+    line-height: 1.4;
+    margin-bottom: 14px !important;
+    padding: 0 4px;
+  }
+  .store-badges-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+  .store-badge-card {
+    padding: 6px 12px;
+    gap: 8px;
+  }
+  .store-badge-card .store-icon {
+    font-size: 20px;
+  }
+  .store-badge-card .store-title {
+    font-size: 12px;
+  }
+  .hero-action-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 6px !important;
+  }
+  .hero-card-action {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  /* Layout & Feed */
   .web-main-layout {
     grid-template-columns: 1fr;
+    padding: 14px 10px;
+    gap: 16px;
   }
   .web-sidebar-left {
     position: static;
   }
-  .hero-main-title {
-    font-size: 24px;
+  .sidebar-widget {
+    padding: 14px;
   }
-  .hero-action-grid {
-    grid-template-columns: 1fr 1fr;
+  .post-card {
+    border-radius: var(--radius-md);
   }
-  .nav-center-menu {
-    display: none;
+  .post-image-carousel {
+    max-height: 380px;
+  }
+  .floating-ad-btn {
+    bottom: 20px;
+    right: 16px;
+    padding: 10px 14px;
+    font-size: 12px;
   }
 }
 
