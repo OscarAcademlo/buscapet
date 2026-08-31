@@ -2,290 +2,321 @@
 <html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Buscapet 🐾 | Red Social de Mascotas Perdidas y Encontradas</title>
-  <meta name="description" content="Buscapet es la red social global para reportar y encontrar mascotas perdidas con geolocalización, fotos múltiples, selector por país y ciudad, y alertas en tiempo real.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscapet - Red Social Comunitaria para Mascotas Perdidas, Encontradas y en Adopción</title>
+  <meta name="description" content="Plataforma comunitaria 100% solidaria y gratuita para reunir mascotas extraviadas con sus familias y promover la adopción responsable.">
 
-  <!-- Google Fonts: Outfit & Inter -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Open Graph & SEO -->
+  <meta property="og:title" content="Buscapet - Red Social de Mascotas">
+  <meta property="og:description" content="Reporta mascotas perdidas, encontradas o en adopción en tu ciudad en tiempo real.">
+  <meta property="og:type" content="website">
 
-  <!-- FontAwesome Icons -->
+  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
-  <!-- Custom Stylesheets -->
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/mobile-frame.css">
+  <!-- Web Application Styles -->
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <!-- App Wrapper with Device Frame Simulator -->
-  <div class="app-wrapper">
+  <!-- ========================================================================
+       1. TOP DESKTOP NAVBAR
+       ======================================================================== -->
+  <header class="web-navbar">
+    <div class="nav-container">
+      <a href="#" class="brand-box" onclick="BuscapetApp.switchTab('feed'); return false;">
+        <span class="paw">🐾</span>
+        <span class="name">Buscapet</span>
+      </a>
 
-    <!-- Device Switcher Controls (For Browser Testing) -->
-    <div class="device-toolbar">
-      <button class="device-btn active" data-device="iphone" onclick="BuscapetApp.setDeviceMode('iphone')">
-        <i class="fa-brands fa-apple"></i> iPhone
-      </button>
-      <button class="device-btn" data-device="android" onclick="BuscapetApp.setDeviceMode('android')">
-        <i class="fa-brands fa-android"></i> Android
-      </button>
-      <button class="device-btn" data-device="fullscreen" onclick="BuscapetApp.setDeviceMode('fullscreen')">
-        <i class="fa-solid fa-expand"></i> Pantalla Completa
-      </button>
-      <button class="theme-toggle-btn" onclick="BuscapetApp.toggleTheme()" title="Cambiar Tema Claro/Oscuro">
-        <i class="fa-solid fa-moon"></i>
-      </button>
-    </div>
-
-    <!-- Smartphone Container -->
-    <div class="smartphone-container">
-
-      <!-- Phone Status Bar & Dynamic Island -->
-      <div class="phone-status-bar">
-        <span>09:41</span>
-        <div class="dynamic-island">
-          <div class="island-camera"></div>
-          <div class="island-sensor"></div>
-        </div>
-        <div class="status-right">
-          <i class="fa-solid fa-signal"></i>
-          <i class="fa-solid fa-wifi"></i>
-          <i class="fa-solid fa-battery-full"></i>
-        </div>
-      </div>
-
-      <!-- Main Scrollable Screen Area -->
-      <div class="screen-scroll-view">
-
-        <!-- App Header -->
-        <header class="app-header">
-          <a href="#" class="brand-logo" onclick="BuscapetApp.switchTab('feed'); return false;">
-            <span class="paw-icon">🐾</span>
-            <span class="brand-title">Buscapet</span>
-          </a>
-
-          <div class="header-actions">
-            <!-- Prominent Top Donation Button (Cafecito) -->
-            <button class="btn-donate-trigger" onclick="BuscapetApp.openDonationModal()" title="Apoyar la app">
-              <i class="fa-solid fa-mug-hot"></i> <span>Donar Cafecito</span>
-            </button>
-            <button class="icon-btn" onclick="BuscapetNotifications.requestWebPushPermission()" title="Notificaciones">
-              <i class="fa-solid fa-bell"></i>
-              <span class="badge-dot"></span>
-            </button>
-            <button class="icon-btn" onclick="BuscapetFirebase.openAuthModal()" title="Mi Perfil / Admin">
-              <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80" alt="Avatar" class="avatar current-user-avatar" style="width: 32px; height: 32px;">
-            </button>
-          </div>
-        </header>
-
-        <!-- Prominent Primary Actions (4 Botones: Perdidos & Adopciones) -->
-        <div class="hero-actions-bar">
-          <button class="hero-action-btn btn-view-lost" onclick="BuscapetApp.showLost()">
-            <i class="fa-solid fa-magnifying-glass-location"></i>
-            <span>🔍 Ver Perdidos</span>
-          </button>
-          <button class="hero-action-btn btn-report-pet" onclick="BuscapetApp.openCreateModal('lost')">
-            <i class="fa-solid fa-bullhorn"></i>
-            <span>🚨 Reportar</span>
-          </button>
-          <button class="hero-action-btn btn-view-adopt" onclick="BuscapetApp.showAdoptions()">
-            <i class="fa-solid fa-heart"></i>
-            <span>💜 Ver Adopciones</span>
-          </button>
-          <button class="hero-action-btn btn-offer-adopt" onclick="BuscapetApp.openCreateModal('adopt')">
-            <i class="fa-solid fa-hand-holding-heart"></i>
-            <span>🏡 Dar en Adopción</span>
-          </button>
-        </div>
-
-        <!-- Location Filter Bar -->
-        <div class="location-selector-bar">
-          <button class="current-loc-btn" onclick="BuscapetApp.openLocationModal()">
-            <div class="loc-left">
-              <i class="fa-solid fa-location-dot" style="color: var(--primary);"></i>
-              <span id="header-location-pill" class="loc-pill">🌎 Todas las ubicaciones</span>
-            </div>
-            <i class="fa-solid fa-chevron-down" style="font-size: 11px; color: var(--text-muted);"></i>
-          </button>
-
-          <!-- Category Quick Filters -->
-          <div class="category-tabs">
-            <button class="tab-pill active" onclick="BuscapetFeed.filterByType('all'); this.parentElement.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active')); this.classList.add('active');">
-              <i class="fa-solid fa-layer-group"></i> Todos
-            </button>
-            <button class="tab-pill pill-lost" onclick="BuscapetFeed.filterByType('lost'); this.parentElement.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active')); this.classList.add('active');">
-              <i class="fa-solid fa-circle-exclamation"></i> Perdidos
-            </button>
-            <button class="tab-pill pill-found" onclick="BuscapetFeed.filterByType('found'); this.parentElement.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active')); this.classList.add('active');">
-              <i class="fa-solid fa-circle-check"></i> Encontrados
-            </button>
-            <button class="tab-pill pill-adopt" onclick="BuscapetFeed.filterByType('adopt'); this.parentElement.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active')); this.classList.add('active');">
-              <i class="fa-solid fa-heart" style="color: #A78BFA;"></i> En Adopción
-            </button>
-            <button class="tab-pill" onclick="BuscapetFeed.filterByType('spotted'); this.parentElement.querySelectorAll('.tab-pill').forEach(b => b.classList.remove('active')); this.classList.add('active');">
-              <i class="fa-solid fa-eye"></i> Vistos
-            </button>
-          </div>
-        </div>
-
-        <!-- Feed Posts Container -->
-        <main class="feed-container" id="feed-posts-container">
-          <!-- Feed Cards & Sponsored Ads injected dynamically by feed.js -->
-        </main>
-
-        <!-- App Footer (OscarSoft 2026 & Donation support) -->
-        <footer class="app-footer">
-          <div class="footer-brand">🐾 Buscapet &bull; Red Social Comunitaria</div>
-          <div class="footer-copy">Hecho por <strong>OscarSoft 2026</strong></div>
-          <div class="footer-actions">
-            <button class="btn-donate-trigger" style="border-color: #00A699; color: #00A699;" onclick="BuscapetApp.openAdvertisingModal()">
-              <i class="fa-solid fa-rectangle-ad"></i> Quiero Publicitar ($10)
-            </button>
-            <button class="btn-donate-trigger" onclick="BuscapetApp.openDonationModal()">
-              <i class="fa-solid fa-mug-hot"></i> Invitame un Cafecito
-            </button>
-            <button class="btn-donate-trigger" style="border-color: #FFAA00; color: #FFAA00;" onclick="BuscapetApp.openAdminPanel()">
-              <i class="fa-solid fa-crown"></i> Panel Admin
-            </button>
-          </div>
-        </footer>
-
-      </div>
-
-      <!-- Floating Ad Button (Discreet & Easy to find without covering content) -->
-      <button class="floating-ad-btn" onclick="BuscapetApp.openAdvertisingModal()" title="Publicitar mi Negocio ($10 USD)">
-        <i class="fa-solid fa-bullhorn"></i>
-        <span>Publicitar ($10)</span>
-      </button>
-
-      <!-- Bottom Navigation Bar -->
-      <nav class="bottom-nav">
-        <button class="nav-item active" data-tab="feed" onclick="BuscapetApp.switchTab('feed')">
-          <i class="fa-solid fa-house"></i>
-          <span>Inicio</span>
+      <nav class="nav-center-menu">
+        <button class="nav-link-btn active" onclick="BuscapetFeed.filterByType('all')">
+          <i class="fa-solid fa-house"></i> Inicio
         </button>
-        <button class="nav-item" data-tab="lost" onclick="BuscapetApp.switchTab('lost')">
-          <i class="fa-solid fa-magnifying-glass-location"></i>
-          <span>Perdidos</span>
+        <button class="nav-link-btn" onclick="BuscapetApp.showLost()">
+          <i class="fa-solid fa-circle-exclamation" style="color:var(--danger)"></i> Perdidos
         </button>
-        <button class="nav-item nav-btn-fab" onclick="BuscapetApp.openCreateModal('lost')" title="Crear Reporte (Requiere Login)">
-          <i class="fa-solid fa-plus"></i>
+        <button class="nav-link-btn" onclick="BuscapetFeed.filterByType('found')">
+          <i class="fa-solid fa-circle-check" style="color:var(--success)"></i> Encontrados
         </button>
-        <button class="nav-item" data-tab="chats" onclick="BuscapetApp.switchTab('chats')">
-          <i class="fa-solid fa-comments"></i>
-          <span>Mensajes</span>
-        </button>
-        <button class="nav-item" data-tab="profile" onclick="BuscapetApp.switchTab('profile')">
-          <i class="fa-solid fa-user"></i>
-          <span>Perfil</span>
+        <button class="nav-link-btn" onclick="BuscapetApp.showAdoptions()">
+          <i class="fa-solid fa-heart" style="color:var(--adopt)"></i> Adopciones
         </button>
       </nav>
 
-      <!-- Home Indicator -->
-      <div class="phone-home-bar">
-        <div class="home-indicator"></div>
+      <div class="nav-right-actions">
+        <button class="btn-web-ad" onclick="BuscapetApp.openAdvertisingModal()">
+          <i class="fa-solid fa-rectangle-ad"></i> Publicitar ($10)
+        </button>
+        <button class="btn-web-report" onclick="BuscapetApp.openCreateModal('lost')">
+          <i class="fa-solid fa-plus-circle"></i> Publicar Mascota
+        </button>
+        <button class="icon-btn" onclick="BuscapetFirebase.openAuthModal()" title="Mi Cuenta / Admin">
+          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80" alt="Avatar" class="avatar current-user-avatar" style="width:34px; height:34px;">
+        </button>
       </div>
-
     </div>
+  </header>
 
-    <!-- Push Notification Floating Banner with Ringtone -->
-    <div id="push-notif-banner" class="push-notification-banner">
-      <div class="notif-icon">
-        <img id="push-notif-icon-img" src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=200&q=80" alt="Pet Icon" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+  <!-- ========================================================================
+       2. HERO BANNER & OFFICIAL STORE BADGES (PRÓXIMAMENTE)
+       ======================================================================== -->
+  <section class="hero-banner-section">
+    <div class="hero-content-wrapper">
+      <div class="hero-badge-tag">
+        <i class="fa-solid fa-heart-pulse"></i> Red Social Solidaria &bull; 100% Gratuita
       </div>
-      <div class="notif-content">
-        <div id="push-notif-title" class="notif-title">Nueva Alerta Buscapet</div>
-        <div id="push-notif-msg" class="notif-msg">Alguien ha enviado un mensaje sobre una mascota.</div>
+      <h1 class="hero-main-title">Reuniendo Mascotas con sus Familias</h1>
+      <p class="hero-subtitle">
+        Publica reportes con fotos, geolocalización en mapa y comunícate directamente con tu comunidad local en tiempo real.
+      </p>
+
+      <!-- App Store & Google Play Badges (Próximamente) -->
+      <div class="store-badges-container">
+        <!-- Apple App Store -->
+        <a href="#" class="store-badge-card" onclick="alert('¡Próximamente en Apple App Store para iPhone y iPad!'); return false;">
+          <i class="fa-brands fa-apple store-icon" style="color: #fff;"></i>
+          <div class="store-info">
+            <div class="store-subtitle">Descárgalo en el</div>
+            <div class="store-title">App Store <span class="store-coming-soon">Próximamente</span></div>
+          </div>
+        </a>
+
+        <!-- Google Play Store -->
+        <a href="#" class="store-badge-card" onclick="alert('¡Próximamente en Google Play Store para Android!'); return false;">
+          <i class="fa-brands fa-google-play store-icon" style="color: #00D084;"></i>
+          <div class="store-info">
+            <div class="store-subtitle">Disponible en</div>
+            <div class="store-title">Google Play <span class="store-coming-soon">Próximamente</span></div>
+          </div>
+        </a>
       </div>
-      <button class="notif-action-btn" onclick="BuscapetNotifications.hideBanner()">Ver</button>
+
+      <!-- 4 Quick Action Cards in Hero -->
+      <div class="hero-action-grid">
+        <button class="hero-card-action card-lost" onclick="BuscapetApp.showLost()">
+          <i class="fa-solid fa-magnifying-glass-location"></i>
+          <span>🔍 Ver Perdidos</span>
+        </button>
+        <button class="hero-card-action card-report" onclick="BuscapetApp.openCreateModal('lost')">
+          <i class="fa-solid fa-bullhorn"></i>
+          <span>🚨 Reportar Mascota</span>
+        </button>
+        <button class="hero-card-action card-adopt-view" onclick="BuscapetApp.showAdoptions()">
+          <i class="fa-solid fa-heart"></i>
+          <span>💜 Ver Adopciones</span>
+        </button>
+        <button class="hero-card-action card-adopt-offer" onclick="BuscapetApp.openCreateModal('adopt')">
+          <i class="fa-solid fa-house-chimney-heart"></i>
+          <span>🏡 Dar en Adopción</span>
+        </button>
+      </div>
     </div>
+  </section>
 
-  </div>
+  <!-- ========================================================================
+       3. MAIN 3-COLUMN DESKTOP LAYOUT
+       ======================================================================== -->
+  <main class="web-main-layout">
 
-  <!-- =========================================================================
-       MODALS & SHEETS
-       ========================================================================= -->
-
-  <!-- 1. LOCATION SELECTOR MODAL (PAÍS > PROVINCIA/ESTADO > CIUDAD) -->
-  <div id="location-modal" class="modal-backdrop">
-    <div class="sheet-modal">
-      <div class="sheet-handle"></div>
-      <div class="sheet-header">
-        <h3 class="sheet-title"><i class="fa-solid fa-globe" style="color:var(--primary)"></i> Seleccionar Ubicación</h3>
-        <button class="icon-btn" onclick="BuscapetApp.closeLocationModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="sheet-body">
-        <!-- Live Quick Search -->
-        <div class="form-group">
-          <label class="form-label">Búsqueda Rápida de Ciudad</label>
-          <input type="text" id="location-search-input" class="form-control" placeholder="Ej: Palermo, Mar del Plata, Santiago, Lima...">
-          <div id="location-search-results" style="margin-top: 8px;"></div>
+    <!-- LEFT SIDEBAR: FILTERS & GEOLOCATION -->
+    <aside class="web-sidebar-left">
+      <!-- Location Selector Widget -->
+      <div class="sidebar-widget">
+        <div class="widget-title">
+          <i class="fa-solid fa-location-dot" style="color:var(--primary)"></i> Ubicación Geográfica
         </div>
 
-        <hr style="border: 0; border-top: 1px solid var(--border); margin: 16px 0;">
-
-        <!-- Cascading Selectors -->
-        <div class="form-group">
-          <label class="form-label">1. País (América y el Mundo)</label>
-          <select id="filter-country-select" class="form-select"></select>
+        <div class="form-group" style="margin-bottom: 8px;">
+          <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">País:</label>
+          <select id="sidebar-country-select" class="form-select" style="font-size: 12px; padding: 8px 10px;"></select>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">2. Provincia o Estado (Orden Alfabético)</label>
-          <select id="filter-state-select" class="form-select">
+        <div class="form-group" style="margin-bottom: 8px;">
+          <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">Provincia / Estado:</label>
+          <select id="sidebar-state-select" class="form-select" style="font-size: 12px; padding: 8px 10px;">
             <option value="">Todos los Estados/Provincias</option>
           </select>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">3. Ciudad o Barrio</label>
-          <select id="filter-city-select" class="form-select">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">Ciudad / Localidad:</label>
+          <select id="sidebar-city-select" class="form-select" style="font-size: 12px; padding: 8px 10px;">
             <option value="">Todas las Ciudades</option>
           </select>
         </div>
 
-        <div style="display: flex; gap: 10px; margin-top: 20px;">
-          <button class="btn-primary-action" style="flex: 2;" onclick="BuscapetApp.applyLocationFilter()">
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <button class="btn-primary-action" style="font-size: 12.5px; padding: 9px;" onclick="BuscapetApp.applySidebarLocationFilter()">
             <i class="fa-solid fa-check"></i> Aplicar Filtro
           </button>
-          <button class="btn-primary-action" style="flex: 1; background: var(--bg-input); color: var(--text-main); box-shadow: none;" onclick="BuscapetApp.resetLocationFilter()">
-            Ver Todo
+          <button class="btn-primary-action" style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); font-size: 11.5px; padding: 7px; box-shadow: none;" onclick="BuscapetApp.resetSidebarLocationFilter()">
+            <i class="fa-solid fa-earth-americas"></i> Ver Todo el Mundo
+          </button>
+        </div>
+      </div>
+
+      <!-- Category Filter Widget -->
+      <div class="sidebar-widget">
+        <div class="widget-title">
+          <i class="fa-solid fa-layer-group"></i> Categorías
+        </div>
+        <div class="filter-category-list">
+          <button class="filter-cat-btn active" onclick="BuscapetFeed.filterByType('all'); updateCatActiveClass(this);">
+            <i class="fa-solid fa-border-all"></i> Todas las publicaciones
+          </button>
+          <button class="filter-cat-btn" onclick="BuscapetFeed.filterByType('lost'); updateCatActiveClass(this);">
+            <i class="fa-solid fa-circle-exclamation" style="color:var(--danger)"></i> Mascotas Perdidas
+          </button>
+          <button class="filter-cat-btn" onclick="BuscapetFeed.filterByType('found'); updateCatActiveClass(this);">
+            <i class="fa-solid fa-circle-check" style="color:var(--success)"></i> Mascotas Encontradas
+          </button>
+          <button class="filter-cat-btn pill-adopt" onclick="BuscapetFeed.filterByType('adopt'); updateCatActiveClass(this);">
+            <i class="fa-solid fa-heart" style="color:var(--adopt)"></i> En Adopción Responsable
+          </button>
+          <button class="filter-cat-btn" onclick="BuscapetFeed.filterByType('spotted'); updateCatActiveClass(this);">
+            <i class="fa-solid fa-eye" style="color:var(--warning)"></i> Vistos en la calle
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CENTER FEED: REAL-TIME POSTS & CAROUSELS -->
+    <section class="web-center-feed">
+      <div class="feed-container" id="feed-posts-container">
+        <!-- Injected dynamically by feed.js -->
+      </div>
+    </section>
+
+    <!-- RIGHT SIDEBAR: SPONSORS, DONATIONS & ADMIN -->
+    <aside class="web-sidebar-right">
+      <!-- Support / Cafecito Widget -->
+      <div class="sidebar-widget">
+        <div class="widget-title" style="color: #FFAA00;">
+          <i class="fa-solid fa-mug-hot"></i> Apoyar a Buscapet
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+          Buscapet es 100% gratuita y sin fines de lucro. Tu cafecito nos ayuda a mantener los servidores online.
+        </p>
+        <button class="btn-primary-action" style="background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; font-weight: 800; font-size: 12.5px; padding: 10px;" onclick="BuscapetApp.openDonationModal()">
+          <i class="fa-solid fa-mug-hot"></i> Donar un Cafecito
+        </button>
+      </div>
+
+      <!-- Advertising Widget -->
+      <div class="sidebar-widget">
+        <div class="widget-title" style="color: #00D084;">
+          <i class="fa-solid fa-rectangle-ad"></i> Espacio Publicitario
+        </div>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+          Promociona tu veterinaria o pet shop a toda la comunidad de tu zona por solo <strong>$10 USD / $12.000 ARS</strong> por 30 días.
+        </p>
+        <button class="btn-primary-action" style="background: linear-gradient(135deg, #00A699 0%, #008477 100%); font-size: 12.5px; font-weight: 800; padding: 10px;" onclick="BuscapetApp.openAdvertisingModal()">
+          <i class="fa-solid fa-bullhorn"></i> Publicitar mi Negocio
+        </button>
+      </div>
+
+      <!-- OscarSoft Admin Panel Widget -->
+      <div class="sidebar-widget" style="border: 1.5px dashed #FFAA00; background: rgba(255, 170, 0, 0.06); padding: 10px 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 12.5px; font-weight: 800; color: #FFAA00; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-crown"></i> Panel OscarSoft
+          </div>
+          <button type="button" style="padding: 4px 12px; font-size: 11px; font-weight: 800; background: rgba(255, 170, 0, 0.2); color: #FFAA00; border: 1px solid #FFAA00; border-radius: 4px; cursor: pointer;" onclick="BuscapetApp.openAdminPanel()">
+            Entrar
+          </button>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ========================================================================
+       4. FLOATING ACTION BUTTON (PUBLICITAR)
+       ======================================================================== -->
+  <button class="floating-ad-btn" onclick="BuscapetApp.openAdvertisingModal()" title="Publicitar mi Negocio ($10 USD)">
+    <i class="fa-solid fa-bullhorn"></i>
+    <span>Publicitar ($10)</span>
+  </button>
+
+  <!-- ========================================================================
+       5. WEB FOOTER
+       ======================================================================== -->
+  <footer class="web-footer">
+    <div class="footer-inner">
+      <div class="footer-copy">
+        🐾 <strong>Buscapet</strong> &bull; Red Social Comunitaria de Mascotas &bull; Creado por <strong>OscarSoft 2026</strong>
+      </div>
+      <div class="footer-links">
+        <button class="btn-copy-sm" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer;" onclick="BuscapetApp.openAdvertisingModal()">Publicidad ($10)</button>
+        <button class="btn-copy-sm" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer;" onclick="BuscapetApp.openDonationModal()">Donaciones</button>
+        <button class="btn-copy-sm" style="background:transparent; border:none; color:#FFAA00; cursor:pointer;" onclick="BuscapetApp.openAdminPanel()">Panel Admin</button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================
+       6. MODALS: LOCATION, REPORT, ADVERTISING, DONATIONS, AUTH, CHAT
+       ======================================================================== -->
+
+  <!-- LOCATION SELECTOR MODAL -->
+  <div id="location-modal" class="modal-backdrop">
+    <div class="sheet-modal">
+      <div class="sheet-header">
+        <h3 class="sheet-title"><i class="fa-solid fa-earth-americas" style="color:var(--primary)"></i> Seleccionar Ubicación</h3>
+        <button class="icon-btn" onclick="BuscapetApp.closeLocationModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="sheet-body">
+        <input type="text" id="location-search-input" class="form-control" placeholder="Buscar país, provincia o ciudad..." style="margin-bottom: 12px;">
+        <div class="form-group">
+          <label class="form-label">País:</label>
+          <select id="filter-country-select" class="form-select"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Provincia / Estado:</label>
+          <select id="filter-state-select" class="form-select"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ciudad / Localidad:</label>
+          <select id="filter-city-select" class="form-select"></select>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="btn-primary-action" onclick="BuscapetApp.applyLocationFilter()">
+            <i class="fa-solid fa-check"></i> Aplicar Filtro
+          </button>
+          <button class="btn-primary-action" style="background:var(--bg-input); border:1px solid var(--border); color:var(--text-main);" onclick="BuscapetApp.resetLocationFilter()">
+            Ver Todo el Mundo
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 2. CREATE REPORT MODAL (LOST OR FOUND PET WITH UP TO 4 PHOTOS & MAP) -->
+  <!-- CREATE REPORT MODAL -->
   <div id="create-report-modal" class="modal-backdrop">
-    <div class="sheet-modal" style="max-height: 92vh;">
-      <div class="sheet-handle"></div>
+    <div class="sheet-modal" style="max-width: 580px;">
       <div class="sheet-header">
-        <h3 id="create-modal-title" class="sheet-title">Reportar Mascota</h3>
+        <h3 class="sheet-title" id="create-modal-title"><i class="fa-solid fa-plus-circle" style="color:var(--primary)"></i> Publicar Mascota</h3>
         <button class="icon-btn" onclick="BuscapetApp.closeCreateModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="sheet-body">
-        
         <!-- Toggle: Perdido vs Encontrado vs En Adopción -->
-        <div class="type-toggle-group" style="grid-template-columns: repeat(3, 1fr);">
-          <button type="button" id="btn-type-lost" class="type-toggle-btn active type-lost" onclick="BuscapetApp.setReportType('lost')">
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-bottom:14px;">
+          <button type="button" id="btn-type-lost" class="hero-card-action active card-lost" onclick="BuscapetApp.setReportType('lost')">
             <i class="fa-solid fa-triangle-exclamation"></i> Perdido
           </button>
-          <button type="button" id="btn-type-found" class="type-toggle-btn type-found" onclick="BuscapetApp.setReportType('found')">
+          <button type="button" id="btn-type-found" class="hero-card-action" style="border-color:rgba(0,208,132,0.4); color:var(--success);" onclick="BuscapetApp.setReportType('found')">
             <i class="fa-solid fa-shield-heart"></i> Encontrado
           </button>
-          <button type="button" id="btn-type-adopt" class="type-toggle-btn" style="border-color: #8B5CF6; color: #8B5CF6;" onclick="BuscapetApp.setReportType('adopt')">
+          <button type="button" id="btn-type-adopt" class="hero-card-action card-adopt-view" onclick="BuscapetApp.setReportType('adopt')">
             <i class="fa-solid fa-heart"></i> En Adopción
           </button>
         </div>
 
-        <!-- Multi-Photo Uploader (3-4 Photos) -->
+        <!-- Multi-Photo Uploader (4 Slots) -->
         <div class="form-group">
           <label class="form-label">Fotos de la mascota (Hasta 4 fotos)</label>
           <input type="file" id="hidden-photo-input" accept="image/*" multiple style="display: none;" onchange="BuscapetApp.handlePhotoSelected(event)">
@@ -298,10 +329,9 @@
           <input type="datetime-local" id="report-datetime" class="form-control">
         </div>
 
-        <!-- Pet Basic Details -->
-        <div class="form-row">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div class="form-group">
-            <label class="form-label">Nombre / Apodo</label>
+            <label class="form-label">Nombre / Apodo *</label>
             <input type="text" id="report-name" class="form-control" placeholder="Ej: Milo, Toby...">
           </div>
           <div class="form-group">
@@ -316,10 +346,10 @@
           </div>
         </div>
 
-        <div class="form-row">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div class="form-group">
             <label class="form-label">Raza / Tipo</label>
-            <input type="text" id="report-breed" class="form-control" placeholder="Ej: Golden, Mestizo...">
+            <input type="text" id="report-breed" class="form-control" placeholder="Ej: Mestizo, Caniche...">
           </div>
           <div class="form-group">
             <label class="form-label">Sexo</label>
@@ -331,11 +361,9 @@
           </div>
         </div>
 
-        <!-- Description (~200 characters) -->
         <div class="form-group">
-          <label class="form-label">Descripción y características clave</label>
-          <textarea id="report-desc" class="form-control" rows="3" maxlength="200" placeholder="Detalla collar, color, cicatrices, temperamento o estado de salud..."></textarea>
-          <div id="desc-char-count" class="form-char-count">0/200 caracteres</div>
+          <label class="form-label">Descripción detallada &bull; <span id="desc-char-count" style="color:var(--text-muted)">0/200 caracteres</span></label>
+          <textarea id="report-desc" class="form-control" rows="3" maxlength="200" placeholder="Color, collar, señas particulares, temperamento, zona exacta..."></textarea>
         </div>
 
         <!-- Location Dropdowns -->
@@ -344,7 +372,7 @@
           <select id="report-country" class="form-select"></select>
         </div>
 
-        <div class="form-row">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
           <div class="form-group">
             <label class="form-label">Provincia / Estado</label>
             <select id="report-state" class="form-select">
@@ -359,93 +387,140 @@
           </div>
         </div>
 
-        <!-- Street Autocomplete (Calle y número o Esquina / Entre calles) -->
+        <!-- Street Autocomplete -->
         <div class="form-group">
-          <label class="form-label">Dirección (Calle y número, Esquina o Entre calles)</label>
-          <div class="autocomplete-wrapper">
-            <input type="text" id="report-address" class="form-control" placeholder="Ej: Av. Corrientes 1234, o Callao y Corrientes..." autocomplete="off">
-            <div id="street-autocomplete-dropdown" class="autocomplete-dropdown"></div>
+          <label class="form-label">Dirección (Calle y número o Esquina)</label>
+          <div style="position:relative;">
+            <input type="text" id="report-address" class="form-control" placeholder="Ej: Av. Santa Fe 3200 o Corrientes y Callao" autocomplete="off">
+            <div id="street-autocomplete-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--bg-card); border:1px solid var(--border); border-radius:6px; z-index:100; max-height:160px; overflow-y:auto;"></div>
           </div>
-          <p style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">
-            Escribe la calle para autocompletar o arrastra el marcador en el mapa.
-          </p>
         </div>
 
-        <!-- Interactive Map Picker (Mandatory Geolocation) -->
+        <!-- Interactive Map Picker -->
         <div class="form-group">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <label class="form-label" style="margin-bottom:0;">📍 Geolocalización fijada</label>
-            <button type="button" style="background:none; border:none; color:var(--primary); font-size:12px; font-weight:700; cursor:pointer;" onclick="BuscapetMap.useCurrentGPSLocation()">
-              <i class="fa-solid fa-crosshairs"></i> Obtener GPS
+          <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Ubicación en el Mapa</span>
+            <button type="button" class="btn-copy-sm" style="background:var(--primary-light); color:var(--primary); border:1px solid rgba(255,90,95,0.3); cursor:pointer;" onclick="BuscapetMap.useCurrentGPSLocation()">
+              <i class="fa-solid fa-location-crosshairs"></i> Usar mi GPS
             </button>
-          </div>
-          <div id="form-map-picker" class="map-picker-box"></div>
-          <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
-            Haz clic o arrastra el pin para calibrar el punto exacto.
-          </p>
+          </label>
+          <div id="picker-map" style="width:100%; height:180px; border-radius:8px; border:1px solid var(--border); background:#151A23;"></div>
         </div>
 
         <button type="button" class="btn-primary-action" onclick="BuscapetApp.submitPetReport()">
-          <i class="fa-solid fa-paper-plane"></i> Publicar Reporte con Geolocalización
+          <i class="fa-solid fa-paper-plane"></i> Publicar Mascota
         </button>
-
       </div>
     </div>
   </div>
 
-  <!-- 3. MAP VIEW MODAL (EXACT LOCATION PIN) -->
-  <div id="map-view-modal" class="modal-backdrop">
-    <div class="sheet-modal">
-      <div class="sheet-handle"></div>
+  <!-- ADVERTISING MODAL -->
+  <div id="advertising-modal" class="modal-backdrop">
+    <div class="sheet-modal" style="max-width: 520px;">
       <div class="sheet-header">
-        <h3 id="map-modal-title" class="sheet-title">Ubicación de la Mascota</h3>
-        <button class="icon-btn" onclick="BuscapetMap.closeMapModal()"><i class="fa-solid fa-xmark"></i></button>
+        <h3 class="sheet-title"><i class="fa-solid fa-rectangle-ad" style="color:#00A699"></i> Publicitar en Buscapet ($10 USD / mes)</h3>
+        <button class="icon-btn" onclick="BuscapetApp.closeAdvertisingModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="sheet-body">
-        <div id="map-modal-desc" style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px; font-weight: 500;"></div>
-        <div id="map-modal-container"></div>
-        <button class="btn-primary-action" style="margin-top: 14px;" onclick="BuscapetMap.closeMapModal()">
-          Cerrar Mapa
+        <div class="form-group">
+          <label class="form-label">Nombre del Negocio o Veterinaria *</label>
+          <input type="text" id="ad-biz-name" class="form-control" placeholder="Ej: Veterinaria San Roque" oninput="BuscapetApp.updateAdPreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Categoría</label>
+          <select id="ad-biz-category" class="form-select" onchange="BuscapetApp.updateAdPreview()">
+            <option value="Veterinaria">🩺 Clínica Veterinaria</option>
+            <option value="Pet Shop">🛒 Pet Shop & Alimentos</option>
+            <option value="Peluquería">✂️ Peluquería Canina</option>
+            <option value="Paseador">🐕 Paseador / Guardería</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Texto del Anuncio *</label>
+          <textarea id="ad-biz-desc" class="form-control" rows="2" placeholder="Atención 24hs, ecografías y cirugías..." oninput="BuscapetApp.updateAdPreview()"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ciudad / Zona *</label>
+          <input type="text" id="ad-biz-city" class="form-control" placeholder="Ej: Palermo, CABA" oninput="BuscapetApp.updateAdPreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fa-brands fa-whatsapp" style="color:#25D366"></i> WhatsApp de Contacto (Obligatorio) *</label>
+          <input type="tel" id="ad-biz-contact" class="form-control" placeholder="Ej: +54 9 11 5555-5555">
+        </div>
+        <div class="form-group">
+          <label class="form-label"><i class="fa-solid fa-receipt"></i> Adjuntar Comprobante de Pago *</label>
+          <input type="file" id="ad-receipt-file" class="form-control" accept="image/*" onchange="BuscapetApp.handleAdReceiptUpload(event)">
+        </div>
+
+        <div id="ad-alias-info-box" style="background:rgba(0,208,132,0.08); border:1.5px dashed #00D084; padding:10px; border-radius:8px; margin-bottom:12px;">
+          <div style="font-size:11.5px; font-weight:800; color:#00D084;">Alias Mercado Pago / Banco (Argentina):</div>
+          <div style="font-size:12px; margin-top:2px;"><strong>Alias:</strong> <code style="color:var(--primary); font-weight:bold;">buscapet.oscarsoft</code></div>
+          <div style="font-size:11px; color:var(--text-muted);">Titular: Oscar Nicolás Stella &bull; Monto: $12.000 ARS / mes</div>
+        </div>
+
+        <button type="button" class="btn-primary-action" style="background:#00A699;" onclick="BuscapetApp.submitAdInquiry()">
+          <i class="fa-solid fa-paper-plane"></i> Enviar Solicitud con Comprobante
         </button>
       </div>
     </div>
   </div>
 
-  <!-- 4. DIRECT CHAT MODAL (WITH RINGTONE ALERTS) -->
-  <div id="chat-modal" class="modal-backdrop">
+  <!-- DONATION MODAL -->
+  <div id="donation-modal" class="modal-backdrop">
     <div class="sheet-modal">
-      <div class="sheet-handle"></div>
       <div class="sheet-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <img id="chat-modal-avatar" src="" alt="Avatar" class="avatar">
-          <div>
-            <h4 id="chat-modal-title" style="font-size: 14px; font-weight: 700; color: var(--text-main);">Chat Directo</h4>
-            <div id="chat-modal-sub" style="font-size: 11.5px; color: var(--secondary); font-weight: 600;">Mascota</div>
+        <h3 class="sheet-title"><i class="fa-solid fa-mug-hot" style="color:#FFAA00"></i> Apoyar a Buscapet</h3>
+        <button class="icon-btn" onclick="BuscapetApp.closeDonationModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="sheet-body">
+        <div style="background:var(--bg-main); border:1px solid var(--border); padding:12px; border-radius:8px; margin-bottom:12px;">
+          <div style="font-weight:800; color:#009EE3; font-size:12px;">🇦🇷 Argentina (Mercado Pago):</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <span id="mp-alias-text">buscapet.oscarsoft</span>
+            <button class="btn-copy-sm" style="background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" onclick="BuscapetApp.copyDonationData('buscapet.oscarsoft', 'Alias')">Copiar Alias</button>
           </div>
         </div>
-        <button class="icon-btn" onclick="BuscapetChat.closeChatModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="sheet-body">
-        <!-- Message Bubbles -->
-        <div id="chat-messages-box" class="chat-messages-container"></div>
-
-        <!-- Chat Input Bar -->
-        <div class="chat-input-bar">
-          <input type="text" id="chat-message-input" class="form-control" placeholder="Escribe un mensaje..." onkeypress="if(event.key === 'Enter') BuscapetChat.sendMessage()">
-          <button class="btn-primary-action" style="width: auto; padding: 10px 16px;" onclick="BuscapetChat.sendMessage()">
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
+        <div style="background:var(--bg-main); border:1px solid var(--border); padding:12px; border-radius:8px;">
+          <div style="font-weight:800; color:#00457C; font-size:12px;">🌎 Internacional (PayPal):</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <span id="paypal-email-text">oscarns@gmail.com</span>
+            <button class="btn-copy-sm" style="background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;" onclick="BuscapetApp.copyDonationData('oscarns@gmail.com', 'PayPal')">Copiar Email</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 5. USER AUTH & PROFILE MODAL (LOGIN & REGISTRO) -->
-  <div id="auth-modal" class="modal-backdrop">
-    <div class="sheet-modal" style="max-height: 92vh;">
-      <div class="sheet-handle"></div>
+  <!-- ADMIN MASTER PANEL MODAL -->
+  <div id="admin-panel-modal" class="modal-backdrop">
+    <div class="sheet-modal" style="max-width: 600px;">
       <div class="sheet-header">
-        <h3 class="sheet-title"><i class="fa-solid fa-user-shield" style="color:var(--primary)"></i> Cuenta de Usuario</h3>
+        <h3 class="sheet-title"><i class="fa-solid fa-crown" style="color:#FFAA00"></i> Panel de Administrador (OscarSoft)</h3>
+        <button class="icon-btn" onclick="BuscapetApp.closeAdminPanel()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="sheet-body">
+        <!-- Settings Form -->
+        <div style="background:var(--bg-main); padding:12px; border-radius:8px; border:1px solid var(--border); margin-bottom:14px;">
+          <div style="font-size:12px; font-weight:800; color:#FFAA00; margin-bottom:8px;">Configuración de Alias y Cobros:</div>
+          <input type="text" id="admin-setting-alias" class="form-control" placeholder="Alias MP" style="margin-bottom:6px; font-size:12px;">
+          <input type="text" id="admin-setting-holder" class="form-control" placeholder="Titular" style="margin-bottom:6px; font-size:12px;">
+          <input type="text" id="admin-setting-ars" class="form-control" placeholder="Monto ARS" style="margin-bottom:6px; font-size:12px;">
+          <input type="email" id="admin-setting-paypal" class="form-control" placeholder="Email PayPal" style="margin-bottom:8px; font-size:12px;">
+          <button class="btn-primary-action" style="background:#FFAA00; color:#000; font-size:12px; padding:8px;" onclick="BuscapetApp.savePaymentSettings()">Guardar Cambios</button>
+        </div>
+
+        <!-- Ad Requests List -->
+        <div style="font-size:12.5px; font-weight:800; margin-bottom:8px;">Solicitudes de Publicidad y Anuncios Activos:</div>
+        <div id="admin-ad-requests-list-box" style="max-height:220px; overflow-y:auto;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL (LOGIN & REGISTRO) -->
+  <div id="auth-modal" class="modal-backdrop">
+    <div class="sheet-modal" style="max-width: 440px;">
+      <div class="sheet-header">
+        <h3 class="sheet-title"><i class="fa-solid fa-user-circle" style="color:var(--primary)"></i> Mi Cuenta</h3>
         <button class="icon-btn" onclick="BuscapetFirebase.closeAuthModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="sheet-body">
@@ -548,302 +623,10 @@
     </div>
   </div>
 
-  <!-- 6. ADMIN MASTER PANEL MODAL (OSCARSOFT ADMIN) -->
-  <div id="admin-panel-modal" class="modal-backdrop">
-    <div class="sheet-modal" style="max-height: 92vh;">
-      <div class="sheet-handle"></div>
-      <div class="sheet-header">
-        <h3 class="sheet-title">
-          <span class="admin-badge-pill"><i class="fa-solid fa-crown"></i> Admin Master</span> OscarSoft
-        </h3>
-        <button class="icon-btn" onclick="BuscapetApp.closeAdminPanel()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="sheet-body">
-        
-        <!-- Live Stats -->
-        <div class="admin-stats-grid">
-          <div class="admin-stat-card">
-            <div id="admin-stat-total" class="admin-stat-val">0</div>
-            <div class="admin-stat-lbl">Total Posts</div>
-          </div>
-          <div class="admin-stat-card">
-            <div id="admin-stat-lost" class="admin-stat-val" style="color: var(--danger);">0</div>
-            <div class="admin-stat-lbl">Perdidos</div>
-          </div>
-          <div class="admin-stat-card">
-            <div id="admin-stat-found" class="admin-stat-val" style="color: var(--success);">0</div>
-            <div class="admin-stat-lbl">Encontrados</div>
-          </div>
-        </div>
-
-        <!-- Broadcast Notification Button -->
-        <button class="btn-primary-action" style="background: linear-gradient(135deg, #00A699 0%, #008489 100%); margin-bottom: 16px;" onclick="BuscapetApp.sendAdminBroadcast()">
-          <i class="fa-solid fa-tower-broadcast"></i> Enviar Alerta Masiva Push a Todos
-        </button>
-
-        <!-- Payment & Alias Dynamic Configuration -->
-        <div style="background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
-          <h4 style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; display:flex; align-items:center; gap:6px;">
-            <i class="fa-solid fa-wallet" style="color: #FFAA00;"></i> Configuración de Cobros & Alias (OscarSoft)
-          </h4>
-          
-          <div class="form-group" style="margin-bottom: 8px;">
-            <label class="form-label" style="font-size: 11px;">Alias Mercado Pago / Banco (Argentina):</label>
-            <input type="text" id="admin-setting-alias" class="form-control" placeholder="Ej: buscapet.oscarsoft" style="font-size: 12px; padding: 8px;">
-          </div>
-
-          <div class="form-group" style="margin-bottom: 8px;">
-            <label class="form-label" style="font-size: 11px;">Nombre del Titular:</label>
-            <input type="text" id="admin-setting-holder" class="form-control" placeholder="Ej: Oscar Nicolás Stella" style="font-size: 12px; padding: 8px;">
-          </div>
-
-          <div class="form-group" style="margin-bottom: 8px;">
-            <label class="form-label" style="font-size: 11px;">Monto Publicidad en Pesos (ARS / mes):</label>
-            <input type="text" id="admin-setting-ars" class="form-control" placeholder="Ej: $12.000 ARS" style="font-size: 12px; padding: 8px;">
-          </div>
-
-          <div class="form-group" style="margin-bottom: 10px;">
-            <label class="form-label" style="font-size: 11px;">Email para PayPal Internacional:</label>
-            <input type="email" id="admin-setting-paypal" class="form-control" placeholder="Ej: oscarns@gmail.com" style="font-size: 12px; padding: 8px;">
-          </div>
-
-          <button type="button" class="btn-primary-action" style="background: #FFAA00; color:#000; font-size: 12px; padding: 8px; font-weight: 800;" onclick="BuscapetApp.savePaymentSettings()">
-            <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios de Pagos
-          </button>
-        </div>
-
-        <!-- Ad Requests Approval Section -->
-        <div style="background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 12px; margin-bottom: 16px;">
-          <h4 style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; display:flex; align-items:center; justify-content:space-between;">
-            <span><i class="fa-solid fa-bullhorn" style="color:#00A699"></i> Solicitudes de Publicidad:</span>
-            <span id="admin-ad-requests-badge" style="background:#00A699; color:#fff; font-size:10px; padding:2px 6px; border-radius:10px;">0 Pendientes</span>
-          </h4>
-          <div id="admin-ad-requests-list-box" style="max-height: 220px; overflow-y: auto;">
-            <!-- Rendered by BuscapetApp.renderAdminAdRequests() -->
-          </div>
-        </div>
-
-        <h4 style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">
-          Moderación y Eliminación de Reportes:
-        </h4>
-
-        <!-- Post Moderation List -->
-        <div id="admin-posts-list-box" style="max-height: 240px; overflow-y: auto;"></div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- 7. DONATION / CAFECITO / MERCADO PAGO / PAYPAL MODAL -->
-  <div id="donation-modal" class="modal-backdrop">
-    <div class="sheet-modal">
-      <div class="sheet-handle"></div>
-      <div class="sheet-header">
-        <h3 class="sheet-title"><i class="fa-solid fa-mug-hot" style="color:#FFAA00"></i> Apoyar a Buscapet</h3>
-        <button class="icon-btn" onclick="BuscapetApp.closeDonationModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="sheet-body">
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
-          Buscapet es una plataforma 100% gratuita y comunitaria. Tus donaciones nos ayudan a cubrir los servidores, mapas y notificaciones para seguir reuniendo familias con sus mascotas.
-        </p>
-
-        <!-- Argentina: Mercado Pago / Cafecito -->
-        <div class="donation-card">
-          <div class="donation-header">
-            <span class="donation-title">🇦🇷 Argentina (Mercado Pago / Cafecito)</span>
-            <span style="font-size: 11px; font-weight:700; color: #009EE3;">MERCADO PAGO</span>
-          </div>
-          <div class="copy-pill-box">
-            <span id="mp-alias-text">buscapet.mp</span>
-            <button class="btn-copy-sm" onclick="BuscapetApp.copyDonationData('buscapet.mp', 'Alias Mercado Pago')">
-              <i class="fa-solid fa-copy"></i> Copiar Alias
-            </button>
-          </div>
-          <div class="copy-pill-box">
-            <span>CVU: 0000003100085429182310</span>
-            <button class="btn-copy-sm" onclick="BuscapetApp.copyDonationData('0000003100085429182310', 'CVU')">
-              <i class="fa-solid fa-copy"></i> Copiar
-            </button>
-          </div>
-        </div>
-
-        <!-- Internacional: PayPal -->
-        <div class="donation-card">
-          <div class="donation-header">
-            <span class="donation-title">🌎 Internacional (PayPal)</span>
-            <span style="font-size: 11px; font-weight:700; color: #00457C;">PAYPAL</span>
-          </div>
-          <div class="copy-pill-box">
-            <span id="paypal-email-text">donaciones@buscapet.com</span>
-            <button class="btn-copy-sm" onclick="BuscapetApp.copyDonationData('donaciones@buscapet.com', 'Email PayPal')">
-              <i class="fa-solid fa-copy"></i> Copiar Email
-            </button>
-          </div>
-        </div>
-
-        <!-- Suscripción / Donación Voluntaria Play Store ($5 USD / mes) -->
-        <div class="donation-card" style="border: 2px solid #00D084; background: rgba(0, 208, 132, 0.08);">
-          <div class="donation-header">
-            <span class="donation-title"><i class="fa-brands fa-google-play" style="color: #00D084;"></i> Apoyo Voluntario (Play Store / App Store)</span>
-            <span style="font-size: 11px; font-weight:800; color: #00D084;">$5 USD / MES</span>
-          </div>
-          <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 8px;">
-            Suscripción 100% opcional y voluntaria dentro de la aplicación para costear servidores, mapas de alta precisión y rescates.
-          </p>
-          <button class="btn-primary-action" style="background: #00D084; color: #000; font-weight: 800; font-size: 12px; padding: 8px;" onclick="BuscapetNotifications.showPushBanner('¡Gracias por tu apoyo!', 'Esta función estará activa directamente en la app descargada de Google Play / App Store.')">
-            <i class="fa-solid fa-heart"></i> Suscripción Voluntaria de $5/mes
-          </button>
-        </div>
-
-        <div style="text-align: center; margin-top: 14px; font-size: 12px; color: var(--text-muted);">
-          💙 ¡Gracias de corazón por cada cafecito y aporte!
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 8. ADVERTISING & SPONSORSHIP MODAL (QUIERO PUBLICITAR) -->
-  <div id="advertising-modal" class="modal-backdrop">
-    <div class="sheet-modal" style="max-height: 92vh; max-width: 480px;">
-      <div class="sheet-handle"></div>
-      <div class="sheet-header">
-        <h3 class="sheet-title"><i class="fa-solid fa-rectangle-ad" style="color:#00A699"></i> Publicitar en Buscapet</h3>
-        <button class="icon-btn" onclick="BuscapetApp.closeAdvertisingModal()"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="sheet-body" style="padding-bottom: 24px;">
-        <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
-          Llega a miles de dueños y amantes de mascotas en tu ciudad. Tu anuncio aparecerá intercalado en el feed principal.
-        </p>
-
-        <!-- Pricing Card -->
-        <div style="background: rgba(0, 166, 153, 0.1); border: 1.5px solid #00A699; border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-size: 13px; font-weight: 800; color: var(--text-main);">Plan Mensual Destacado</div>
-            <div style="font-size: 11px; color: var(--text-muted);">Ubicación geográfica segmentada</div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 16px; font-weight: 900; color: #00A699;">$10 USD <span style="font-size:11px; font-weight:600; color:var(--text-muted);">/ mes</span></div>
-            <div style="font-size: 10px; color: var(--text-muted);">(o equiv. en moneda local)</div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Nombre del Negocio o Veterinaria *</label>
-          <input type="text" id="ad-biz-name" class="form-control" placeholder="Ej: Veterinaria San Roque" oninput="BuscapetApp.updateAdPreview()">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Categoría del Servicio</label>
-          <select id="ad-biz-category" class="form-select" onchange="BuscapetApp.updateAdPreview()">
-            <option value="Veterinaria">🩺 Clínica Veterinaria / Urgencias</option>
-            <option value="Pet Shop">🛒 Pet Shop & Alimentos</option>
-            <option value="Peluquería">✂️ Peluquería & Estética Canina</option>
-            <option value="Paseador / Guardería">🐕 Paseador / Guardería Canina</option>
-            <option value="Servicio">🐾 Adiestramiento / Otro Servicio</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Texto / Descripción del Anuncio *</label>
-          <textarea id="ad-biz-desc" class="form-control" rows="2" placeholder="Ej: Atención 24 hs, ecografías, cirugías y microchips. ¡10% de descuento a usuarios de Buscapet!" oninput="BuscapetApp.updateAdPreview()"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Ciudad / Zona de Cobertura *</label>
-          <input type="text" id="ad-biz-city" class="form-control" placeholder="Ej: Caballito, CABA o Córdoba Capital" oninput="BuscapetApp.updateAdPreview()">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> WhatsApp de Contacto (Obligatorio) *</label>
-          <input type="tel" id="ad-biz-contact" class="form-control" placeholder="Ej: +54 9 11 5555-5555 (con código de país/área)">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Logo o Foto del Anuncio (URL o imagen)</label>
-          <input type="text" id="ad-biz-img" class="form-control" placeholder="https://ejemplo.com/mifoto.jpg (opcional)" oninput="BuscapetApp.updateAdPreview()">
-        </div>
-
-        <!-- Live Preview of the Ad -->
-        <div style="margin: 14px 0 10px;">
-          <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
-            <i class="fa-solid fa-eye"></i> Vista Previa en el Feed:
-          </span>
-          <div id="ad-live-preview-box" class="ad-card-sponsored" style="margin-top: 6px;">
-            <div class="ad-banner-header">
-              <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">
-                <i class="fa-solid fa-bullhorn"></i> Espacio Patrocinado
-              </span>
-              <span class="ad-demo-badge" style="background:#00A699; color:#fff;">Anuncio</span>
-            </div>
-            <div class="ad-content">
-              <img id="preview-ad-img" src="https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&w=200&q=80" alt="Logo" class="ad-logo">
-              <div class="ad-text-box">
-                <h4 id="preview-ad-title" class="ad-title">Tu Negocio Aquí 🩺</h4>
-                <p id="preview-ad-desc" class="ad-desc">Tu descripción aparecerá aquí para todos los usuarios de tu zona.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Payment Method Selection -->
-        <div class="form-group" style="margin-top: 14px;">
-          <label class="form-label"><i class="fa-solid fa-credit-card"></i> Seleccionar Método de Pago ($10 USD / mes):</label>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <label style="display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-main); background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer;">
-              <input type="radio" name="ad-pay-method" value="alias" checked>
-              <span>🇦🇷 <strong>Transferencia Bancaria / Mercado Pago</strong> (Alias OscarSoft)</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-main); background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer;">
-              <input type="radio" name="ad-pay-method" value="stores">
-              <span>📱 <strong>Google Play / Apple App Store</strong> (Suscripción $10/mes)</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-main); background: var(--bg-card); padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); cursor: pointer;">
-              <input type="radio" name="ad-pay-method" value="paypal">
-              <span>🌎 <strong>PayPal / Tarjeta de Crédito Internacional</strong> ($10 USD)</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Alias Info Card for Argentina -->
-        <div id="ad-alias-info-box" style="background: rgba(0, 208, 132, 0.08); border: 1.5px dashed #00D084; border-radius: var(--radius-sm); padding: 10px; margin-bottom: 14px;">
-          <div style="font-size: 11.5px; font-weight: 800; color: #00D084;">
-            <i class="fa-solid fa-building-columns"></i> Datos de Transferencia Directa (Argentina):
-          </div>
-          <div style="font-size: 12px; color: var(--text-main); margin-top: 4px;">
-            <strong>Alias:</strong> <code style="background:var(--bg-main); padding:2px 6px; border-radius:4px; font-weight:bold; color:var(--primary);">buscapet.oscarsoft</code>
-          </div>
-          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
-            Titular: Oscar Nicolás Stella &bull; Monto: $12.000 ARS / mes
-          </div>
-        </div>
-
-        <!-- Upload Payment Receipt -->
-        <div class="form-group" style="margin-top: 10px;">
-          <label class="form-label"><i class="fa-solid fa-receipt"></i> Adjuntar Comprobante de Pago / Transferencia *</label>
-          <input type="file" id="ad-receipt-file" class="form-control" accept="image/*" onchange="BuscapetApp.handleAdReceiptUpload(event)" style="font-size: 11.5px; padding: 6px;">
-          <input type="text" id="ad-receipt-url" class="form-control" placeholder="O pega el N° de Comprobante / Transacción" style="margin-top: 6px; font-size: 11.5px;">
-          <div id="ad-receipt-preview-box" style="margin-top: 6px; display: none;">
-            <img id="ad-receipt-preview-img" src="" style="max-height: 80px; border-radius: 6px; border: 1px solid var(--border);">
-          </div>
-        </div>
-
-        <!-- Approval Process Notice -->
-        <div style="background: rgba(0, 166, 153, 0.08); border: 1px solid rgba(0, 166, 153, 0.2); border-radius: var(--radius-sm); padding: 10px; margin-bottom: 14px; font-size: 11.5px; color: var(--text-muted); line-height: 1.4;">
-          <i class="fa-solid fa-clock-rotate-left" style="color: #00A699;"></i> 
-          <strong>Verificación Segura:</strong> Al enviar tu solicitud, el Administrador verificará el comprobante de pago y activará tu publicidad en el feed.
-        </div>
-
-        <button type="button" class="btn-primary-action" style="background: linear-gradient(135deg, #00A699 0%, #008477 100%); font-size: 13.5px; padding: 12px; font-weight: 800;" onclick="BuscapetApp.submitAdInquiry()">
-          <i class="fa-solid fa-paper-plane"></i> Enviar Solicitud con Comprobante
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- Leaflet Map JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-  <!-- Firebase SDKs (Official Compat for Web) -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -859,6 +642,11 @@
   <script src="js/app.js"></script>
 
   <script>
+    function updateCatActiveClass(btn) {
+      document.querySelectorAll('.filter-cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
     // Auto-close modal when clicking outside
     document.querySelectorAll('.modal-backdrop').forEach(modal => {
       modal.addEventListener('click', (e) => {

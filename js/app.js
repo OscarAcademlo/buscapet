@@ -114,6 +114,7 @@ var BuscapetApp = window.BuscapetApp = {
   populateCountrySelects() {
     const countries = BuscapetLocations.getCountries();
     const filterCountrySelect = document.getElementById('filter-country-select');
+    const sidebarCountrySelect = document.getElementById('sidebar-country-select');
     const reportCountrySelect = document.getElementById('report-country');
 
     const filterOptionsHtml = `
@@ -132,11 +133,105 @@ var BuscapetApp = window.BuscapetApp = {
       this.onFilterCountryChange(); // Trigger initial
     }
 
+    if (sidebarCountrySelect) {
+      sidebarCountrySelect.innerHTML = filterOptionsHtml;
+      sidebarCountrySelect.onchange = () => this.onSidebarCountryChange();
+      this.onSidebarCountryChange();
+    }
+
     if (reportCountrySelect) {
       reportCountrySelect.innerHTML = reportOptionsHtml;
       reportCountrySelect.onchange = () => this.onReportCountryChange();
       this.onReportCountryChange();
     }
+  },
+
+  onSidebarCountryChange() {
+    const sidebarCountry = document.getElementById('sidebar-country-select');
+    const countryCode = sidebarCountry ? sidebarCountry.value : '';
+    const stateSelect = document.getElementById('sidebar-state-select');
+    const citySelect = document.getElementById('sidebar-city-select');
+
+    if (!stateSelect || !citySelect) return;
+
+    if (!countryCode) {
+      stateSelect.innerHTML = '<option value="">Todos los Estados/Provincias</option>';
+      citySelect.innerHTML = '<option value="">Todas las Ciudades</option>';
+      return;
+    }
+
+    const states = BuscapetLocations.getStatesByCountryCode(countryCode);
+    stateSelect.innerHTML = `
+      <option value="">Todos los Estados/Provincias</option>
+      ${states.map(s => `<option value="${s.name}">${s.name}</option>`).join('')}
+    `;
+    citySelect.innerHTML = '<option value="">Todas las Ciudades</option>';
+    stateSelect.onchange = () => this.onSidebarStateChange();
+  },
+
+  onSidebarStateChange() {
+    const sidebarCountry = document.getElementById('sidebar-country-select');
+    const countryCode = sidebarCountry ? sidebarCountry.value : '';
+    const stateSelect = document.getElementById('sidebar-state-select');
+    const citySelect = document.getElementById('sidebar-city-select');
+
+    if (!stateSelect || !citySelect) return;
+
+    const stateName = stateSelect.value;
+    if (!stateName) {
+      citySelect.innerHTML = '<option value="">Todas las Ciudades</option>';
+      return;
+    }
+
+    const cities = BuscapetLocations.getCitiesByState(countryCode, stateName);
+    citySelect.innerHTML = `
+      <option value="">Todas las Ciudades</option>
+      ${cities.map(c => `<option value="${c}">${c}</option>`).join('')}
+    `;
+  },
+
+  applySidebarLocationFilter() {
+    const countrySelect = document.getElementById('sidebar-country-select');
+    const stateSelect = document.getElementById('sidebar-state-select');
+    const citySelect = document.getElementById('sidebar-city-select');
+
+    const country = countrySelect ? countrySelect.value : '';
+    const state = stateSelect ? stateSelect.value : '';
+    const city = citySelect ? citySelect.value : '';
+
+    BuscapetFeed.filterByLocation(country, state, city);
+
+    let label = '🌎 Todas las ubicaciones';
+    if (city) {
+      label = `📍 ${city}`;
+    } else if (state) {
+      label = `📍 ${state}`;
+    } else if (country) {
+      const cObj = BuscapetLocations.getCountries().find(c => c.code === country);
+      label = cObj ? `${cObj.flag} ${cObj.name}` : `📍 ${country}`;
+    }
+
+    const pill = document.getElementById('header-location-pill');
+    if (pill) pill.textContent = label;
+
+    BuscapetNotifications.showPushBanner('Filtro de Ubicación Aplicado', `Mostrando reportes de: ${label}`);
+  },
+
+  resetSidebarLocationFilter() {
+    const countrySelect = document.getElementById('sidebar-country-select');
+    const stateSelect = document.getElementById('sidebar-state-select');
+    const citySelect = document.getElementById('sidebar-city-select');
+
+    if (countrySelect) countrySelect.value = '';
+    if (stateSelect) stateSelect.innerHTML = '<option value="">Todos los Estados/Provincias</option>';
+    if (citySelect) citySelect.innerHTML = '<option value="">Todas las Ciudades</option>';
+
+    BuscapetFeed.filterByLocation('', '', '');
+
+    const pill = document.getElementById('header-location-pill');
+    if (pill) pill.textContent = '🌎 Todas las ubicaciones';
+
+    BuscapetNotifications.showPushBanner('Filtros Restablecidos', 'Mostrando reportes de todo el mundo');
   },
 
   onFilterCountryChange() {

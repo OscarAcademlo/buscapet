@@ -129,10 +129,34 @@
         <div class="widget-title">
           <i class="fa-solid fa-location-dot" style="color:var(--primary)"></i> Ubicación Geográfica
         </div>
-        <button class="btn-primary-action" style="background:var(--bg-input); border:1px solid var(--border); color:var(--text-main); font-size:12.5px; padding:10px; justify-content:space-between;" onclick="BuscapetApp.openLocationModal()">
-          <span id="header-location-pill">🌎 Todas las ubicaciones</span>
-          <i class="fa-solid fa-chevron-down" style="font-size:11px; color:var(--text-muted);"></i>
-        </button>
+
+        <div class="form-group" style="margin-bottom: 8px;">
+          <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">País:</label>
+          <select id="sidebar-country-select" class="form-select" style="font-size: 12px; padding: 8px 10px;"></select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 8px;">
+          <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">Provincia / Estado:</label>
+          <select id="sidebar-state-select" class="form-select" style="font-size: 12px; padding: 8px 10px;">
+            <option value="">Todos los Estados/Provincias</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">Ciudad / Localidad:</label>
+          <select id="sidebar-city-select" class="form-select" style="font-size: 12px; padding: 8px 10px;">
+            <option value="">Todas las Ciudades</option>
+          </select>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <button class="btn-primary-action" style="font-size: 12.5px; padding: 9px;" onclick="BuscapetApp.applySidebarLocationFilter()">
+            <i class="fa-solid fa-check"></i> Aplicar Filtro
+          </button>
+          <button class="btn-primary-action" style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); font-size: 11.5px; padding: 7px; box-shadow: none;" onclick="BuscapetApp.resetSidebarLocationFilter()">
+            <i class="fa-solid fa-earth-americas"></i> Ver Todo el Mundo
+          </button>
+        </div>
       </div>
 
       <!-- Category Filter Widget -->
@@ -169,40 +193,42 @@
 
     <!-- RIGHT SIDEBAR: SPONSORS, DONATIONS & ADMIN -->
     <aside class="web-sidebar-right">
-      <!-- Advertising Widget -->
-      <div class="sidebar-widget" style="border: 1.5px solid rgba(0, 166, 153, 0.4); background: rgba(0, 166, 153, 0.05);">
-        <div class="widget-title" style="color: #00A699;">
-          <i class="fa-solid fa-bullhorn"></i> Publicidad para Comercios
-        </div>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
-          Destaca tu veterinaria o pet shop ante miles de dueños en tu ciudad por solo <strong>$10 USD / mes</strong>.
-        </p>
-        <button class="btn-primary-action" style="background:#00A699; font-size:12px; padding:10px;" onclick="BuscapetApp.openAdvertisingModal()">
-          <i class="fa-solid fa-rectangle-ad"></i> Quiero Publicitar
-        </button>
-      </div>
-
       <!-- Support / Cafecito Widget -->
       <div class="sidebar-widget">
         <div class="widget-title" style="color: #FFAA00;">
-          <i class="fa-solid fa-mug-hot"></i> Apoya el Proyecto
+          <i class="fa-solid fa-mug-hot"></i> Apoyar a Buscapet
         </div>
-        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-          Ayúdanos a costear servidores y mapas para mantener Buscapet siempre gratuito.
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+          Buscapet es 100% gratuita y sin fines de lucro. Tu cafecito nos ayuda a mantener los servidores online.
         </p>
-        <button class="btn-primary-action" style="background:#FFAA00; color:#000; font-size:12px; padding:10px;" onclick="BuscapetApp.openDonationModal()">
+        <button class="btn-primary-action" style="background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; font-weight: 800; font-size: 12.5px; padding: 10px;" onclick="BuscapetApp.openDonationModal()">
           <i class="fa-solid fa-mug-hot"></i> Donar un Cafecito
         </button>
       </div>
 
-      <!-- Admin Master Panel Access -->
+      <!-- Advertising Widget -->
       <div class="sidebar-widget">
-        <div class="widget-title" style="color: #FFAA00;">
-          <i class="fa-solid fa-crown"></i> OscarSoft 2026
+        <div class="widget-title" style="color: #00D084;">
+          <i class="fa-solid fa-rectangle-ad"></i> Espacio Publicitario
         </div>
-        <button class="btn-primary-action" style="background:var(--bg-input); border:1px solid var(--border); font-size:12px; padding:10px; color:var(--text-main);" onclick="BuscapetApp.openAdminPanel()">
-          <i class="fa-solid fa-shield-halved" style="color:#FFAA00;"></i> Panel de Administrador
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+          Promociona tu veterinaria o pet shop a toda la comunidad de tu zona por solo <strong>$10 USD / $12.000 ARS</strong> por 30 días.
+        </p>
+        <button class="btn-primary-action" style="background: linear-gradient(135deg, #00A699 0%, #008477 100%); font-size: 12.5px; font-weight: 800; padding: 10px;" onclick="BuscapetApp.openAdvertisingModal()">
+          <i class="fa-solid fa-bullhorn"></i> Publicitar mi Negocio
         </button>
+      </div>
+
+      <!-- OscarSoft Admin Panel Widget -->
+      <div class="sidebar-widget" style="border: 1.5px dashed #FFAA00; background: rgba(255, 170, 0, 0.06); padding: 10px 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 12.5px; font-weight: 800; color: #FFAA00; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-crown"></i> Panel OscarSoft
+          </div>
+          <button type="button" style="padding: 4px 12px; font-size: 11px; font-weight: 800; background: rgba(255, 170, 0, 0.2); color: #FFAA00; border: 1px solid #FFAA00; border-radius: 4px; cursor: pointer;" onclick="BuscapetApp.openAdminPanel()">
+            Entrar
+          </button>
+        </div>
       </div>
     </aside>
 
