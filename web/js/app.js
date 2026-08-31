@@ -117,8 +117,8 @@ var BuscapetApp = window.BuscapetApp = {
     const reportCountrySelect = document.getElementById('report-country');
 
     const filterOptionsHtml = `
-      <option value="">🌎 Todos los Países (Todo el mundo)</option>
-      ${countries.map(c => `<option value="${c.code}" ${c.code === 'AR' ? 'selected' : ''}>${c.flag} ${c.name}</option>`).join('')}
+      <option value="" selected>🌎 Todos los Países (Todo el mundo)</option>
+      ${countries.map(c => `<option value="${c.code}">${c.flag} ${c.name}</option>`).join('')}
     `;
 
     const reportOptionsHtml = `

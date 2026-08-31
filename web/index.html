@@ -490,20 +490,109 @@
     </div>
   </div>
 
-  <!-- AUTH MODAL -->
+  <!-- AUTH MODAL (LOGIN & REGISTRO) -->
   <div id="auth-modal" class="modal-backdrop">
-    <div class="sheet-modal" style="max-width:400px;">
+    <div class="sheet-modal" style="max-width: 440px;">
       <div class="sheet-header">
-        <h3 class="sheet-title"><i class="fa-solid fa-user-circle"></i> Mi Perfil</h3>
+        <h3 class="sheet-title"><i class="fa-solid fa-user-circle" style="color:var(--primary)"></i> Mi Cuenta</h3>
         <button class="icon-btn" onclick="BuscapetFirebase.closeAuthModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="sheet-body" style="text-align:center;">
-        <button class="btn-primary-action" style="background:#4285F4; margin-bottom:10px;" onclick="BuscapetFirebase.loginWithGoogle()">
-          <i class="fa-brands fa-google"></i> Continuar con Google
-        </button>
-        <button class="btn-primary-action" style="background:var(--bg-input); border:1px solid var(--border); color:var(--text-main);" onclick="BuscapetFirebase.logout()">
-          Cerrar Sesión
-        </button>
+      <div class="sheet-body">
+
+        <!-- LOGGED-IN VIEW -->
+        <div id="auth-logged-in-view" style="display: none; text-align: center; padding: 10px 0;">
+          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80" alt="User Profile" class="avatar current-user-avatar" style="width: 72px; height: 72px; margin: 0 auto 10px; border: 3px solid var(--primary);">
+          <h3 class="current-user-name" style="font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">Usuario Conectado</h3>
+          <div id="user-auth-status-badge" style="font-size: 13px; margin-bottom: 20px;"></div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px; max-width: 320px; margin: 0 auto;">
+            <button class="btn-primary-action" style="background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; font-weight: 800;" onclick="BuscapetApp.openAdminPanel()">
+              <i class="fa-solid fa-crown"></i> Abrir Panel de Administrador
+            </button>
+            <button class="btn-primary-action" style="background: var(--bg-input); border: 1px solid var(--danger); color: var(--danger); box-shadow: none;" onclick="BuscapetFirebase.logout()">
+              <i class="fa-solid fa-power-off"></i> Cerrar Sesión
+            </button>
+          </div>
+        </div>
+
+        <!-- GUEST VIEW: TABS (INICIAR SESIÓN / REGISTRARSE) -->
+        <div id="auth-guest-view">
+          <!-- Auth Switcher Tabs -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg-input); padding: 4px; border-radius: var(--radius-md); margin-bottom: 16px;">
+            <button type="button" id="auth-tab-login-btn" style="border: none; padding: 10px; font-family: inherit; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; background: var(--primary); color: #fff; transition: all 0.2s ease;" onclick="BuscapetFirebase.switchAuthTab('login')">
+              <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+            </button>
+            <button type="button" id="auth-tab-register-btn" style="border: none; padding: 10px; font-family: inherit; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; background: transparent; color: var(--text-muted); transition: all 0.2s ease;" onclick="BuscapetFirebase.switchAuthTab('register')">
+              <i class="fa-solid fa-user-plus"></i> Registrarme
+            </button>
+          </div>
+
+          <!-- 1. LOGIN FORM -->
+          <div id="auth-login-form">
+            <!-- Google Fast Login -->
+            <button class="btn-primary-action" style="background: #4285F4; margin-bottom: 14px; font-weight: 800;" onclick="BuscapetFirebase.loginWithGoogle()">
+              <i class="fa-brands fa-google"></i> Continuar con Google
+            </button>
+
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+              <hr style="flex: 1; border: 0; border-top: 1px solid var(--border);">
+              <span style="font-size: 11px; color: var(--text-muted); font-weight: 700;">O CON TU EMAIL Y CLAVE</span>
+              <hr style="flex: 1; border: 0; border-top: 1px solid var(--border);">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Correo Electrónico</label>
+              <input type="email" id="auth-email-input" class="form-control" placeholder="ejemplo@gmail.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contraseña</label>
+              <input type="password" id="auth-pass-input" class="form-control" placeholder="Ingresa tu contraseña...">
+            </div>
+
+            <button class="btn-primary-action" style="margin-top: 6px; margin-bottom: 14px; font-weight: 800;" onclick="BuscapetFirebase.loginWithEmail(document.getElementById('auth-email-input').value, document.getElementById('auth-pass-input').value)">
+              <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+            </button>
+
+            <!-- 1-Click Fast Testing Access -->
+            <div style="background: var(--bg-card); border: 1px dashed var(--border); border-radius: var(--radius-sm); padding: 10px; margin-top: 8px;">
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; text-align: center;">Acceso Rápido Directo:</div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn-primary-action" style="flex: 1; background: rgba(255, 170, 0, 0.15); border: 1px solid #FFAA00; color: #FFAA00; font-size: 11.5px; padding: 8px; box-shadow: none;" onclick="BuscapetFirebase.loginAsAdmin()">
+                  👑 Modo Admin (Oscar)
+                </button>
+                <button type="button" class="btn-primary-action" style="flex: 1; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); font-size: 11.5px; padding: 8px; box-shadow: none;" onclick="BuscapetFirebase.loginWithDemo('Vecino Invitado', 'invitado@buscapet.click')">
+                  🐾 Invitado
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. REGISTER FORM -->
+          <div id="auth-register-form" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">Nombre Completo o Alias *</label>
+              <input type="text" id="reg-name-input" class="form-control" placeholder="Ej: Juan Pérez">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Correo Electrónico *</label>
+              <input type="email" id="reg-email-input" class="form-control" placeholder="tunombre@gmail.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contraseña (Mínimo 6 caracteres) *</label>
+              <input type="password" id="reg-pass-input" class="form-control" placeholder="Crea una clave segura...">
+            </div>
+            <div class="form-group">
+              <label class="form-label"><i class="fa-brands fa-whatsapp" style="color:#25D366;"></i> WhatsApp de Contacto (Opcional)</label>
+              <input type="tel" id="reg-phone-input" class="form-control" placeholder="Ej: +54 9 11 5555-4321">
+            </div>
+
+            <button class="btn-primary-action" style="background: linear-gradient(135deg, #00A699 0%, #008477 100%); margin-top: 8px; font-weight: 800;" onclick="BuscapetFirebase.registerUser(document.getElementById('reg-name-input').value, document.getElementById('reg-email-input').value, document.getElementById('reg-pass-input').value, document.getElementById('reg-phone-input').value)">
+              <i class="fa-solid fa-user-plus"></i> Crear mi Cuenta Gratis
+            </button>
+          </div>
+
+        </div>
+
       </div>
     </div>
   </div>

@@ -187,20 +187,23 @@ var BuscapetFirebase = window.BuscapetFirebase = {
     return this.currentUser !== null && this.currentUser.uid !== undefined;
   },
 
-  // Inicio de sesión con Email y Contraseña (oficial Firebase)
+  // Inicio de sesión con Email y Contraseña (oficial Firebase + Fallback)
   async loginWithEmail(email, password) {
-    if (!email || !password) {
-      alert('Por favor ingresa correo y contraseña.');
+    const cleanEmail = (email || '').trim();
+    const cleanPass = (password || '').trim();
+
+    if (!cleanEmail || !cleanPass) {
+      alert('Por favor ingresa tu correo y contraseña.');
       return;
     }
 
     try {
       if (typeof firebase !== 'undefined' && firebase.auth) {
-        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+        const userCredential = await firebase.auth().signInWithEmailAndPassword(cleanEmail, cleanPass);
         const user = userCredential.user;
         this.currentUser = {
           uid: user.uid,
-          displayName: user.displayName || email.split('@')[0],
+          displayName: user.displayName || cleanEmail.split('@')[0],
           email: user.email,
           photoURL: user.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
         };
@@ -208,31 +211,130 @@ var BuscapetFirebase = window.BuscapetFirebase = {
         this.updateUserUI();
         this.closeAuthModal();
         BuscapetNotifications.showPushBanner('¡Sesión Iniciada!', `Bienvenido, ${this.currentUser.displayName}`);
+
+        if (this.pendingAction) {
+          const action = this.pendingAction;
+          this.pendingAction = null;
+          action();
+        }
         return;
       }
     } catch (error) {
-      // Si el usuario aún no existe en Firebase Auth, lo registramos automáticamente
-      try {
-        const newCred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+      console.warn('Firebase login detail:', error);
+      if (error.code === 'auth/user-not-found') {
+        return this.registerUser(cleanEmail.split('@')[0], cleanEmail, cleanPass);
+      }
+      if (error.code === 'auth/wrong-password') {
+        alert('Contraseña incorrecta. Por favor verifica los datos.');
+        return;
+      }
+    }
+
+    // Fallback inmediato si no hay conexión a Firebase
+    this.loginWithDemo(cleanEmail.split('@')[0], cleanEmail);
+  },
+
+  // Registro de nuevo usuario (Nombre, Correo, Clave, Teléfono)
+  async registerUser(name, email, password, phone = '') {
+    const cleanName = (name || '').trim();
+    const cleanEmail = (email || '').trim();
+    const cleanPass = (password || '').trim();
+    const cleanPhone = (phone || '').trim();
+
+    if (!cleanEmail || !cleanPass) {
+      alert('Por favor ingresa un correo y una contraseña.');
+      return;
+    }
+
+    if (cleanPass.length < 6) {
+      alert('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    const displayName = cleanName || cleanEmail.split('@')[0];
+
+    try {
+      if (typeof firebase !== 'undefined' && firebase.auth) {
+        const newCred = await firebase.auth().createUserWithEmailAndPassword(cleanEmail, cleanPass);
         const u = newCred.user;
+        if (u.updateProfile) {
+          await u.updateProfile({ displayName: displayName });
+        }
         this.currentUser = {
           uid: u.uid,
-          displayName: email.split('@')[0],
+          displayName: displayName,
           email: u.email,
+          phone: cleanPhone,
           photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
         };
         this.saveUser();
         this.updateUserUI();
         this.closeAuthModal();
-        BuscapetNotifications.showPushBanner('¡Cuenta Creada!', `Bienvenido a Buscapet, ${this.currentUser.displayName}`);
+        BuscapetNotifications.showPushBanner('¡Cuenta Creada con Éxito! 🎉', `Bienvenido a Buscapet, ${displayName}`);
+
+        if (this.pendingAction) {
+          const action = this.pendingAction;
+          this.pendingAction = null;
+          action();
+        }
         return;
-      } catch (err2) {
-        console.warn('Auth notice:', err2.message);
+      }
+    } catch (err) {
+      console.warn('Firebase register notice:', err);
+      if (err.code === 'auth/email-already-in-use') {
+        return this.loginWithEmail(cleanEmail, cleanPass);
       }
     }
 
-    // Fallback directo para demo
-    this.loginWithDemo(email.split('@')[0], email);
+    // Fallback local seguro
+    this.currentUser = {
+      uid: 'usr-' + Date.now(),
+      displayName: displayName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80'
+    };
+    this.saveUser();
+    this.updateUserUI();
+    this.closeAuthModal();
+    BuscapetNotifications.showPushBanner('¡Cuenta Creada! 🎉', `Bienvenido a Buscapet, ${displayName}`);
+
+    if (this.pendingAction) {
+      const action = this.pendingAction;
+      this.pendingAction = null;
+      action();
+    }
+  },
+
+  switchAuthTab(tab) {
+    const loginForm = document.getElementById('auth-login-form');
+    const registerForm = document.getElementById('auth-register-form');
+    const tabLoginBtn = document.getElementById('auth-tab-login-btn');
+    const tabRegisterBtn = document.getElementById('auth-tab-register-btn');
+
+    if (tab === 'login') {
+      if (loginForm) loginForm.style.display = 'block';
+      if (registerForm) registerForm.style.display = 'none';
+      if (tabLoginBtn) {
+        tabLoginBtn.style.background = 'var(--primary)';
+        tabLoginBtn.style.color = '#fff';
+      }
+      if (tabRegisterBtn) {
+        tabRegisterBtn.style.background = 'transparent';
+        tabRegisterBtn.style.color = 'var(--text-muted)';
+      }
+    } else {
+      if (loginForm) loginForm.style.display = 'none';
+      if (registerForm) registerForm.style.display = 'block';
+      if (tabLoginBtn) {
+        tabLoginBtn.style.background = 'transparent';
+        tabLoginBtn.style.color = 'var(--text-muted)';
+      }
+      if (tabRegisterBtn) {
+        tabRegisterBtn.style.background = 'var(--primary)';
+        tabRegisterBtn.style.color = '#fff';
+      }
+    }
   },
 
   saveUser() {
@@ -247,6 +349,8 @@ var BuscapetFirebase = window.BuscapetFirebase = {
     const avatarEls = document.querySelectorAll('.current-user-avatar');
     const nameEls = document.querySelectorAll('.current-user-name');
     const authBadgeEl = document.getElementById('user-auth-status-badge');
+    const loggedInBox = document.getElementById('auth-logged-in-view');
+    const guestBox = document.getElementById('auth-guest-view');
 
     if (this.isLoggedIn()) {
       avatarEls.forEach(el => {
@@ -256,8 +360,10 @@ var BuscapetFirebase = window.BuscapetFirebase = {
         if (this.currentUser && this.currentUser.displayName) el.textContent = this.currentUser.displayName;
       });
       if (authBadgeEl) {
-        authBadgeEl.innerHTML = `<span style="color:var(--success); font-weight:700;"><i class="fa-solid fa-circle-check"></i> Conectado como ${this.currentUser.displayName}</span>`;
+        authBadgeEl.innerHTML = `<span style="color:var(--success); font-weight:700;"><i class="fa-solid fa-circle-check"></i> Conectado como ${this.currentUser.displayName} (${this.currentUser.email || ''})</span>`;
       }
+      if (loggedInBox) loggedInBox.style.display = 'block';
+      if (guestBox) guestBox.style.display = 'none';
     } else {
       avatarEls.forEach(el => {
         el.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80';
@@ -268,15 +374,17 @@ var BuscapetFirebase = window.BuscapetFirebase = {
       if (authBadgeEl) {
         authBadgeEl.innerHTML = `<span style="color:var(--warning); font-weight:700;"><i class="fa-solid fa-circle-exclamation"></i> No has iniciado sesión</span>`;
       }
+      if (loggedInBox) loggedInBox.style.display = 'none';
+      if (guestBox) guestBox.style.display = 'block';
     }
   },
 
   loginWithDemo(name, email) {
     this.currentUser = {
       uid: 'usr-' + Date.now(),
-      displayName: name || 'Oscar (Usuario Verificado)',
-      email: email || 'oscar@buscapet.com',
-      photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+      displayName: name || 'Usuario Demo',
+      email: email || 'usuario@buscapet.click',
+      photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80',
       phone: '+54 9 11 1234-5678'
     };
     this.saveUser();
@@ -284,7 +392,6 @@ var BuscapetFirebase = window.BuscapetFirebase = {
     this.closeAuthModal();
     BuscapetNotifications.showPushBanner('¡Sesión Iniciada!', `Bienvenido a Buscapet, ${this.currentUser.displayName}`);
 
-    // If there was a pending report to open
     if (this.pendingAction) {
       const action = this.pendingAction;
       this.pendingAction = null;
@@ -304,6 +411,7 @@ var BuscapetFirebase = window.BuscapetFirebase = {
   },
 
   openAuthModal() {
+    this.updateUserUI();
     const modal = document.getElementById('auth-modal');
     if (modal) modal.classList.add('active');
   },
