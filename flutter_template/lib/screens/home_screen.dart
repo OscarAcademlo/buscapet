@@ -475,16 +475,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-  // ============ FEED BODY ============
-  Widget _buildFeedBody() {
-    return _buildFeed();
-  }
-
-  // ============ HERO BANNER CON LOS 4 BOTONES Y SELECTOR DE UBICACIÓN INTEGRADO ============
+  // ============ FEED BODY ===========  // ============ HERO BANNER CON LOS 4 BOTONES Y SELECTOR DE UBICACIÓN INTEGRADO ============
   Widget _buildHeroBanner() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -502,14 +497,14 @@ class _HomeScreenState extends State<HomeScreen> {
             AppSettings.tr('hero_title'),
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 15,
+              fontSize: 14,
               fontWeight: FontWeight.w800,
               color: BuscapetTheme.textMain,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
-          // 4 BOTONES SIMÉTRICOS
+          // 4 BOTONES SIMÉTRICOS CON INMEDIATA RESPUESTA AL TACTO (INSTANT TAP)
           Row(
             children: [
               Expanded(
@@ -552,82 +547,84 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
 
           // BOTÓN DESTACADO: PUBLICAR PUBLICIDAD / ANUNCIAR NEGOCIO
-          InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: _openAdRequest,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
-                ),
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: _openAdRequest,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
                   ),
-                ],
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.campaign_rounded, size: 16, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text(
-                    '📢 Publicitar mi Negocio o Veterinaria',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                  SizedBox(width: 6),
-                  Icon(Icons.arrow_forward_ios_rounded, size: 10, color: Colors.white70),
-                ],
+                  ],
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.campaign_rounded, size: 17, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(
+                      '📢 Publicitar mi Negocio o Veterinaria (\$14.000 ARS)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(width: 6),
+                    Icon(Icons.arrow_forward_ios_rounded, size: 10, color: Colors.white70),
+                  ],
+                ),
               ),
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
           // SELECTOR DE UBICACIÓN RÁPIDO INTEGRADO EN EL BANNER
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: BuscapetTheme.bgInput,
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: BuscapetTheme.border),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.place_rounded, size: 16, color: BuscapetTheme.primary),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    _filterCity.isNotEmpty
-                        ? '📍 $_filterCity, $_filterState'
-                        : (_filterState.isNotEmpty
-                            ? '📍 $_filterState, ${_filterCountry.toUpperCase()}'
-                            : (_filterCountry.isNotEmpty ? '📍 ${_filterCountry.toUpperCase()}' : '🌎 Todo el mundo')),
-                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: BuscapetTheme.textMain),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+              onTap: () => _showFilterSheet(),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: BuscapetTheme.bgInput,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: BuscapetTheme.border),
                 ),
-                TextButton(
-                  onPressed: () => _showFilterSheet(),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Text(
-                    AppSettings.tr('change_city'),
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary),
-                  ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.place_rounded, size: 16, color: BuscapetTheme.primary),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        _filterCity.isNotEmpty
+                            ? '📍 $_filterCity, $_filterState'
+                            : (_filterState.isNotEmpty
+                                ? '📍 $_filterState, ${_filterCountry.toUpperCase()}'
+                                : (_filterCountry.isNotEmpty ? '📍 ${_filterCountry.toUpperCase()}' : '🌎 Todo el mundo')),
+                        style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: BuscapetTheme.textMain),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      AppSettings.tr('change_city'),
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ],
@@ -636,24 +633,28 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _heroBtn(String label, Color color, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.35)),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w700,
-            color: color,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color.withValues(alpha: 0.35)),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11.5,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
           ),
         ),
       ),
@@ -671,7 +672,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Container(
       color: Theme.of(context).cardColor,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -680,29 +681,39 @@ class _HomeScreenState extends State<HomeScreen> {
             final isSelected = _filterType == cat.$1;
             return Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: GestureDetector(
-                onTap: () => setState(() => _filterType = cat.$1),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: isSelected ? cat.$3.withValues(alpha: 0.2) : BuscapetTheme.bgInput,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isSelected ? cat.$3 : BuscapetTheme.border,
-                      width: isSelected ? 1.5 : 1,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => setState(() => _filterType = cat.$1),
+                  borderRadius: BorderRadius.circular(20),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: isSelected ? cat.$3.withValues(alpha: 0.2) : BuscapetTheme.bgInput,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected ? cat.$3 : BuscapetTheme.border,
+                        width: isSelected ? 1.5 : 1,
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    cat.$2,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                      color: isSelected ? cat.$3 : BuscapetTheme.textMuted,
+                    child: Text(
+                      cat.$2,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                        color: isSelected ? cat.$3 : BuscapetTheme.textMuted,
+                      ),
                     ),
                   ),
                 ),
               ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }         ),
             );
           }).toList(),
         ),
