@@ -890,7 +890,7 @@ var BuscapetApp = window.BuscapetApp = {
     alias: 'oscar.stella.mp',
     holder: 'Oscar Nicolás Stella',
     arsAmount: '$14.000 ARS',
-    paypalEmail: 'oscarns@gmail.com',
+    paypalEmail: 'oscarnicolasstella@yahoo.com.ar',
     publicKey: 'APP_USR-0a741409-599f-434a-84ba-996c4eb0b958',
     accessToken: 'APP_USR-7254310245914481-090511-ea2d70cd02d87cc2e2a70c6833406a33-741894322'
   },
@@ -902,6 +902,13 @@ var BuscapetApp = window.BuscapetApp = {
         this.paymentSettings = { ...this.paymentSettings, ...JSON.parse(stored) };
       }
     } catch (e) {}
+    // Ensure accurate defaults
+    if (!this.paymentSettings.paypalEmail || this.paymentSettings.paypalEmail === 'oscarns@gmail.com') {
+      this.paymentSettings.paypalEmail = 'oscarnicolasstella@yahoo.com.ar';
+    }
+    if (!this.paymentSettings.alias || this.paymentSettings.alias === 'buscapet.oscarsoft') {
+      this.paymentSettings.alias = 'oscar.stella.mp';
+    }
     this.updateDynamicPaymentUI();
   },
 
@@ -929,13 +936,16 @@ var BuscapetApp = window.BuscapetApp = {
       '¡Configuración Guardada! ✅',
       `Alias "${this.paymentSettings.alias}" y datos de cobro guardados con éxito.`
     );
-    alert(`¡Datos guardados con éxito en vivo!\n\nAlias: ${this.paymentSettings.alias}\nTitular: ${this.paymentSettings.holder}\nPayPal: ${this.paymentSettings.paypalEmail}`);
+    alert(`¡Datos guardados con éxito!\n\nAlias: ${this.paymentSettings.alias}\nTitular: ${this.paymentSettings.holder}\nPayPal: ${this.paymentSettings.paypalEmail}`);
   },
 
   updateDynamicPaymentUI() {
     // Update Donation Modal
     const mpAliasText = document.getElementById('mp-alias-text');
     if (mpAliasText) mpAliasText.textContent = this.paymentSettings.alias;
+
+    const mpHolderText = document.getElementById('mp-holder-text');
+    if (mpHolderText) mpHolderText.textContent = this.paymentSettings.holder;
 
     const paypalEmailText = document.getElementById('paypal-email-text');
     if (paypalEmailText) paypalEmailText.textContent = this.paymentSettings.paypalEmail;
@@ -944,10 +954,122 @@ var BuscapetApp = window.BuscapetApp = {
     const adAliasBox = document.getElementById('ad-alias-info-box');
     if (adAliasBox) {
       adAliasBox.innerHTML = `
-        <div style="font-size: 11.5px; font-weight: 800; color: #00D084;">
-          <i class="fa-solid fa-building-columns"></i> Datos de Transferencia Directa (Mercado Pago / Banco):
+        <div style="font-size: 11.5px; font-weight: 800; color: #009EE3; display: flex; justify-content: space-between; align-items: center;">
+          <span><i class="fa-solid fa-building-columns"></i> O Transferir por Alias / CBU:</span>
+          <button class="btn-copy-sm" style="background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); padding:3px 8px; border-radius:4px; font-size:10.5px; cursor:pointer;" onclick="BuscapetApp.copyDonationData('${this.paymentSettings.alias}', 'Alias')">
+            <i class="fa-regular fa-copy"></i> Copiar
+          </button>
         </div>
-        <div style="font-size: 12px; color: var(--text-main); margin-top: 4px;">
+        <div style="font-size: 12.5px; margin-top: 4px;"><strong>Alias:</strong> <code style="color:#009EE3; font-weight:bold; font-size:13px;">${this.paymentSettings.alias}</code></div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Titular: ${this.paymentSettings.holder} &bull; Monto: ${this.paymentSettings.arsAmount} / mes (~10 USD)</div>
+      `;
+    }
+  },
+
+  async payAdWithMercadoPago() {
+    const businessName = document.getElementById('ad-biz-name')?.value.trim() || 'Publicidad Buscapet';
+    const desc = document.getElementById('ad-biz-desc')?.value.trim() || 'Anuncio destacado en Buscapet';
+    const price = 14000;
+    const btn = document.getElementById('btn-mp-ad-pay');
+    
+    try {
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando Mercado Pago...';
+      
+      const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.paymentSettings.accessToken}`
+        },
+        body: JSON.stringify({
+          items: [
+            {
+              title: `Publicidad Buscapet (30 días) - ${businessName}`,
+              description: desc.substring(0, 120),
+              quantity: 1,
+              unit_price: price,
+              currency_id: 'ARS'
+            }
+          ],
+          back_urls: {
+            success: window.location.href,
+            failure: window.location.href,
+            pending: window.location.href
+          },
+          auto_return: 'approved'
+        })
+      });
+      
+      const data = await response.json();
+      if (data && data.init_point) {
+        window.open(data.init_point, '_blank');
+      } else {
+        alert(`No se pudo generar el link directo. Puedes transferir $14.000 ARS al Alias: ${this.paymentSettings.alias}`);
+      }
+    } catch (err) {
+      console.error('Error MP Preference:', err);
+      alert(`Puedes abonar con transferencia de $14.000 ARS al Alias: ${this.paymentSettings.alias}`);
+    } finally {
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-credit-card"></i> Pagar $14.000 ARS con Mercado Pago / Tarjetas';
+    }
+  },
+
+  async donateWithMercadoPago(amount = 2000) {
+    const btn = document.getElementById('btn-mp-donate');
+    try {
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Conectando Mercado Pago...';
+      
+      const response = await fetch('https://api.mercadopago.com/checkout/preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.paymentSettings.accessToken}`
+        },
+        body: JSON.stringify({
+          items: [
+            {
+              title: 'Donación Solidaria Cafecito - Buscapet Mascotas',
+              description: 'Apoyo al mantenimiento y servidores de Buscapet',
+              quantity: 1,
+              unit_price: amount,
+              currency_id: 'ARS'
+            }
+          ],
+          back_urls: {
+            success: window.location.href,
+            failure: window.location.href,
+            pending: window.location.href
+          },
+          auto_return: 'approved'
+        })
+      });
+      
+      const data = await response.json();
+      if (data && data.init_point) {
+        window.open(data.init_point, '_blank');
+      } else {
+        alert(`Puedes donar transfiriendo al Alias: ${this.paymentSettings.alias}`);
+      }
+    } catch (err) {
+      console.error('Error MP Donación:', err);
+      alert(`Puedes donar transfiriendo al Alias: ${this.paymentSettings.alias}`);
+    } finally {
+      if (btn) btn.innerHTML = `<i class="fa-solid fa-credit-card"></i> Donar $${amount.toLocaleString('es-AR')} ARS con Mercado Pago / Tarjeta`;
+    }
+  },
+
+  toggleLocationFilter() {
+    const collapseEl = document.getElementById('location-filter-collapse');
+    const iconEl = document.getElementById('loc-toggle-icon');
+    if (collapseEl) {
+      collapseEl.classList.toggle('open');
+      if (iconEl) {
+        iconEl.innerHTML = collapseEl.classList.contains('open') 
+          ? '<i class="fa-solid fa-chevron-up"></i>' 
+          : '<i class="fa-solid fa-chevron-down"></i>';
+      }
+    }
+  },
           <strong>Alias:</strong> <code style="background:var(--bg-main); padding:2px 6px; border-radius:4px; font-weight:bold; color:var(--primary);">${this.paymentSettings.alias}</code>
         </div>
         <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">

@@ -1297,6 +1297,14 @@ html, body {
   max-width: 100%;
 }
 
+/* Desktop Location Collapse default */
+.location-filter-collapse {
+  display: block;
+}
+.mobile-filter-badge-toggle {
+  display: none;
+}
+
 @media (max-width: 1024px) {
   .web-main-layout {
     grid-template-columns: 260px 1fr;
@@ -1316,19 +1324,23 @@ html, body {
     overflow-x: hidden !important;
     width: 100% !important;
     max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* Navbar */
   .web-navbar {
-    padding: 8px 12px !important;
+    padding: 6px 10px !important;
     height: auto !important;
-    min-height: 56px !important;
+    min-height: 52px !important;
     width: 100% !important;
+    max-width: 100vw !important;
     box-sizing: border-box !important;
   }
   .nav-container {
     padding: 0 !important;
     width: 100% !important;
+    max-width: 100% !important;
     gap: 6px !important;
   }
   .nav-center-menu {
@@ -1337,21 +1349,16 @@ html, body {
   .nav-right-actions {
     gap: 6px !important;
   }
-  .nav-right-actions .btn-donate-nav {
-    display: none !important; /* Ocultar en header móvil para que entre perfecto */
-  }
+  .nav-right-actions .btn-donate-nav,
   .nav-right-actions .btn-web-ad {
-    display: none !important; /* Ocultar Publicitar en móvil - el avatar de login debe ser visible siempre */
+    display: none !important;
   }
   .nav-right-actions .icon-btn {
-    display: inline-flex !important; /* Avatar de login SIEMPRE visible en móvil */
+    display: inline-flex !important;
     flex-shrink: 0 !important;
   }
   .nav-right-actions .btn-primary-action {
-    padding: 8px 12px !important;
-    font-size: 12px !important;
-  }
-  .nav-right-actions .btn-primary-action span {
+    padding: 7px 10px !important;
     font-size: 11.5px !important;
   }
   .brand-box .name {
@@ -1361,33 +1368,34 @@ html, body {
     font-size: 18px !important;
   }
 
-  /* Hero Section (Ultra Compact en Celulares) */
+  /* Hero Section (Ultra Compact) */
   .hero-banner-section {
-    padding: 12px 10px 10px !important;
+    padding: 10px 8px 8px !important;
     width: 100% !important;
+    max-width: 100vw !important;
     box-sizing: border-box !important;
+    margin: 0 !important;
   }
   .hero-content-wrapper {
     width: 100% !important;
     max-width: 100% !important;
     padding: 0 !important;
-    box-sizing: border-box !important;
+    margin: 0 !important;
   }
   .hero-badge-tag {
-    display: none !important; /* Ocultar en móvil para ganar espacio */
+    display: none !important;
   }
   .hero-main-title {
-    font-size: 18px !important;
+    font-size: 17px !important;
     line-height: 1.2 !important;
-    margin-bottom: 6px !important;
-    padding: 0 4px !important;
-    word-break: break-word !important;
+    margin-bottom: 4px !important;
+    padding: 0 !important;
   }
   .hero-subtitle {
-    display: none !important; /* Ocultar texto largo en móvil */
+    display: none !important;
   }
   .store-badges-container {
-    display: none !important; /* Ocultar badges de tienda en móvil para mostrar contenido */
+    display: none !important;
   }
   .hero-action-grid {
     grid-template-columns: 1fr 1fr !important;
@@ -1403,30 +1411,33 @@ html, body {
     justify-content: center !important;
     gap: 6px !important;
   }
-  .hero-card-action i {
-    font-size: 14px !important;
-  }
 
-  /* Layout & Feed (Filtros visibles arriba con order: 1, Feed con order: 2) */
+  /* Layout & Feed (100% Pantalla Completa sin márgenes laterales vacíos) */
   .web-main-layout {
     display: flex !important;
     flex-direction: column !important;
-    padding: 10px 8px !important;
-    gap: 12px !important;
+    padding: 6px 4px !important;
+    margin: 0 !important;
+    gap: 8px !important;
     width: 100% !important;
+    max-width: 100vw !important;
     box-sizing: border-box !important;
   }
   .web-sidebar-left {
-    order: 1 !important; /* Filtros visibles arriba en el celular */
+    order: 1 !important;
     position: static !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-  .web-center-feed {
-    order: 2 !important; /* Feed de mascotas con anuncio debajo de los filtros */
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+    padding: 0 !important;
+    gap: 8px !important;
+  }
+  .web-center-feed {
+    order: 2 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
   }
   .feed-container {
     width: 100% !important;
@@ -1437,19 +1448,67 @@ html, body {
     display: none !important;
   }
   .sidebar-widget {
-    padding: 12px !important;
+    padding: 10px !important;
     width: 100% !important;
+    max-width: 100% !important;
     box-sizing: border-box !important;
+    border-radius: var(--radius-md) !important;
   }
+
+  /* Filtro de ubicación colapsable en móvil */
+  .location-filter-collapse {
+    display: none;
+    margin-top: 8px;
+  }
+  .location-filter-collapse.open {
+    display: block !important;
+  }
+  .mobile-filter-badge-toggle {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bg-hover);
+    color: var(--primary);
+    font-size: 11px;
+  }
+
+  /* Barra horizontal deslizable para categorías en móvil */
+  .filter-category-list {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    gap: 6px !important;
+    padding: 2px 0 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .filter-category-list::-webkit-scrollbar {
+    display: none !important;
+  }
+  .filter-cat-btn {
+    flex: 0 0 auto !important;
+    padding: 6px 12px !important;
+    font-size: 11.5px !important;
+    border-radius: var(--radius-full) !important;
+    background: var(--bg-input) !important;
+    border: 1px solid var(--border) !important;
+  }
+
+  /* Tarjetas de post a pantalla completa */
   .post-card {
     border-radius: var(--radius-md) !important;
     width: 100% !important;
+    max-width: 100% !important;
     box-sizing: border-box !important;
     margin-bottom: 12px !important;
     overflow: hidden !important;
   }
   .post-actions {
-    padding: 8px 10px !important;
+    padding: 8px !important;
     flex-direction: column !important;
     align-items: stretch !important;
     gap: 8px !important;
@@ -1465,7 +1524,7 @@ html, body {
   .action-group-left .action-btn,
   .action-group-left .btn-map-view {
     padding: 5px 8px !important;
-    font-size: 11.5px !important;
+    font-size: 11px !important;
     gap: 4px !important;
   }
   .action-group-right {
@@ -1476,16 +1535,17 @@ html, body {
   }
   .action-group-right button {
     flex: 1 1 0 !important;
-    font-size: 11.5px !important;
+    font-size: 11px !important;
     padding: 7px 6px !important;
     justify-content: center !important;
     box-sizing: border-box !important;
   }
   .post-image-carousel {
-    max-height: 340px !important;
+    max-height: 320px !important;
+    width: 100% !important;
   }
   .floating-ad-btn {
-    display: none !important; /* Oculto en móvil para no tapar los botones ni el contenido */
+    display: none !important;
   }
 }
 

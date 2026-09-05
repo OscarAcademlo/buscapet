@@ -132,49 +132,52 @@
 
     <!-- LEFT SIDEBAR: FILTERS & GEOLOCATION -->
     <aside class="web-sidebar-left">
-      <!-- Location Selector Widget -->
-      <div class="sidebar-widget">
-        <div class="widget-title">
-          <i class="fa-solid fa-location-dot" style="color:var(--primary)"></i> Ubicación Geográfica
+      <!-- Location Selector Widget (Colapsable en Móviles para acceso inmediato al Feed) -->
+      <div class="sidebar-widget location-widget-box">
+        <div class="widget-title" onclick="BuscapetApp.toggleLocationFilter()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none;">
+          <span><i class="fa-solid fa-location-dot" style="color:var(--primary)"></i> Ubicación Geográfica</span>
+          <span class="mobile-filter-badge-toggle" id="loc-toggle-icon"><i class="fa-solid fa-chevron-down"></i></span>
         </div>
 
-        <div class="form-group" style="margin-bottom: 8px;">
-          <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">País:</label>
-          <select id="sidebar-country-select" class="form-select" style="font-size: 12px; padding: 8px 10px;" onchange="BuscapetApp.onSidebarCountryChange()">
-            <option value="">🌎 Todos los Países (Todo el mundo)</option>
-            <option value="AR">🇦🇷 Argentina</option>
-            <option value="CL">🇨🇱 Chile</option>
-            <option value="UY">🇺🇾 Uruguay</option>
-            <option value="MX">🇲🇽 México</option>
-            <option value="CO">🇨🇴 Colombia</option>
-            <option value="PE">🇵🇪 Perú</option>
-            <option value="BR">🇧🇷 Brasil</option>
-            <option value="ES">🇪🇸 España</option>
-            <option value="US">🇺🇸 Estados Unidos</option>
-          </select>
-        </div>
+        <div id="location-filter-collapse" class="location-filter-collapse">
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">País:</label>
+            <select id="sidebar-country-select" class="form-select" style="font-size: 12px; padding: 8px 10px;" onchange="BuscapetApp.onSidebarCountryChange()">
+              <option value="">🌎 Todos los Países (Todo el mundo)</option>
+              <option value="AR">🇦🇷 Argentina</option>
+              <option value="CL">🇨🇱 Chile</option>
+              <option value="UY">🇺🇾 Uruguay</option>
+              <option value="MX">🇲🇽 México</option>
+              <option value="CO">🇨🇴 Colombia</option>
+              <option value="PE">🇵🇪 Perú</option>
+              <option value="BR">🇧🇷 Brasil</option>
+              <option value="ES">🇪🇸 España</option>
+              <option value="US">🇺🇸 Estados Unidos</option>
+            </select>
+          </div>
 
-        <div class="form-group" style="margin-bottom: 8px;">
-          <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">Provincia / Estado:</label>
-          <select id="sidebar-state-select" class="form-select" style="font-size: 12px; padding: 8px 10px;" onchange="BuscapetApp.onSidebarStateChange()">
-            <option value="">Todos los Estados/Provincias</option>
-          </select>
-        </div>
+          <div class="form-group" style="margin-bottom: 8px;">
+            <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">Provincia / Estado:</label>
+            <select id="sidebar-state-select" class="form-select" style="font-size: 12px; padding: 8px 10px;" onchange="BuscapetApp.onSidebarStateChange()">
+              <option value="">Todos los Estados/Provincias</option>
+            </select>
+          </div>
 
-        <div class="form-group" style="margin-bottom: 12px;">
-          <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">Ciudad / Localidad:</label>
-          <select id="sidebar-city-select" class="form-select" style="font-size: 12px; padding: 8px 10px;">
-            <option value="">Todas las Ciudades</option>
-          </select>
-        </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label" style="font-size: 11.5px; margin-bottom: 4px;">Ciudad / Localidad:</label>
+            <select id="sidebar-city-select" class="form-select" style="font-size: 12px; padding: 8px 10px;">
+              <option value="">Todas las Ciudades</option>
+            </select>
+          </div>
 
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-          <button class="btn-primary-action" style="font-size: 12.5px; padding: 9px;" onclick="BuscapetApp.applySidebarLocationFilter()">
-            <i class="fa-solid fa-check"></i> Aplicar Filtro
-          </button>
-          <button class="btn-primary-action" style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); font-size: 11.5px; padding: 7px; box-shadow: none;" onclick="BuscapetApp.resetSidebarLocationFilter()">
-            <i class="fa-solid fa-earth-americas"></i> Ver Todo el Mundo
-          </button>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <button class="btn-primary-action" style="font-size: 12.5px; padding: 9px;" onclick="BuscapetApp.applySidebarLocationFilter()">
+              <i class="fa-solid fa-check"></i> Aplicar Filtro
+            </button>
+            <button class="btn-primary-action" style="background: var(--bg-input); border: 1px solid var(--border); color: var(--text-main); font-size: 11.5px; padding: 7px; box-shadow: none;" onclick="BuscapetApp.resetSidebarLocationFilter()">
+              <i class="fa-solid fa-earth-americas"></i> Ver Todo el Mundo
+            </button>
+          </div>
         </div>
       </div>
 
@@ -231,7 +234,7 @@
           <i class="fa-solid fa-rectangle-ad"></i> Espacio Publicitario
         </div>
         <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
-          Promociona tu veterinaria o pet shop a toda la comunidad de tu zona por solo <strong>$10 USD / $12.000 ARS</strong> por 30 días.
+          Promociona tu veterinaria o pet shop a toda la comunidad de tu zona por solo <strong>$10 USD / $14.000 ARS</strong> por 30 días.
         </p>
         <button class="btn-primary-action" style="background: linear-gradient(135deg, #00A699 0%, #008477 100%); font-size: 12.5px; font-weight: 800; padding: 10px;" onclick="BuscapetApp.openAdvertisingModal()">
           <i class="fa-solid fa-bullhorn"></i> Publicitar mi Negocio
@@ -435,7 +438,7 @@
   <div id="advertising-modal" class="modal-backdrop">
     <div class="sheet-modal" style="max-width: 520px;">
       <div class="sheet-header">
-        <h3 class="sheet-title"><i class="fa-solid fa-rectangle-ad" style="color:#00A699"></i> Publicitar en Buscapet ($10 USD / mes)</h3>
+        <h3 class="sheet-title"><i class="fa-solid fa-rectangle-ad" style="color:#00A699"></i> Publicitar en Buscapet ($10 USD / $14.000 ARS)</h3>
         <button class="icon-btn" onclick="BuscapetApp.closeAdvertisingModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="sheet-body">
@@ -465,24 +468,34 @@
           <input type="tel" id="ad-biz-contact" class="form-control" placeholder="Ej: +54 9 11 5555-5555">
         </div>
         <div class="form-group">
-          <label class="form-label"><i class="fa-solid fa-receipt"></i> Adjuntar Comprobante de Pago *</label>
+          <label class="form-label"><i class="fa-solid fa-receipt"></i> Adjuntar Comprobante de Pago (Opcional)</label>
           <input type="file" id="ad-receipt-file" class="form-control" accept="image/*" onchange="BuscapetApp.handleAdReceiptUpload(event)">
         </div>
 
-        <div id="ad-alias-info-box" style="background:rgba(0,208,132,0.08); border:1.5px dashed #00D084; padding:10px; border-radius:8px; margin-bottom:12px;">
-          <div style="font-size:11.5px; font-weight:800; color:#00D084;">Alias Mercado Pago / Banco (Argentina):</div>
-          <div style="font-size:12px; margin-top:2px;"><strong>Alias:</strong> <code style="color:var(--primary); font-weight:bold;">buscapet.oscarsoft</code></div>
-          <div style="font-size:11px; color:var(--text-muted);">Titular: Oscar Nicolás Stella &bull; Monto: $12.000 ARS / mes</div>
+        <!-- Botón Mercado Pago Checkout Pro Directo -->
+        <button type="button" id="btn-mp-ad-pay" class="btn-primary-action" style="background: linear-gradient(135deg, #009EE3 0%, #007EB5 100%); color: #fff; font-weight: 800; font-size: 13.5px; padding: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 158, 227, 0.35);" onclick="BuscapetApp.payAdWithMercadoPago()">
+          <i class="fa-solid fa-credit-card"></i> Pagar $14.000 ARS con Mercado Pago / Tarjetas
+        </button>
+
+        <div id="ad-alias-info-box" style="background:rgba(0, 158, 227, 0.08); border:1.5px dashed #009EE3; padding:10px 12px; border-radius:8px; margin-bottom:12px;">
+          <div style="font-size:11.5px; font-weight:800; color:#009EE3; display:flex; justify-content:space-between; align-items:center;">
+            <span><i class="fa-solid fa-building-columns"></i> O Transferir por Alias / CBU:</span>
+            <button class="btn-copy-sm" style="background:var(--bg-card); color:var(--text-main); border:1px solid var(--border); padding:3px 8px; border-radius:4px; font-size:10.5px; cursor:pointer;" onclick="BuscapetApp.copyDonationData('oscar.stella.mp', 'Alias')">
+              <i class="fa-regular fa-copy"></i> Copiar
+            </button>
+          </div>
+          <div style="font-size:12.5px; margin-top:4px;"><strong>Alias:</strong> <code style="color:#009EE3; font-weight:bold; font-size:13px;">oscar.stella.mp</code></div>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">Titular: Oscar Nicolás Stella &bull; Monto: $14.000 ARS / mes (~10 USD)</div>
         </div>
 
-        <button type="button" class="btn-primary-action" style="background:#00A699;" onclick="BuscapetApp.submitAdInquiry()">
-          <i class="fa-solid fa-paper-plane"></i> Enviar Solicitud con Comprobante
+        <button type="button" class="btn-primary-action" style="background:#00A699; font-size:12.5px;" onclick="BuscapetApp.submitAdInquiry()">
+          <i class="fa-solid fa-paper-plane"></i> Enviar Solicitud de Anuncio
         </button>
       </div>
     </div>
   </div>
 
-  <!-- DONATION MODAL (MERCAOD PAGO & PAYPAL) -->
+  <!-- DONATION MODAL (MERCADO PAGO & PAYPAL) -->
   <div id="donation-modal" class="modal-backdrop">
     <div class="sheet-modal" style="max-width: 440px;">
       <div class="sheet-header">
@@ -502,15 +515,20 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
             <div>
               <div style="font-size: 11px; color: var(--text-muted);">Alias:</div>
-              <strong id="mp-alias-text" style="font-size: 13.5px; color: var(--text-main);">oscar.stella.mp</strong>
+              <strong id="mp-alias-text" style="font-size: 13.5px; color: #009EE3;">oscar.stella.mp</strong>
             </div>
-            <button class="btn-copy-sm" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;" onclick="BuscapetApp.copyDonationData(document.getElementById('mp-alias-text').textContent, 'Alias')">
+            <button class="btn-copy-sm" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;" onclick="BuscapetApp.copyDonationData('oscar.stella.mp', 'Alias')">
               <i class="fa-regular fa-copy"></i> Copiar Alias
             </button>
           </div>
           <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
             Titular: <span id="mp-holder-text" style="color: var(--text-main); font-weight: 600;">Oscar Nicolás Stella</span>
           </div>
+
+          <!-- Botón Mercado Pago Donación Directa -->
+          <button type="button" id="btn-mp-donate" class="btn-primary-action" style="background: #009EE3; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; font-weight: 800; margin-top: 10px; padding: 9px; box-shadow: none;" onclick="BuscapetApp.donateWithMercadoPago(2000)">
+            <i class="fa-solid fa-credit-card"></i> Donar $2.000 ARS con Mercado Pago / Tarjeta
+          </button>
         </div>
 
         <!-- PayPal Box -->
@@ -521,9 +539,9 @@
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
             <div>
               <div style="font-size: 11px; color: var(--text-muted);">Email PayPal:</div>
-              <strong id="paypal-email-text" style="font-size: 13px; color: var(--text-main);">oscarns@gmail.com</strong>
+              <strong id="paypal-email-text" style="font-size: 13px; color: var(--text-main);">oscarnicolasstella@yahoo.com.ar</strong>
             </div>
-            <button class="btn-copy-sm" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;" onclick="BuscapetApp.copyDonationData(document.getElementById('paypal-email-text').textContent, 'PayPal')">
+            <button class="btn-copy-sm" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;" onclick="BuscapetApp.copyDonationData('oscarnicolasstella@yahoo.com.ar', 'PayPal')">
               <i class="fa-regular fa-copy"></i> Copiar Email
             </button>
           </div>
@@ -561,12 +579,12 @@
 
           <div class="form-group" style="margin-bottom: 8px;">
             <label class="form-label" style="font-size: 11.5px;">Monto Publicidad en ARS (30 días)</label>
-            <input type="text" id="admin-setting-ars" class="form-control" placeholder="$12.000 ARS" value="$12.000 ARS">
+            <input type="text" id="admin-setting-ars" class="form-control" placeholder="$14.000 ARS" value="$14.000 ARS">
           </div>
 
           <div class="form-group" style="margin-bottom: 12px;">
             <label class="form-label" style="font-size: 11.5px;">Email PayPal (Internacional)</label>
-            <input type="email" id="admin-setting-paypal" class="form-control" placeholder="oscarns@gmail.com" value="oscarns@gmail.com">
+            <input type="email" id="admin-setting-paypal" class="form-control" placeholder="oscarnicolasstella@yahoo.com.ar" value="oscarnicolasstella@yahoo.com.ar">
           </div>
 
           <button class="btn-primary-action" style="background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; font-weight: 800; font-size: 13px; padding: 10px;" onclick="BuscapetApp.savePaymentSettings()">
