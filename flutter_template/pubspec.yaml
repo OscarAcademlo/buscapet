@@ -1,0 +1,68 @@
+name: buscapet
+description: Red Social de Mascotas - Perdidas, Encontradas y Adopción
+version: 1.0.0+1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.3
+  firebase_storage: ^12.3.2
+  google_sign_in: ^6.2.1
+
+  # Imágenes
+  image_picker: ^1.1.2
+  cached_network_image: ^3.4.1
+
+  # Mapa
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+
+  # HTTP / Nominatim
+  http: ^1.2.2
+
+  # EXIF GPS
+  exif: ^3.3.0
+
+  # Utils
+  intl: ^0.19.0
+  shared_preferences: ^2.3.2
+  uuid: ^4.5.1
+  path_provider: ^2.1.4
+  url_launcher: ^6.3.0
+  share_plus: ^10.0.0
+  permission_handler: ^11.3.1
+  flutter_image_compress: ^2.3.0
+
+  # UI
+  flutter_svg: ^2.0.10+1
+  shimmer: ^3.0.0
+  lottie: ^3.1.2
+  geolocator: ^14.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#FF6B4A"
+  adaptive_icon_foreground: "assets/icons/app_icon.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+
+

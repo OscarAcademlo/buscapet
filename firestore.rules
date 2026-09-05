@@ -1,22 +1,37 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Colección de reportes de mascotas (Lectura pública para todos, escritura para usuarios registrados)
+
+    // Posts: lectura pública, crear solo logueados,
+    // editar/borrar solo el autor o el admin (oscarns@gmail.com)
     match /posts/{postId} {
       allow read: if true;
-      allow create: if request.auth != null || true; // Modo permisivo para web demo y apps
-      allow update, delete: if request.auth != null || true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null &&
+        (request.auth.uid == resource.data.user.id ||
+         request.auth.token.email == resource.data.user.email ||
+         request.auth.token.email == 'oscarns@gmail.com');
+      allow delete: if request.auth != null &&
+        (request.auth.uid == resource.data.user.id ||
+         request.auth.token.email == 'oscarns@gmail.com');
     }
 
-    // Colección de solicitudes de publicidad
+    // Solicitudes de publicidad: crear sin login, ver/gestionar solo admin
     match /ad_requests/{requestId} {
-      allow read, write: if true;
+      allow create: if true;
+      allow read, update, delete: if request.auth != null &&
+        request.auth.token.email == 'oscarns@gmail.com';
     }
 
-    // Colección de chats comunitarios
+    // Chats: solo usuarios logueados
     match /chats/{chatId} {
-      allow read, write: if true;
+      allow read, write: if request.auth != null;
+    }
+
+    // Perfiles de usuario
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }

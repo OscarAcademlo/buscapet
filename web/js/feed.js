@@ -351,6 +351,13 @@ var BuscapetFeed = window.BuscapetFeed = {
   },
 
   submitComment(postId) {
+    // Solo usuarios logueados pueden comentar
+    if (!window.BuscapetFirebase || !BuscapetFirebase.isLoggedIn()) {
+      alert('Debes iniciar sesión para dejar un comentario.');
+      BuscapetFirebase.openAuthModal();
+      return;
+    }
+
     const input = document.getElementById(`comment-input-${postId}`);
     if (!input) return;
     const text = input.value.trim();
@@ -427,17 +434,25 @@ var BuscapetFeed = window.BuscapetFeed = {
 
     // Filter by Country if selected
     if (this.selectedCountry) {
-      filtered = filtered.filter(p => p.location && p.location.countryCode === this.selectedCountry);
+      filtered = filtered.filter(p => p.location && (p.location.countryCode === this.selectedCountry || p.location.countryName === this.selectedCountry));
     }
 
     // Filter by State if selected
     if (this.selectedState) {
-      filtered = filtered.filter(p => p.location && p.location.stateName === this.selectedState);
+      const s = this.selectedState.toLowerCase();
+      filtered = filtered.filter(p => p.location && (
+        (p.location.stateName && (p.location.stateName.toLowerCase().includes(s) || s.includes(p.location.stateName.toLowerCase()))) ||
+        (p.location.address && p.location.address.toLowerCase().includes(s))
+      ));
     }
 
     // Filter by City if selected
     if (this.selectedCity) {
-      filtered = filtered.filter(p => p.location && p.location.cityName === this.selectedCity);
+      const c = this.selectedCity.toLowerCase();
+      filtered = filtered.filter(p => p.location && (
+        (p.location.cityName && (p.location.cityName.toLowerCase().includes(c) || c.includes(p.location.cityName.toLowerCase()))) ||
+        (p.location.address && p.location.address.toLowerCase().includes(c))
+      ));
     }
 
     if (filtered.length === 0) {
@@ -464,14 +479,19 @@ var BuscapetFeed = window.BuscapetFeed = {
     }
 
     let htmlContent = '';
-    filtered.forEach((post, index) => {
-      htmlContent += this.renderPostCard(post);
+    if (filtered.length === 1) {
+      htmlContent += this.renderPostCard(filtered[0]);
+      htmlContent += this.renderSponsoredAd();
+    } else {
+      filtered.forEach((post, index) => {
+        htmlContent += this.renderPostCard(post);
 
-      // Insert Demo Sponsored Ad after second post
-      if (index === 1) {
-        htmlContent += this.renderSponsoredAd();
-      }
-    });
+        // Insert Demo Sponsored Ad after first post
+        if (index === 0) {
+          htmlContent += this.renderSponsoredAd();
+        }
+      });
+    }
 
     container.innerHTML = htmlContent;
     this.initCarousels();
@@ -627,7 +647,7 @@ var BuscapetFeed = window.BuscapetFeed = {
             </button>
           </div>
 
-          <div style="display: flex; gap: 6px;">
+          <div class="action-group-right">
             ${!isReunited && !isAdopted && isOwner && post.type !== 'adopt' ? `
               <button class="btn-primary-action" style="background:#10B981; font-size:11px; padding:6px 10px; width:auto;" onclick="BuscapetFeed.markAsReunited('${post.id}')" title="Marcar como Encontrado">
                 <i class="fa-solid fa-circle-check"></i> ¡Ya fue encontrado!

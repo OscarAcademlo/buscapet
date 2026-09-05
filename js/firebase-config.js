@@ -180,7 +180,7 @@ var BuscapetFirebase = window.BuscapetFirebase = {
   isAdmin() {
     if (!this.currentUser) return false;
     const email = (this.currentUser.email || '').toLowerCase().trim();
-    return email === 'oscarns@gmail.com';
+    return email === 'oscarns@gmail.com' || this.currentUser.role === 'admin';
   },
 
   isLoggedIn() {
@@ -367,9 +367,15 @@ var BuscapetFirebase = window.BuscapetFirebase = {
     const guestBox = document.getElementById('auth-guest-view');
     const sidebarAdminContainer = document.getElementById('sidebar-admin-container');
     const authAdminBtn = document.getElementById('auth-admin-btn');
+    const navAdminBtn = document.getElementById('nav-admin-btn');
     const isMasterAdmin = this.isAdmin();
 
-    // Inyección 100% dinámica del widget solo para oscarns@gmail.com
+    // Botón directo en Navbar superior (Visible en móvil y escritorio solo para Oscar)
+    if (navAdminBtn) {
+      navAdminBtn.style.display = isMasterAdmin ? 'inline-flex' : 'none';
+    }
+
+    // Inyección dinámica del widget en la barra lateral
     if (sidebarAdminContainer) {
       if (isMasterAdmin) {
         sidebarAdminContainer.innerHTML = `

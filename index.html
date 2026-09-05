@@ -2,9 +2,13 @@
 <html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Buscapet - Red Social Comunitaria para Mascotas Perdidas, Encontradas y en Adopción</title>
   <meta name="description" content="Plataforma comunitaria 100% solidaria y gratuita para reunir mascotas extraviadas con sus familias y promover la adopción responsable.">
+
+  <!-- Favicon (Patitas Buscapet) -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="alternate icon" href="favicon.ico">
 
   <!-- Open Graph & SEO -->
   <meta property="og:title" content="Buscapet - Red Social de Mascotas">
@@ -17,8 +21,8 @@
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
-  <!-- Web Application Styles -->
-  <link rel="stylesheet" href="css/style.css">
+  <!-- Web Application Styles (v4.0) -->
+  <link rel="stylesheet" href="css/style.css?v=4.0">
 </head>
 <body>
 
@@ -48,6 +52,10 @@
       </nav>
 
       <div class="nav-right-actions">
+        <!-- Botón Admin en Navbar (SOLO SE MUESTRA SI oscarns@gmail.com ESTÁ LOGUEADO) -->
+        <button id="nav-admin-btn" style="display: none; background: linear-gradient(135deg, #FFAA00 0%, #E69500 100%); color: #000; font-weight: 800; font-size: 11.5px; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(255, 170, 0, 0.35);" onclick="BuscapetApp.openAdminPanel()">
+          <i class="fa-solid fa-crown"></i> Admin
+        </button>
         <button class="btn-web-ad" onclick="BuscapetApp.openAdvertisingModal()">
           <i class="fa-solid fa-rectangle-ad"></i> Publicitar ($10)
         </button>
@@ -318,10 +326,17 @@
           </button>
         </div>
 
-        <!-- Multi-Photo Uploader (4 Slots) -->
-        <div class="form-group">
-          <label class="form-label">Fotos de la mascota (Hasta 4 fotos)</label>
-          <input type="file" id="hidden-photo-input" accept="image/*" multiple style="display: none;" onchange="BuscapetApp.handlePhotoSelected(event)">
+        <!-- Multi-Photo Uploader (4 Ranuras: al tocar abre selector Cámara o Galería) -->
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Fotos de la mascota (Hasta 4 fotos)</span>
+            <span id="photo-count-badge" style="font-size: 11px; color: var(--primary); font-weight: 700;">0/4 fotos</span>
+          </label>
+          
+          <input type="file" id="hidden-camera-input" accept="image/*" capture="environment" style="display: none;" onchange="BuscapetApp.handlePhotoSelected(event)">
+          <input type="file" id="hidden-gallery-input" accept="image/*" multiple style="display: none;" onchange="BuscapetApp.handlePhotoSelected(event)">
+          
+          <!-- 4 Ranuras de Fotos -->
           <div id="photo-uploader-grid" class="photo-uploader-grid"></div>
         </div>
 
@@ -675,6 +690,29 @@
     </div>
   </div>
 
+  <!-- ========================================================================
+       MODAL: SELECCIONAR ORIGEN DE LA FOTO (CÁMARA vs GALERÍA)
+       ======================================================================== -->
+  <div id="photo-source-modal" class="modal-backdrop" style="z-index: 99999; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0,0,0,0.82);">
+    <div style="background: #181E2A; border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 24px 20px; max-width: 320px; width: 100%; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,0.8);">
+      <div style="font-size: 34px; margin-bottom: 6px;">📷</div>
+      <h3 style="font-size: 16px; font-weight: 800; color: var(--text-main); margin-bottom: 4px;">Foto de la Mascota</h3>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">¿Cómo deseas agregar la foto?</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <button type="button" class="btn-primary-action" style="background: linear-gradient(135deg, #FF5A5F 0%, #FF385C 100%); font-weight: 800; padding: 12px; font-size: 13.5px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;" onclick="BuscapetApp.openCamera()">
+          <i class="fa-solid fa-camera"></i> Cámara
+        </button>
+        <button type="button" class="btn-primary-action" style="background: var(--bg-input); color: var(--text-main); border: 1px solid var(--border); font-weight: 700; padding: 12px; font-size: 13.5px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;" onclick="BuscapetApp.openGallery()">
+          <i class="fa-solid fa-images" style="color: var(--primary);"></i> Galería
+        </button>
+        <button type="button" style="background: transparent; border: none; color: var(--text-muted); font-size: 12.5px; font-weight: 600; padding: 6px; cursor: pointer;" onclick="BuscapetApp.closePhotoSourceModal()">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Leaflet Map JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
@@ -684,14 +722,14 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
 
-  <!-- Application Scripts -->
-  <script src="js/locations-data.js"></script>
-  <script src="js/firebase-config.js"></script>
-  <script src="js/feed.js"></script>
-  <script src="js/map.js"></script>
-  <script src="js/chat.js"></script>
-  <script src="js/notifications.js"></script>
-  <script src="js/app.js"></script>
+  <!-- Application Scripts (v4.1 Cache Busting) -->
+  <script src="js/locations-data.js?v=4.1"></script>
+  <script src="js/firebase-config.js?v=4.1"></script>
+  <script src="js/feed.js?v=4.1"></script>
+  <script src="js/map.js?v=4.1"></script>
+  <script src="js/chat.js?v=4.1"></script>
+  <script src="js/notifications.js?v=4.1"></script>
+  <script src="js/app.js?v=4.1"></script>
 
   <script>
     function updateCatActiveClass(btn) {
@@ -706,6 +744,13 @@
           modal.classList.remove('active');
         }
       });
+    });
+
+    // Renderizar las 4 ranuras de foto al cargar la página
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.BuscapetApp && BuscapetApp.renderPhotoUploadSlots) {
+        BuscapetApp.renderPhotoUploadSlots();
+      }
     });
   </script>
 

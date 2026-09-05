@@ -46,6 +46,9 @@ var BuscapetApp = window.BuscapetApp = {
 
     // Explicitly ensure feed is rendered
     BuscapetFeed.render();
+
+    // Renderizar las ranuras de foto iniciales para que el botón "Añadir" funcione
+    this.renderPhotoUploadSlots();
   },
 
   // Street autocomplete using OpenStreetMap Nominatim
@@ -112,14 +115,20 @@ var BuscapetApp = window.BuscapetApp = {
   // =========================================================================
 
   populateCountrySelects() {
+    if (typeof BuscapetLocations === 'undefined' || !BuscapetLocations.getCountries) {
+      console.warn('BuscapetLocations not ready yet');
+      return;
+    }
+
     const countries = BuscapetLocations.getCountries();
-    const filterCountrySelect = document.getElementById('filter-country-select');
     const sidebarCountrySelect = document.getElementById('sidebar-country-select');
+    const sidebarStateSelect = document.getElementById('sidebar-state-select');
+    const sidebarCitySelect = document.getElementById('sidebar-city-select');
     const reportCountrySelect = document.getElementById('report-country');
 
     const filterOptionsHtml = `
-      <option value="" selected>🌎 Todos los Países (Todo el mundo)</option>
-      ${countries.map(c => `<option value="${c.code}">${c.flag} ${c.name}</option>`).join('')}
+      <option value="">🌎 Todos los Países (Todo el mundo)</option>
+      ${countries.map(c => `<option value="${c.code}" ${c.code === 'AR' ? 'selected' : ''}>${c.flag} ${c.name}</option>`).join('')}
     `;
 
     const reportOptionsHtml = `
@@ -127,20 +136,20 @@ var BuscapetApp = window.BuscapetApp = {
       ${countries.map(c => `<option value="${c.code}" ${c.code === 'AR' ? 'selected' : ''}>${c.flag} ${c.name}</option>`).join('')}
     `;
 
-    if (filterCountrySelect) {
-      filterCountrySelect.innerHTML = filterOptionsHtml;
-      filterCountrySelect.onchange = () => this.onFilterCountryChange();
-      this.onFilterCountryChange(); // Trigger initial
-    }
-
     if (sidebarCountrySelect) {
       sidebarCountrySelect.innerHTML = filterOptionsHtml;
+      sidebarCountrySelect.value = 'AR'; // Argentina por defecto para mostrar provincias
       sidebarCountrySelect.onchange = () => this.onSidebarCountryChange();
-      this.onSidebarCountryChange();
+      this.onSidebarCountryChange(); // Llena las provincias de inmediato
+    }
+
+    if (sidebarStateSelect) {
+      sidebarStateSelect.onchange = () => this.onSidebarStateChange();
     }
 
     if (reportCountrySelect) {
       reportCountrySelect.innerHTML = reportOptionsHtml;
+      reportCountrySelect.value = 'AR';
       reportCountrySelect.onchange = () => this.onReportCountryChange();
       this.onReportCountryChange();
     }
@@ -162,16 +171,15 @@ var BuscapetApp = window.BuscapetApp = {
 
     const states = BuscapetLocations.getStatesByCountryCode(countryCode);
     stateSelect.innerHTML = `
-      <option value="">Todos los Estados/Provincias</option>
+      <option value="">Todos los Estados/Provincias (${states.length})</option>
       ${states.map(s => `<option value="${s.name}">${s.name}</option>`).join('')}
     `;
     citySelect.innerHTML = '<option value="">Todas las Ciudades</option>';
-    stateSelect.onchange = () => this.onSidebarStateChange();
   },
 
   onSidebarStateChange() {
     const sidebarCountry = document.getElementById('sidebar-country-select');
-    const countryCode = sidebarCountry ? sidebarCountry.value : '';
+    const countryCode = sidebarCountry ? sidebarCountry.value : 'AR';
     const stateSelect = document.getElementById('sidebar-state-select');
     const citySelect = document.getElementById('sidebar-city-select');
 
@@ -185,7 +193,7 @@ var BuscapetApp = window.BuscapetApp = {
 
     const cities = BuscapetLocations.getCitiesByState(countryCode, stateName);
     citySelect.innerHTML = `
-      <option value="">Todas las Ciudades</option>
+      <option value="">Todas las Ciudades (${cities.length})</option>
       ${cities.map(c => `<option value="${c}">${c}</option>`).join('')}
     `;
   },
@@ -207,7 +215,7 @@ var BuscapetApp = window.BuscapetApp = {
     } else if (state) {
       label = `📍 ${state}`;
     } else if (country) {
-      const cObj = BuscapetLocations.getCountries().find(c => c.code === country);
+      const cObj = BuscapetLocations.countries.find(c => c.code === country);
       label = cObj ? `${cObj.flag} ${cObj.name}` : `📍 ${country}`;
     }
 
@@ -222,16 +230,15 @@ var BuscapetApp = window.BuscapetApp = {
     const stateSelect = document.getElementById('sidebar-state-select');
     const citySelect = document.getElementById('sidebar-city-select');
 
-    if (countrySelect) countrySelect.value = '';
+    if (countrySelect) {
+      countrySelect.value = '';
+      this.onSidebarCountryChange();
+    }
     if (stateSelect) stateSelect.innerHTML = '<option value="">Todos los Estados/Provincias</option>';
     if (citySelect) citySelect.innerHTML = '<option value="">Todas las Ciudades</option>';
 
     BuscapetFeed.filterByLocation('', '', '');
-
-    const pill = document.getElementById('header-location-pill');
-    if (pill) pill.textContent = '🌎 Todas las ubicaciones';
-
-    BuscapetNotifications.showPushBanner('Filtros Restablecidos', 'Mostrando reportes de todo el mundo');
+    BuscapetNotifications.showPushBanner('Filtro Restablecido', 'Mostrando reportes de todo el mundo.');
   },
 
   onFilterCountryChange() {
@@ -508,8 +515,33 @@ var BuscapetApp = window.BuscapetApp = {
       alert('Máximo 4 fotos por publicación.');
       return;
     }
-    const input = document.getElementById('hidden-photo-input');
-    if (input) input.click();
+    const modal = document.getElementById('photo-source-modal');
+    if (modal) {
+      modal.classList.add('active');
+    } else {
+      this.openGallery();
+    }
+  },
+
+  closePhotoSourceModal() {
+    const modal = document.getElementById('photo-source-modal');
+    if (modal) modal.classList.remove('active');
+  },
+
+  openCamera() {
+    this.closePhotoSourceModal();
+    const cameraInput = document.getElementById('hidden-camera-input');
+    if (cameraInput) {
+      cameraInput.click();
+    }
+  },
+
+  openGallery() {
+    this.closePhotoSourceModal();
+    const galleryInput = document.getElementById('hidden-gallery-input');
+    if (galleryInput) {
+      galleryInput.click();
+    }
   },
 
   handlePhotoSelected(event) {
@@ -533,10 +565,152 @@ var BuscapetApp = window.BuscapetApp = {
         }
       };
       reader.readAsDataURL(file);
+
+      // Intentar leer GPS del EXIF de la primera foto
+      if (file === filesToRead[0]) {
+        this._tryReadExifLocation(file);
+      }
     });
 
     event.target.value = ''; // Reset file input
   },
+
+  _tryReadExifLocation(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const view = new DataView(e.target.result);
+        // Verificar que sea JPEG
+        if (view.getUint16(0, false) !== 0xFFD8) return;
+
+        let offset = 2;
+        while (offset < view.byteLength - 2) {
+          const marker = view.getUint16(offset, false);
+          offset += 2;
+          if (marker === 0xFFE1) { // APP1 / EXIF
+            const length = view.getUint16(offset, false);
+            const exifData = new DataView(e.target.result, offset + 2, length - 2);
+            const gps = this._parseExifGPS(exifData);
+            if (gps) {
+              this._showPhotoLocationBtn(gps.lat, gps.lng);
+            }
+            return;
+          }
+          if (offset + 2 > view.byteLength) break;
+          offset += view.getUint16(offset, false);
+        }
+      } catch (err) {
+        // Sin EXIF, no importa
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  },
+
+  _parseExifGPS(exif) {
+    try {
+      // Verificar header Exif
+      const header = String.fromCharCode(
+        exif.getUint8(0), exif.getUint8(1),
+        exif.getUint8(2), exif.getUint8(3)
+      );
+      if (!header.startsWith('Exif')) return null;
+
+      const littleEndian = exif.getUint16(6) === 0x4949;
+      const ifdOffset = exif.getUint32(10, littleEndian) + 6;
+      const numEntries = exif.getUint16(ifdOffset, littleEndian);
+
+      let gpsIFDOffset = null;
+      for (let i = 0; i < numEntries; i++) {
+        const entryOffset = ifdOffset + 2 + i * 12;
+        const tag = exif.getUint16(entryOffset, littleEndian);
+        if (tag === 0x8825) { // GPSInfoIFDPointer
+          gpsIFDOffset = exif.getUint32(entryOffset + 8, littleEndian) + 6;
+          break;
+        }
+      }
+      if (!gpsIFDOffset) return null;
+
+      const gpsEntries = exif.getUint16(gpsIFDOffset, littleEndian);
+      const gps = {};
+      for (let i = 0; i < gpsEntries; i++) {
+        const entryOffset = gpsIFDOffset + 2 + i * 12;
+        const tag = exif.getUint16(entryOffset, littleEndian);
+        const valOffset = exif.getUint32(entryOffset + 8, littleEndian) + 6;
+
+        if (tag === 0x0001) gps.latRef = String.fromCharCode(exif.getUint8(entryOffset + 8));
+        if (tag === 0x0003) gps.lngRef = String.fromCharCode(exif.getUint8(entryOffset + 8));
+        if (tag === 0x0002) {
+          // 3 rationals: deg, min, sec
+          const d = exif.getUint32(valOffset, littleEndian) / exif.getUint32(valOffset + 4, littleEndian);
+          const m = exif.getUint32(valOffset + 8, littleEndian) / exif.getUint32(valOffset + 12, littleEndian);
+          const s = exif.getUint32(valOffset + 16, littleEndian) / exif.getUint32(valOffset + 20, littleEndian);
+          gps.lat = d + m / 60 + s / 3600;
+        }
+        if (tag === 0x0004) {
+          const d = exif.getUint32(valOffset, littleEndian) / exif.getUint32(valOffset + 4, littleEndian);
+          const m = exif.getUint32(valOffset + 8, littleEndian) / exif.getUint32(valOffset + 12, littleEndian);
+          const s = exif.getUint32(valOffset + 16, littleEndian) / exif.getUint32(valOffset + 20, littleEndian);
+          gps.lng = d + m / 60 + s / 3600;
+        }
+      }
+
+      if (!gps.lat || !gps.lng) return null;
+      if (gps.latRef === 'S') gps.lat = -gps.lat;
+      if (gps.lngRef === 'W') gps.lng = -gps.lng;
+
+      return { lat: gps.lat, lng: gps.lng };
+    } catch (e) {
+      return null;
+    }
+  },
+
+  _showPhotoLocationBtn(lat, lng) {
+    // Remover botón previo si existía
+    const existing = document.getElementById('photo-location-btn');
+    if (existing) existing.remove();
+
+    const grid = document.getElementById('photo-uploader-grid');
+    if (!grid) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'photo-location-btn';
+    btn.innerHTML = `<i class="fa-solid fa-location-dot"></i> 📍 Usar ubicación de la foto`;
+    btn.style.cssText = `
+      width: 100%; margin-top: 8px; padding: 9px 14px;
+      background: linear-gradient(135deg, #00C9A7 0%, #0097A7 100%);
+      color: #fff; border: none; border-radius: var(--radius-sm);
+      font-size: 12.5px; font-weight: 700; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; box-shadow: 0 3px 10px rgba(0,201,167,0.35);
+      animation: fadeIn 0.3s ease;
+    `;
+    btn.onclick = () => {
+      // Hacer geocodificación inversa con Nominatim
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+        .then(r => r.json())
+        .then(data => {
+          const addr = data.display_name || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+          const addrInput = document.getElementById('report-address');
+          if (addrInput) {
+            addrInput.value = addr;
+            addrInput.style.borderColor = '#00C9A7';
+            setTimeout(() => addrInput.style.borderColor = '', 2000);
+          }
+          btn.innerHTML = `<i class="fa-solid fa-check"></i> ✅ Ubicación aplicada`;
+          btn.style.background = 'linear-gradient(135deg, #27ae60 0%, #1a8a45 100%)';
+          setTimeout(() => btn.remove(), 3000);
+        })
+        .catch(() => {
+          // Si falla Nominatim, poner coordenadas directamente
+          const addrInput = document.getElementById('report-address');
+          if (addrInput) addrInput.value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+        });
+    };
+
+    grid.parentNode.insertBefore(btn, grid.nextSibling);
+  },
+
 
   removePhoto(index) {
     this.uploadedPhotos.splice(index, 1);
@@ -546,6 +720,11 @@ var BuscapetApp = window.BuscapetApp = {
   renderPhotoUploadSlots() {
     const grid = document.getElementById('photo-uploader-grid');
     if (!grid) return;
+
+    const countBadge = document.getElementById('photo-count-badge');
+    if (countBadge) {
+      countBadge.textContent = `${this.uploadedPhotos.length}/4 fotos`;
+    }
 
     let slotsHtml = '';
 
@@ -708,10 +887,12 @@ var BuscapetApp = window.BuscapetApp = {
 
   // Dynamic Payment Settings Management
   paymentSettings: {
-    alias: 'buscapet.oscarsoft',
+    alias: 'oscar.stella.mp',
     holder: 'Oscar Nicolás Stella',
-    arsAmount: '$12.000 ARS',
-    paypalEmail: 'oscarns@gmail.com'
+    arsAmount: '$14.000 ARS',
+    paypalEmail: 'oscarns@gmail.com',
+    publicKey: 'APP_USR-0a741409-599f-434a-84ba-996c4eb0b958',
+    accessToken: 'APP_USR-7254310245914481-090511-ea2d70cd02d87cc2e2a70c6833406a33-741894322'
   },
 
   loadPaymentSettings() {
@@ -746,9 +927,9 @@ var BuscapetApp = window.BuscapetApp = {
 
     BuscapetNotifications.showPushBanner(
       '¡Configuración Guardada! ✅',
-      `Alias "${this.paymentSettings.alias}" y cobros actualizados.`
+      `Alias "${this.paymentSettings.alias}" y datos de cobro guardados con éxito.`
     );
-    alert('¡Cambios guardados con éxito en vivo!');
+    alert(`¡Datos guardados con éxito en vivo!\n\nAlias: ${this.paymentSettings.alias}\nTitular: ${this.paymentSettings.holder}\nPayPal: ${this.paymentSettings.paypalEmail}`);
   },
 
   updateDynamicPaymentUI() {

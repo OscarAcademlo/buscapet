@@ -90,6 +90,13 @@ var BuscapetChat = window.BuscapetChat = {
   },
 
   openDirectChat(petId, userName, petName, userAvatar) {
+    // Solo usuarios logueados pueden contactar
+    if (!window.BuscapetFirebase || !BuscapetFirebase.isLoggedIn()) {
+      alert('Debes iniciar sesión para contactar al dueño.');
+      BuscapetFirebase.openAuthModal();
+      return;
+    }
+
     let chat = this.chats.find(c => c.userName === userName || c.petId === petId);
     if (!chat) {
       chat = {
