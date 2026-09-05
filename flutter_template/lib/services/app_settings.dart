@@ -13,6 +13,13 @@ class AppSettings {
   final ValueNotifier<ThemeMode> themeModeNotifier = ValueNotifier(ThemeMode.dark);
   final ValueNotifier<String> languageNotifier = ValueNotifier('es');
 
+  // Datos de Cobro Dinámicos (Mercado Pago, PayPal, Precios)
+  String mpAlias = 'oscar.stella.mp';
+  String mpHolder = 'Oscar Nicolás Stella';
+  String paypalEmail = 'oscarnicolasstella@yahoo.com.ar';
+  double adPriceArs = 14000.0;
+  String adPriceArsString = '\$14.000 ARS';
+
   bool get isDarkMode => themeModeNotifier.value == ThemeMode.dark;
   String get currentLanguage => languageNotifier.value;
 
@@ -29,6 +36,34 @@ class AppSettings {
       } else if (savedTheme == 'dark') {
         themeModeNotifier.value = ThemeMode.dark;
       }
+
+      // Cargar configuraciones de pago
+      mpAlias = prefs.getString('buscapet_mp_alias') ?? 'oscar.stella.mp';
+      mpHolder = prefs.getString('buscapet_mp_holder') ?? 'Oscar Nicolás Stella';
+      paypalEmail = prefs.getString('buscapet_paypal_email') ?? 'oscarnicolasstella@yahoo.com.ar';
+      adPriceArs = prefs.getDouble('buscapet_ad_price') ?? 14000.0;
+      adPriceArsString = '\$${adPriceArs.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')} ARS';
+    } catch (_) {}
+  }
+
+  Future<void> savePaymentSettings({
+    required String alias,
+    required String holder,
+    required String email,
+    required double price,
+  }) async {
+    mpAlias = alias.trim();
+    mpHolder = holder.trim();
+    paypalEmail = email.trim();
+    adPriceArs = price;
+    adPriceArsString = '\$${adPriceArs.toInt().toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]}.')} ARS';
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('buscapet_mp_alias', mpAlias);
+      await prefs.setString('buscapet_mp_holder', mpHolder);
+      await prefs.setString('buscapet_paypal_email', paypalEmail);
+      await prefs.setDouble('buscapet_ad_price', adPriceArs);
     } catch (_) {}
   }
 

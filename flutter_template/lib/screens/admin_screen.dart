@@ -1,14 +1,61 @@
-// =============================================================================
-// PANTALLA: AdminScreen — Panel de administración (Solo oscarns@gmail.com)
-// =============================================================================
-
 import 'package:flutter/material.dart';
 import '../theme.dart';
 import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
+import '../services/app_settings.dart';
 
-class AdminScreen extends StatelessWidget {
+class AdminScreen extends StatefulWidget {
   const AdminScreen({super.key});
+
+  @override
+  State<AdminScreen> createState() => _AdminScreenState();
+}
+
+class _AdminScreenState extends State<AdminScreen> {
+  final _settings = AppSettings();
+  late TextEditingController _aliasCtrl;
+  late TextEditingController _holderCtrl;
+  late TextEditingController _paypalCtrl;
+  late TextEditingController _priceCtrl;
+  bool _isSavingSettings = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _aliasCtrl = TextEditingController(text: _settings.mpAlias);
+    _holderCtrl = TextEditingController(text: _settings.mpHolder);
+    _paypalCtrl = TextEditingController(text: _settings.paypalEmail);
+    _priceCtrl = TextEditingController(text: _settings.adPriceArs.toStringAsFixed(0));
+  }
+
+  @override
+  void dispose() {
+    _aliasCtrl.dispose();
+    _holderCtrl.dispose();
+    _paypalCtrl.dispose();
+    _priceCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _savePaymentSettings() async {
+    setState(() => _isSavingSettings = true);
+    final price = double.tryParse(_priceCtrl.text.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 14000.0;
+    await _settings.savePaymentSettings(
+      alias: _aliasCtrl.text.trim(),
+      holder: _holderCtrl.text.trim(),
+      email: _paypalCtrl.text.trim(),
+      price: price,
+    );
+    if (mounted) {
+      setState(() => _isSavingSettings = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('✅ Configuración de cobros guardada correctamente'),
+          backgroundColor: BuscapetTheme.success,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +78,7 @@ class AdminScreen extends StatelessWidget {
           children: [
             Icon(Icons.shield_rounded, color: BuscapetTheme.warning, size: 20),
             SizedBox(width: 8),
-            Text('Panel Admin',
+            Text('Panel Admin - OscarSoft',
                 style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,
@@ -50,13 +97,13 @@ class AdminScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    BuscapetTheme.warning.withOpacity(0.12),
-                    BuscapetTheme.warning.withOpacity(0.04),
+                    BuscapetTheme.warning.withValues(alpha: 0.12),
+                    BuscapetTheme.warning.withValues(alpha: 0.04),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                    color: BuscapetTheme.warning.withOpacity(0.3)),
+                    color: BuscapetTheme.warning.withValues(alpha: 0.3)),
               ),
               child: const Row(
                 children: [
@@ -80,6 +127,12 @@ class AdminScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
+            // SECCIÓN: CONFIGURACIÓN DE COBROS Y PAGOS
+            _sectionTitle('💳 Configuración de Cobros y Pagos (Cafecito / Publicidad)'),
+            const SizedBox(height: 10),
+            _buildPaymentSettingsForm(),
+            const SizedBox(height: 24),
+
             _sectionTitle('📢 Solicitudes de Publicidad'),
             const SizedBox(height: 10),
             _buildAdRequests(),
@@ -90,6 +143,107 @@ class AdminScreen extends StatelessWidget {
             _buildRecentPosts(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentSettingsForm() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: BuscapetTheme.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: BuscapetTheme.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Configurá los datos de cobro que ven los usuarios en Donaciones y Publicidad:',
+              style: TextStyle(fontSize: 12, color: BuscapetTheme.textMuted)),
+          const SizedBox(height: 14),
+
+          // Alias MP
+          const Text('Alias Mercado Pago:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: BuscapetTheme.textMain)),
+          const SizedBox(height: 4),
+          TextField(
+            controller: _aliasCtrl,
+            style: const TextStyle(fontSize: 13, color: BuscapetTheme.textMain),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: BuscapetTheme.bgInput,
+              prefixIcon: const Icon(Icons.account_balance_wallet_rounded, size: 18, color: Color(0xFF009EE3)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: BuscapetTheme.border)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Titular MP
+          const Text('Titular de la cuenta:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: BuscapetTheme.textMain)),
+          const SizedBox(height: 4),
+          TextField(
+            controller: _holderCtrl,
+            style: const TextStyle(fontSize: 13, color: BuscapetTheme.textMain),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: BuscapetTheme.bgInput,
+              prefixIcon: const Icon(Icons.person_rounded, size: 18, color: BuscapetTheme.textMuted),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: BuscapetTheme.border)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // PayPal Email
+          const Text('Email de PayPal (Internacional):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: BuscapetTheme.textMain)),
+          const SizedBox(height: 4),
+          TextField(
+            controller: _paypalCtrl,
+            style: const TextStyle(fontSize: 13, color: BuscapetTheme.textMain),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: BuscapetTheme.bgInput,
+              prefixIcon: const Icon(Icons.public_rounded, size: 18, color: Color(0xFF0079C1)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: BuscapetTheme.border)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Precio Publicidad
+          const Text('Precio Publicidad mensual (\$ ARS):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: BuscapetTheme.textMain)),
+          const SizedBox(height: 4),
+          TextField(
+            controller: _priceCtrl,
+            keyboardType: TextInputType.number,
+            style: const TextStyle(fontSize: 13, color: BuscapetTheme.textMain),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: BuscapetTheme.bgInput,
+              prefixIcon: const Icon(Icons.attach_money_rounded, size: 18, color: BuscapetTheme.warning),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: BuscapetTheme.border)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Botón Guardar
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _isSavingSettings ? null : _savePaymentSettings,
+              icon: _isSavingSettings
+                  ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.save_rounded, size: 18),
+              label: Text(_isSavingSettings ? 'Guardando...' : 'Guardar Datos de Cobro'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BuscapetTheme.primary,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

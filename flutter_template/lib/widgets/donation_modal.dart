@@ -7,14 +7,15 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import '../services/mercadopago_service.dart';
+import '../services/app_settings.dart';
 
 class DonationModal extends StatelessWidget {
   const DonationModal({super.key});
 
-  static const String mpAlias = 'oscar.stella.mp';
-  static const String mpHolder = 'Oscar Nicolás Stella';
-  static const String paypalEmail = 'oscarns@gmail.com';
-  static const String paypalLink = 'https://www.paypal.com/paypalme/oscarns';
+  String get mpAlias => AppSettings().mpAlias;
+  String get mpHolder => AppSettings().mpHolder;
+  String get paypalEmail => AppSettings().paypalEmail;
+  String get paypalLink => 'https://www.paypal.com/paypalme/oscarns';
 
   void _copyToClipboard(BuildContext context, String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
@@ -167,17 +168,17 @@ class DonationModal extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Alias Mercado Pago / CVU:',
                               style: TextStyle(fontSize: 11, color: BuscapetTheme.textMuted),
                             ),
-                            SizedBox(height: 2),
+                            const SizedBox(height: 2),
                             SelectableText(
                               mpAlias,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
                                 color: BuscapetTheme.textMain,
@@ -201,15 +202,15 @@ class DonationModal extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Row(
+                    Row(
                       children: [
-                        Text(
+                        const Text(
                           'Titular: ',
                           style: TextStyle(fontSize: 11, color: BuscapetTheme.textMuted),
                         ),
                         Text(
                           mpHolder,
-                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: BuscapetTheme.textMain),
+                          style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: BuscapetTheme.textMain),
                         ),
                       ],
                     ),
@@ -263,17 +264,17 @@ class DonationModal extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Email PayPal:',
                               style: TextStyle(fontSize: 11, color: BuscapetTheme.textMuted),
                             ),
-                            SizedBox(height: 2),
+                            const SizedBox(height: 2),
                             SelectableText(
                               paypalEmail,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.w800,
                                 color: BuscapetTheme.textMain,

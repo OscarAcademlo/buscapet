@@ -713,15 +713,9 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }         ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
   }
 
-  Widget _buildFeed() {
+  Widget _buildFeedBody() {
     return StreamBuilder<List<PetPost>>(
       stream: _firestore.postsStream(
         filterType: _filterType == 'all' ? null : _filterType,

@@ -12,6 +12,7 @@ import '../models/sponsored_ad.dart';
 import '../services/firestore_service.dart';
 import '../services/storage_service.dart';
 import '../services/mercadopago_service.dart';
+import '../services/app_settings.dart';
 
 class AdRequestModal extends StatefulWidget {
   const AdRequestModal({super.key});
@@ -42,9 +43,10 @@ class _AdRequestModalState extends State<AdRequestModal> {
   bool _submitting = false;
 
   // Datos de cobro oficiales de Oscar en Mercado Pago
-  static const String mpAlias = 'oscar.stella.mp';
-  static const String mpTitular = 'Oscar Nicolas Stella';
-  static const double adPriceArs = 14000.0; // Equivalente a 10 USD
+  String get mpAlias => AppSettings().mpAlias;
+  String get mpTitular => AppSettings().mpHolder;
+  double get adPriceArs => AppSettings().adPriceArs;
+  String get adPriceArsString => AppSettings().adPriceArsString;
 
   static const _categories = [
     'Veterinaria / Clínica 24h',
@@ -101,10 +103,10 @@ class _AdRequestModalState extends State<AdRequestModal> {
   }
 
   void _copyAlias() {
-    Clipboard.setData(const ClipboardData(text: mpAlias));
+    Clipboard.setData(ClipboardData(text: mpAlias));
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('📋 Alias "oscar.stella.mp" copiado al portapapeles'),
+        content: Text('📋 Alias copiado al portapapeles'),
         backgroundColor: BuscapetTheme.success,
         duration: Duration(seconds: 2),
       ),
@@ -666,9 +668,9 @@ class _AdRequestModalState extends State<AdRequestModal> {
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: BuscapetTheme.primary.withValues(alpha: 0.4)),
                       ),
-                      child: const Text(
+                      child: Text(
                         mpAlias,
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: BuscapetTheme.primary),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: BuscapetTheme.primary),
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -680,15 +682,15 @@ class _AdRequestModalState extends State<AdRequestModal> {
                   ],
                 ),
                 const Divider(height: 16, color: BuscapetTheme.border),
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.person_outline_rounded, size: 18, color: BuscapetTheme.textMuted),
-                    SizedBox(width: 8),
-                    Text('Titular de la Cuenta:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: BuscapetTheme.textMuted)),
-                    Spacer(),
+                    const Icon(Icons.person_outline_rounded, size: 18, color: BuscapetTheme.textMuted),
+                    const SizedBox(width: 8),
+                    const Text('Titular de la Cuenta:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: BuscapetTheme.textMuted)),
+                    const Spacer(),
                     Text(
                       mpTitular,
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: BuscapetTheme.textMain),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: BuscapetTheme.textMain),
                     ),
                   ],
                 ),
