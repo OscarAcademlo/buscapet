@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+# No reescribir si la petición es para aab, apks o buscapetweb
+RewriteRule ^(buscapetweb|aab|apks)(/.*)?$ - [L]
+
+# Reescribir la raíz a la carpeta buscapetweb
+RewriteRule ^$ buscapetweb/ [L]
+
+# Si el archivo o directorio no existe en la raíz, buscarlo dentro de buscapetweb
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ buscapetweb/$1 [L]
+</IfModule>
