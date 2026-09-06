@@ -32,7 +32,10 @@ var BuscapetChat = window.BuscapetChat = {
   audioCtx: null,
 
   init() {
-    const stored = localStorage.getItem('buscapet_chats');
+    let stored = null;
+    try {
+      if (window.SafeStorage) stored = window.SafeStorage.getItem('buscapet_chats');
+    } catch(e) {}
     if (stored) {
       try { this.chats = JSON.parse(stored); } catch (e) {}
     }
@@ -40,7 +43,9 @@ var BuscapetChat = window.BuscapetChat = {
   },
 
   save() {
-    localStorage.setItem('buscapet_chats', JSON.stringify(this.chats));
+    try {
+      if (window.SafeStorage) window.SafeStorage.setItem('buscapet_chats', JSON.stringify(this.chats));
+    } catch(e) {}
     this.updateBadge();
   },
 

@@ -51,7 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 3. Alternador de Tema (Modo Claro / Modo Oscuro)
   const themeBtn = document.getElementById('btn-theme-toggle');
-  const savedTheme = localStorage.getItem('buscapet_theme') || 'dark';
+  let savedTheme = 'dark';
+  try {
+    if (window.SafeStorage) savedTheme = window.SafeStorage.getItem('buscapet_theme') || 'dark';
+  } catch(e) {}
+
   if (savedTheme === 'light') {
     document.documentElement.setAttribute('data-theme', 'light');
     if (themeBtn) themeBtn.innerHTML = '<i class="bi bi-moon-stars-fill" style="color:var(--primary);font-size:17px"></i>';
@@ -62,7 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const current = document.documentElement.getAttribute('data-theme') || 'dark';
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('buscapet_theme', next);
+      try {
+        if (window.SafeStorage) window.SafeStorage.setItem('buscapet_theme', next);
+      } catch(e) {}
 
       if (next === 'light') {
         themeBtn.innerHTML = '<i class="bi bi-moon-stars-fill" style="color:var(--primary);font-size:17px"></i>';

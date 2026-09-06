@@ -8,9 +8,11 @@ var BuscapetAdmin = window.BuscapetAdmin = {
   adminPin: 'oscar2026',
 
   init() {
-    if (sessionStorage.getItem('buscapet_admin_auth') === 'true') {
-      this.authenticated = true;
-    }
+    try {
+      if (window.SafeSessionStorage && window.SafeSessionStorage.getItem('buscapet_admin_auth') === 'true') {
+        this.authenticated = true;
+      }
+    } catch(e) {}
   },
 
   openModal() {
@@ -61,7 +63,9 @@ var BuscapetAdmin = window.BuscapetAdmin = {
 
     if (pin === this.adminPin) {
       this.authenticated = true;
-      sessionStorage.setItem('buscapet_admin_auth', 'true');
+      try {
+        if (window.SafeSessionStorage) window.SafeSessionStorage.setItem('buscapet_admin_auth', 'true');
+      } catch(e) {}
       this.showDashboardScreen();
     } else {
       if (errEl) {
@@ -153,7 +157,12 @@ var BuscapetAdmin = window.BuscapetAdmin = {
     const container = document.getElementById('admin-pending-list');
     if (!container) return;
 
-    const pendingList = JSON.parse(localStorage.getItem('buscapet_pending_ads') || '[]');
+    let pendingList = [];
+    try {
+      if (window.SafeStorage) {
+        pendingList = JSON.parse(window.SafeStorage.getItem('buscapet_pending_ads') || '[]');
+      }
+    } catch(e) {}
 
     if (pendingList.length === 0) {
       container.innerHTML = `
@@ -188,12 +197,17 @@ var BuscapetAdmin = window.BuscapetAdmin = {
   },
 
   approveAd(adId) {
-    let pendingList = JSON.parse(localStorage.getItem('buscapet_pending_ads') || '[]');
+    let pendingList = [];
+    try {
+      if (window.SafeStorage) pendingList = JSON.parse(window.SafeStorage.getItem('buscapet_pending_ads') || '[]');
+    } catch(e) {}
     const ad = pendingList.find(a => a.id === adId);
     if (!ad) return;
 
     pendingList = pendingList.filter(a => a.id !== adId);
-    localStorage.setItem('buscapet_pending_ads', JSON.stringify(pendingList));
+    try {
+      if (window.SafeStorage) window.SafeStorage.setItem('buscapet_pending_ads', JSON.stringify(pendingList));
+    } catch(e) {}
 
     ad.active = true;
     if (window.BuscapetAds) {
@@ -210,9 +224,14 @@ var BuscapetAdmin = window.BuscapetAdmin = {
 
   rejectAd(adId) {
     if (!confirm('¿Seguro que deseas rechazar esta solicitud publicitaria?')) return;
-    let pendingList = JSON.parse(localStorage.getItem('buscapet_pending_ads') || '[]');
+    let pendingList = [];
+    try {
+      if (window.SafeStorage) pendingList = JSON.parse(window.SafeStorage.getItem('buscapet_pending_ads') || '[]');
+    } catch(e) {}
     pendingList = pendingList.filter(a => a.id !== adId);
-    localStorage.setItem('buscapet_pending_ads', JSON.stringify(pendingList));
+    try {
+      if (window.SafeStorage) window.SafeStorage.setItem('buscapet_pending_ads', JSON.stringify(pendingList));
+    } catch(e) {}
     this.renderPendingAds();
   },
 

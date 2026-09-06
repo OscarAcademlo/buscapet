@@ -46,13 +46,26 @@ var BuscapetAds = window.BuscapetAds = {
 
   uploadedBanner: null,
 
+  getAdForIndex(idx) {
+    if (!this.activeAds || this.activeAds.length === 0) return null;
+    const adIndex = (idx === 0) ? 0 : 1;
+    return this.activeAds[adIndex % this.activeAds.length] || null;
+  },
+
   init() {
-    const savedAds = localStorage.getItem('buscapet_active_ads');
+    let savedAds = null;
+    let savedSettings = null;
+    try {
+      if (window.SafeStorage) {
+        savedAds = window.SafeStorage.getItem('buscapet_active_ads');
+        savedSettings = window.SafeStorage.getItem('buscapet_payment_settings');
+      }
+    } catch(e) {}
+
     if (savedAds) {
       try { this.activeAds = JSON.parse(savedAds); } catch (e) {}
     }
 
-    const savedSettings = localStorage.getItem('buscapet_payment_settings');
     if (savedSettings) {
       try { this.paymentSettings = { ...this.paymentSettings, ...JSON.parse(savedSettings) }; } catch (e) {}
     }
@@ -61,8 +74,12 @@ var BuscapetAds = window.BuscapetAds = {
   },
 
   save() {
-    localStorage.setItem('buscapet_active_ads', JSON.stringify(this.activeAds));
-    localStorage.setItem('buscapet_payment_settings', JSON.stringify(this.paymentSettings));
+    try {
+      if (window.SafeStorage) {
+        window.SafeStorage.setItem('buscapet_active_ads', JSON.stringify(this.activeAds));
+        window.SafeStorage.setItem('buscapet_payment_settings', JSON.stringify(this.paymentSettings));
+      }
+    } catch(e) {}
     this.updatePriceDisplays();
   },
 
@@ -216,9 +233,18 @@ var BuscapetAds = window.BuscapetAds = {
       active: false
     };
 
-    const pendingList = JSON.parse(localStorage.getItem('buscapet_pending_ads') || '[]');
+    let pendingList = [];
+    try {
+      if (window.SafeStorage) {
+        pendingList = JSON.parse(window.SafeStorage.getItem('buscapet_pending_ads') || '[]');
+      }
+    } catch(e) {}
     pendingList.push(pendingAd);
-    localStorage.setItem('buscapet_pending_ads', JSON.stringify(pendingList));
+    try {
+      if (window.SafeStorage) {
+        window.SafeStorage.setItem('buscapet_pending_ads', JSON.stringify(pendingList));
+      }
+    } catch(e) {}
 
     // Pasar al paso de pago
     const formView = document.getElementById('ad-form-view');

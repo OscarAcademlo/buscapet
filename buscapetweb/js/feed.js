@@ -184,7 +184,10 @@ var BuscapetFeed = window.BuscapetFeed = {
   ],
 
   init() {
-    const saved = localStorage.getItem('buscapet_posts');
+    let saved = null;
+    try {
+      if (window.SafeStorage) saved = window.SafeStorage.getItem('buscapet_posts');
+    } catch(e) {}
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -204,7 +207,9 @@ var BuscapetFeed = window.BuscapetFeed = {
   },
 
   save() {
-    localStorage.setItem('buscapet_posts', JSON.stringify(this.posts));
+    try {
+      if (window.SafeStorage) window.SafeStorage.setItem('buscapet_posts', JSON.stringify(this.posts));
+    } catch(e) {}
   },
 
   setFilter(type) {
@@ -311,25 +316,56 @@ var BuscapetFeed = window.BuscapetFeed = {
     const loc = post.location || { cityName: 'Argentina', stateName: '', address: 'Zona reportada' };
 
     let badgeClass = 'badge-lost';
-    let badgeText = '🔴 Perdida';
+    let badgeKey = 'badge_lost';
     let borderClass = 'border-lost';
     if (post.type === 'found') {
       badgeClass = 'badge-found';
-      badgeText = '🟢 Encontrada';
+      badgeKey = 'badge_found';
       borderClass = 'border-found';
     } else if (post.type === 'adopt') {
       badgeClass = 'badge-adopt';
-      badgeText = '🟣 En Adopción';
+      badgeKey = 'badge_adopt';
       borderClass = 'border-adopt';
     } else if (post.type === 'spotted') {
       badgeClass = 'badge-spotted';
-      badgeText = '🟡 Avistamiento';
+      badgeKey = 'badge_spotted';
       borderClass = 'border-spotted';
     }
 
+    const badgeText = (window.BuscapetI18n && window.BuscapetI18n.t(badgeKey)) || (post.type === 'found' ? '🟢 Encontrada' : post.type === 'adopt' ? '🟣 En Adopción' : post.type === 'spotted' ? '🟡 Avistamiento' : '🔴 Perdida');
+    const bannerText = (window.BuscapetI18n && window.BuscapetI18n.t('active_post_banner')) || '⚠️ ✦ [ PUBLICACIÓN ACTIVA EN BUSCAPET ]';
+    const collarText = post.hasCollar ? ((window.BuscapetI18n && window.BuscapetI18n.t('collar_yes')) || 'Lleva collar/chapita') : ((window.BuscapetI18n && window.BuscapetI18n.t('collar_no')) || 'Sin collar visible');
+    const mapText = (window.BuscapetI18n && window.BuscapetI18n.t('view_map')) || 'Ver en Mapa';
+    const chatText = (window.BuscapetI18n && window.BuscapetI18n.t('contact_chat')) || 'Chat Interno';
+    const commentPlaceholder = (window.BuscapetI18n && window.BuscapetI18n.t('write_comment')) || 'Escribí un comentario...';
+
+    // Traducción dinámica de descripción para posts demo
+    let desc = post.description;
+    if (window.BuscapetI18n) {
+      if (post.id === 'post-1') desc = window.BuscapetI18n.t('milo_desc');
+      else if (post.id === 'post-2') desc = window.BuscapetI18n.t('gatita_desc');
+      else if (post.id === 'post-3') desc = window.BuscapetI18n.t('luna_desc');
+      else if (post.id === 'post-4') desc = window.BuscapetI18n.t('pastor_desc');
+    }
+
+    // Traducción de especie y género
+    let speciesLabel = post.species;
+    let genderLabel = post.gender;
+    if (window.BuscapetI18n && window.BuscapetI18n.currentLang === 'en') {
+      if (post.species === 'Perro') speciesLabel = 'Dog';
+      else if (post.species === 'Gato') speciesLabel = 'Cat';
+      if (post.gender === 'Macho') genderLabel = 'Male';
+      else if (post.gender === 'Hembra') genderLabel = 'Female';
+    } else if (window.BuscapetI18n && window.BuscapetI18n.currentLang === 'pt') {
+      if (post.species === 'Perro') speciesLabel = 'Cão';
+      else if (post.species === 'Gato') speciesLabel = 'Gato';
+      if (post.gender === 'Macho') genderLabel = 'Macho';
+      else if (post.gender === 'Hembra') genderLabel = 'Fêmea';
+    }
+
     const isResolved = !!post.isResolved;
-    const resolvedLabel = post.type === 'adopt' ? '¡ADOPTADO CON ÉXITO!' : '¡YA FUE ENCONTRADO!';
-    const markResolvedBtnText = post.type === 'adopt' ? '🏠 ¡Ya fue adoptado!' : '✅ ¡Ya fue encontrado!';
+    const resolvedLabel = post.type === 'adopt' ? (window.BuscapetI18n?.currentLang === 'en' ? 'SUCCESSFULLY ADOPTED!' : window.BuscapetI18n?.currentLang === 'pt' ? 'ADOTADO COM SUCESSO!' : '¡ADOPTADO CON ÉXITO!') : (window.BuscapetI18n?.currentLang === 'en' ? 'ALREADY REUNITED!' : window.BuscapetI18n?.currentLang === 'pt' ? 'JÁ FOI ENCONTRADO!' : '¡YA FUE ENCONTRADO!');
+    const markResolvedBtnText = post.type === 'adopt' ? (window.BuscapetI18n?.currentLang === 'en' ? '🏠 Adopted!' : window.BuscapetI18n?.currentLang === 'pt' ? '🏠 Já foi adotado!' : '🏠 ¡Ya fue adoptado!') : (window.BuscapetI18n?.currentLang === 'en' ? '✅ Reunited!' : window.BuscapetI18n?.currentLang === 'pt' ? '✅ Já foi encontrado!' : '✅ ¡Ya fue encontrado!');
 
     return `
       <article class="pet-card ${borderClass}" id="card-${post.id}" data-type="${post.type}">
@@ -338,7 +374,7 @@ var BuscapetFeed = window.BuscapetFeed = {
             <span>🎉</span> <span>${resolvedLabel}</span>
           </div>
         ` : `
-          <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN ACTIVA EN BUSCAPET ]</div>
+          <div class="demo-banner">${bannerText}</div>
         `}
 
         <div class="card-header-row">
@@ -381,7 +417,7 @@ var BuscapetFeed = window.BuscapetFeed = {
           </button>
           ${loc && loc.lat ? `
             <button class="action-btn" style="margin-left:auto;color:var(--primary);" onclick="BuscapetMap.openMapForPost('${post.id}')">
-              <i class="bi bi-geo-alt-fill"></i> Ver en Mapa
+              <i class="bi bi-geo-alt-fill"></i> ${mapText}
             </button>
           ` : ''}
         </div>
@@ -391,19 +427,19 @@ var BuscapetFeed = window.BuscapetFeed = {
             <i class="bi bi-whatsapp"></i> WhatsApp
           </a>
           <button class="contact-btn contact-btn-msg" onclick="BuscapetChat.openDirectChat('${post.id}', '${user.name}', '${post.petName}', '${user.avatar}')">
-            <i class="bi bi-chat-dots"></i> Chat Interno
+            <i class="bi bi-chat-dots"></i> ${chatText}
           </button>
         </div>
 
         <div class="card-details">
           <div class="card-pet-name">${post.petName}</div>
           <div class="card-species-tags">
-            <span class="species-tag">🐶 ${post.species}</span>
+            <span class="species-tag">🐾 ${speciesLabel}</span>
             <span class="species-tag">${post.breed}</span>
-            <span class="species-tag">${post.gender}</span>
-            ${post.hasCollar ? `<span class="species-tag" style="border-color:var(--warning);color:var(--warning);">🏷️ ${post.collarDetails || 'Con collar'}</span>` : ''}
+            <span class="species-tag">${genderLabel}</span>
+            ${post.hasCollar ? `<span class="species-tag" style="border-color:var(--warning);color:var(--warning);">🏷️ ${collarText}</span>` : ''}
           </div>
-          <div class="card-description">${post.description}</div>
+          <div class="card-description">${desc}</div>
           ${loc ? `
             <div class="card-location-row" style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-muted);margin-top:6px;">
               <i class="bi bi-geo-alt-fill" style="color:var(--primary)"></i>
@@ -411,10 +447,10 @@ var BuscapetFeed = window.BuscapetFeed = {
             </div>
           ` : ''}
 
-          <!-- Botón de Resolución de Caso (Final Feliz) -->
+          <!-- Botón de Resolución de Caso -->
           <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
             <button class="hero-btn" style="font-size:11px;padding:6px 12px;background:rgba(34,197,94,.12);border:1px solid var(--success);color:var(--success);" onclick="BuscapetFeed.toggleResolved('${post.id}')">
-              <i class="bi bi-check-circle-fill"></i> ${isResolved ? 'Reabrir caso' : markResolvedBtnText}
+              <i class="bi bi-check-circle-fill"></i> ${isResolved ? (window.BuscapetI18n?.currentLang === 'en' ? 'Reopen case' : window.BuscapetI18n?.currentLang === 'pt' ? 'Reabrir caso' : 'Reabrir caso') : markResolvedBtnText}
             </button>
             <span style="font-size:10.5px;color:var(--text-muted);">${post.date}</span>
           </div>

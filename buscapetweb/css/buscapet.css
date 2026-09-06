@@ -432,9 +432,37 @@ a{color:inherit;text-decoration:none}
   .mobile-sidebar-cards { display: none !important; }
 }
 
+@media (max-width: 576px) {
+  .topbar {
+    padding: 0 8px !important;
+    gap: 4px !important;
+  }
+  .topbar-brand {
+    font-size: 16px !important;
+    gap: 3px !important;
+  }
+  .topbar-brand span:first-child {
+    font-size: 17px !important;
+  }
+  .topbar-actions {
+    gap: 3px !important;
+  }
+  .topbar-btn {
+    padding: 5px 6px !important;
+    font-size: 15px !important;
+    border-radius: 6px !important;
+  }
+  .avatar-initials {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 11px !important;
+  }
+}
+
 @media (max-width: 360px) {
   .hero-btn { font-size: 10px !important; padding: 6px 2px !important; }
   .card-contact-btns { grid-template-columns: 1fr !important; }
+  .topbar-brand span:last-child { display: none !important; } /* Only show paw logo on micro screens */
 }
 
 /* ============================================================
