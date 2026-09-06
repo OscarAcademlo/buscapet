@@ -10,6 +10,7 @@
   <meta property="og:image" content="img/posts/demo/milo_1.jpg">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%230B0E14'/%3E%3Ccircle cx='50' cy='62' r='18' fill='%23FF5A5F'/%3E%3Ccircle cx='28' cy='38' r='9' fill='%23FF5A5F'/%3E%3Ccircle cx='43' cy='26' r='9' fill='%23FF5A5F'/%3E%3Ccircle cx='57' cy='26' r='9' fill='%23FF5A5F'/%3E%3Ccircle cx='72' cy='38' r='9' fill='%23FF5A5F'/%3E%3C/svg%3E">
   <link rel="icon" type="image/png" href="favicon.png">
+
   <script>
     // Limpieza inmediata de Service Worker previo de Flutter y caches antiguas
     if ('serviceWorker' in navigator) {
@@ -23,13 +24,16 @@
       });
     }
   </script>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <!-- Bootstrap 5 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/buscapet.css?v=3">
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/buscapet.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
 
@@ -38,7 +42,7 @@
 ══════════════════════════════════════════════════════════ -->
 <header class="topbar">
   <!-- Brand -->
-  <div class="topbar-brand">
+  <div class="topbar-brand" style="cursor:pointer;" onclick="window.scrollTo({top:0,behavior:'smooth'});BuscapetFeed.setFilter('all');">
     <span style="font-size:20px;-webkit-text-fill-color:initial">🐾</span>
     <span>Buscapet</span>
   </div>
@@ -46,40 +50,40 @@
   <!-- Search (desktop) -->
   <div class="topbar-search d-none d-md-flex">
     <i class="bi bi-search"></i>
-    <span>Buscar mascotas...</span>
+    <input type="text" id="topbar-search-input" placeholder="Buscar mascotas por nombre, raza o zona..." style="background:transparent;border:none;color:var(--text-main);outline:none;width:100%;font-size:12.5px;font-family:'Outfit',sans-serif;">
   </div>
 
   <!-- Actions -->
   <div class="topbar-actions">
     <!-- Idioma -->
     <div class="dropdown">
-      <button class="topbar-btn dropdown-toggle" data-bs-toggle="dropdown" style="font-size:14px;gap:2px">
+      <button class="topbar-btn dropdown-toggle" data-bs-toggle="dropdown" id="lang-dropdown-btn" style="font-size:14px;gap:2px">
         🇦🇷 <span style="font-size:11px;color:var(--text-muted)">▾</span>
       </button>
       <ul class="dropdown-menu dropdown-menu-end" style="background:var(--bg-input);border-color:var(--border)">
-        <li><a class="dropdown-item" href="#" style="color:var(--text-main);font-size:13px">🇦🇷 Español</a></li>
-        <li><a class="dropdown-item" href="#" style="color:var(--text-main);font-size:13px">🇺🇸 English</a></li>
-        <li><a class="dropdown-item" href="#" style="color:var(--text-main);font-size:13px">🇧🇷 Português</a></li>
+        <li><a class="dropdown-item" href="#" data-lang="es" style="color:var(--text-main);font-size:13px">🇦🇷 Español</a></li>
+        <li><a class="dropdown-item" href="#" data-lang="en" style="color:var(--text-main);font-size:13px">🇺🇸 English</a></li>
+        <li><a class="dropdown-item" href="#" data-lang="pt" style="color:var(--text-main);font-size:13px">🇧🇷 Português</a></li>
       </ul>
     </div>
-    <!-- Modo oscuro -->
-    <button class="topbar-btn" title="Modo claro">
+    <!-- Modo claro / oscuro -->
+    <button class="topbar-btn" id="btn-theme-toggle" title="Cambiar tema">
       <i class="bi bi-sun-fill" style="color:var(--warning);font-size:17px"></i>
     </button>
     <!-- Publicar (desktop) -->
-    <button class="topbar-btn publish-btn d-none d-md-flex">
+    <button class="topbar-btn publish-btn d-none d-md-flex" onclick="BuscapetPublish.openModal('lost')">
       <i class="bi bi-plus-circle"></i> Publicar
     </button>
     <!-- Cafecito (desktop/tablet) -->
-    <button class="topbar-btn d-none d-sm-flex" title="Donar un Cafecito">
+    <button class="topbar-btn d-none d-sm-flex" title="Donar un Cafecito" onclick="window.open('https://cafecito.app/buscapet','_blank')">
       <i class="bi bi-cup-hot-fill topbar-icon-coffee" style="font-size:18px"></i>
     </button>
     <!-- Publicidad (desktop/tablet) -->
-    <button class="topbar-btn d-none d-sm-flex" title="Publicitar Negocio">
+    <button class="topbar-btn d-none d-sm-flex" title="Publicitar Negocio" onclick="BuscapetAds.openAdModal()">
       <i class="bi bi-megaphone-fill topbar-icon-ad" style="font-size:17px"></i>
     </button>
     <!-- Avatar -->
-    <div class="avatar-initials ms-1">I</div>
+    <div class="avatar-initials ms-1" title="Perfil">I</div>
   </div>
 </header>
 
@@ -95,8 +99,8 @@
     <div class="user-card">
       <div class="avatar-initials" style="width:40px;height:40px;font-size:16px">I</div>
       <div class="user-card-info">
-        <div class="user-card-name">Invitado</div>
-        <div class="user-card-sub">Iniciá sesión para publicar</div>
+        <div class="user-card-name">Invitado Solidario</div>
+        <div class="user-card-sub">Red Comunitaria Buscapet</div>
       </div>
     </div>
 
@@ -106,19 +110,31 @@
     </button>
 
     <!-- Publish btn -->
-    <button class="btn-publish-big">
+    <button class="btn-publish-big" onclick="BuscapetPublish.openModal('lost')">
       <i class="bi bi-plus-circle-fill"></i> 🐾 Publicar Mascota
     </button>
 
     <!-- Nav -->
     <div class="nav-section-title" style="margin-top:6px">NAVEGACIÓN</div>
-    <div class="nav-item active"><i class="bi bi-house-fill"></i> Inicio</div>
-    <div class="nav-item"><i class="bi bi-search"></i> Buscar</div>
-    <div class="nav-item"><i class="bi bi-chat-dots"></i> Mensajes</div>
-    <div class="nav-item"><i class="bi bi-person-circle"></i> Perfil</div>
+    <div class="nav-item active" onclick="window.scrollTo({top:0,behavior:'smooth'});BuscapetFeed.setFilter('all');">
+      <i class="bi bi-house-fill"></i> Inicio
+    </div>
+    <div class="nav-item" onclick="document.getElementById('topbar-search-input')?.focus();">
+      <i class="bi bi-search"></i> Buscar
+    </div>
+    <div class="nav-item" onclick="BuscapetChat.openChatList();" style="position:relative;">
+      <i class="bi bi-chat-dots"></i> Mensajes
+      <span id="nav-chat-badge" style="background:var(--primary);color:#fff;font-size:10px;font-weight:800;border-radius:10px;padding:1px 6px;margin-left:auto;"></span>
+    </div>
+    <div class="nav-item">
+      <i class="bi bi-person-circle"></i> Perfil
+    </div>
+    <div class="nav-item" id="btn-admin-entry" style="color:var(--warning);font-size:12px;opacity:0.85;cursor:pointer;">
+      <i class="bi bi-shield-lock-fill"></i> Panel OscarSoft
+    </div>
 
     <!-- Cafecito btn -->
-    <button class="btn-cafecito" style="margin-top:6px">
+    <button class="btn-cafecito" style="margin-top:6px" onclick="window.open('https://cafecito.app/buscapet','_blank')">
       ☕ Donar un Cafecito
     </button>
 
@@ -126,33 +142,18 @@
     <div class="filter-section" style="margin-top:6px">
       <div class="filter-title"><i class="bi bi-geo-alt-fill" style="color:var(--primary)"></i> Filtrar por Ubicación</div>
       <div class="filter-label">País:</div>
-      <select class="filter-select">
-        <option selected>🇦🇷 Argentina</option>
-        <option>🇲🇽 México</option>
-        <option>🇨🇱 Chile</option>
-        <option>🇺🇾 Uruguay</option>
-        <option>🇨🇴 Colombia</option>
-        <option>🇵🇪 Perú</option>
-        <option>🇧🇷 Brasil</option>
+      <select class="filter-select" id="filter-country">
+        <option value="AR" selected>🇦🇷 Argentina</option>
       </select>
       <div class="filter-label">Provincia / Estado:</div>
-      <select class="filter-select">
+      <select class="filter-select" id="filter-state">
         <option value="">Todas las provincias</option>
-        <option>CABA</option>
-        <option>Buenos Aires</option>
-        <option>Córdoba</option>
-        <option>Río Negro</option>
-        <option>Santa Fe</option>
       </select>
       <div class="filter-label">Ciudad:</div>
-      <select class="filter-select">
+      <select class="filter-select" id="filter-city">
         <option value="">Todas las ciudades</option>
-        <option>Buenos Aires</option>
-        <option>Córdoba Capital</option>
-        <option>Bariloche</option>
-        <option>Rosario</option>
       </select>
-      <button class="btn-filter-apply">
+      <button class="btn-filter-apply" id="btn-apply-filters">
         <i class="bi bi-funnel-fill"></i> Aplicar Filtros
       </button>
     </div>
@@ -167,12 +168,12 @@
       <div class="hero-banner">
         <div class="hero-title">🐾 Reuniendo Mascotas con sus Familias</div>
         <div class="hero-grid">
-          <button class="hero-btn hero-btn-lost">🔴 Perdí mi Mascota</button>
-          <button class="hero-btn hero-btn-found">🟢 Encontré Mascota</button>
-          <button class="hero-btn hero-btn-adopt">🟣 Ver Adopciones</button>
-          <button class="hero-btn hero-btn-offer">🤝 Dar en Adopción</button>
+          <button class="hero-btn hero-btn-lost" id="btn-hero-lost">🔴 Perdí mi Mascota</button>
+          <button class="hero-btn hero-btn-found" id="btn-hero-found">🟢 Encontré Mascota</button>
+          <button class="hero-btn hero-btn-adopt" id="btn-hero-adopt">🟣 Ver Adopciones</button>
+          <button class="hero-btn hero-btn-offer" id="btn-hero-offer">🤝 Dar en Adopción</button>
         </div>
-        <button class="hero-ad-btn">
+        <button class="hero-ad-btn" onclick="BuscapetAds.openAdModal()">
           <i class="bi bi-megaphone-fill"></i>
           <span>📢 Anunciá tu Veterinaria o Negocio ($14.000 ARS)</span>
           <i class="bi bi-chevron-right" style="font-size:10px;opacity:.8;flex-shrink:0"></i>
@@ -186,272 +187,15 @@
 
       <!-- ── CHIPS / CATEGORÍAS ── -->
       <div class="chips-bar">
-        <button class="chip active-all" data-type="all">Todas</button>
-        <button class="chip" data-type="lost">🔴 Perdidas</button>
-        <button class="chip" data-type="found">🟢 Encontradas</button>
-        <button class="chip" data-type="adopt">🟣 Adopción</button>
-        <button class="chip" data-type="spotted">🟡 Vistos en vía pública</button>
+        <button class="chip active-all" data-type="all" onclick="BuscapetFeed.setFilter('all')">Todas</button>
+        <button class="chip" data-type="lost" onclick="BuscapetFeed.setFilter('lost')">🔴 Perdidas</button>
+        <button class="chip" data-type="found" onclick="BuscapetFeed.setFilter('found')">🟢 Encontradas</button>
+        <button class="chip" data-type="adopt" onclick="BuscapetFeed.setFilter('adopt')">🟣 Adopción</button>
+        <button class="chip" data-type="spotted" onclick="BuscapetFeed.setFilter('spotted')">🟡 Vistos en vía pública</button>
       </div>
 
-      <!-- ══════════ POST 1 — Milo (Perdido) ══════════ -->
-      <article class="pet-card border-lost" data-type="lost">
-        <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN DE MUESTRA / DEMO ]</div>
-        <div class="card-header-row">
-          <img class="card-avatar" src="img/posts/demo/avatar_nicolas.jpg" alt="Nicolás Rossi">
-          <div class="card-user-info">
-            <div class="card-username">Nicolás Rossi</div>
-            <div class="card-meta">Caballito, CABA · Hace 2 h</div>
-          </div>
-          <div class="card-badges">
-            <span class="badge-demo">DEMO</span>
-            <span class="badge-type badge-lost">🔴 Perdidas</span>
-          </div>
-        </div>
-
-        <div class="card-photo-wrap">
-          <img data-photo src="img/posts/demo/milo_1.jpg" alt="Milo">
-          <img data-photo src="img/posts/demo/milo_2.jpg" alt="Milo 2" style="display:none">
-          <img data-photo src="img/posts/demo/milo_3.jpg" alt="Milo 3" style="display:none">
-          <div class="demo-badge-overlay"><i class="bi bi-flag-fill"></i> DEMO</div>
-          <span class="photo-counter">1/3</span>
-          <button class="photo-nav prev" style="display:none"><i class="bi bi-chevron-left"></i></button>
-          <button class="photo-nav next"><i class="bi bi-chevron-right"></i></button>
-        </div>
-
-        <div class="card-actions">
-          <button class="action-btn" data-action="like"><i class="bi bi-heart"></i> <span class="like-count">24</span></button>
-          <button class="action-btn"><i class="bi bi-chat"></i> 1</button>
-          <button class="action-btn"><i class="bi bi-share"></i> 18</button>
-          <button class="action-btn" style="margin-left:auto"><i class="bi bi-geo-alt"></i> Mapa</button>
-        </div>
-
-        <div class="card-contact-btns">
-          <button class="contact-btn contact-btn-found">✅ Ya fue encontrado</button>
-          <button class="contact-btn contact-btn-msg"><i class="bi bi-chat-dots"></i> Contactar</button>
-        </div>
-
-        <div class="card-details">
-          <div class="card-pet-name">Milo</div>
-          <div class="card-species-tags">
-            <span class="species-tag">🐶 Perro</span>
-            <span class="species-tag">Golden Retriever</span>
-            <span class="species-tag">Macho</span>
-          </div>
-          <p class="card-description">Se extravió Milo cerca del Parque Centenario. Llevaba collar azul con chapita pero sin teléfono. Es muy dócil, responde por su nombre y necesita medicación diaria.</p>
-          <div class="card-location">
-            <i class="bi bi-exclamation-circle-fill" style="color:var(--danger)"></i>
-            <strong>Última vez visto (manual):</strong>
-          </div>
-          <div class="card-location" style="margin-top:3px">Av. Díaz Vélez &amp; Campichuelo, CABA</div>
-          <div class="card-map-link"><i class="bi bi-map"></i> Ver ubicación aproximada</div>
-        </div>
-
-        <div class="card-comments">
-          <div class="comment-item">
-            <img class="comment-avatar" src="img/posts/demo/avatar_sofia.jpg" alt="Sofía">
-            <div class="comment-bubble">
-              <div class="comment-name">Sofía Romero</div>
-              <div class="comment-text">¡Lo compartí en el grupo de vecinos de Caballito! Ojalá aparezca pronto 🙏</div>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- ══════════ POST 2 — Gatita (Encontrada) ══════════ -->
-      <article class="pet-card border-found" data-type="found">
-        <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN DE MUESTRA / DEMO ]</div>
-        <div class="card-header-row">
-          <img class="card-avatar" src="img/posts/demo/avatar_martin.jpg" alt="Martín Gómez">
-          <div class="card-user-info">
-            <div class="card-username">Martín Gómez</div>
-            <div class="card-meta">Palermo, CABA · Hace 5 h</div>
-          </div>
-          <div class="card-badges">
-            <span class="badge-demo">DEMO</span>
-            <span class="badge-type badge-found">🟢 Encontradas</span>
-          </div>
-        </div>
-
-        <div class="card-photo-wrap">
-          <img data-photo src="img/posts/demo/gatita_1.jpg" alt="Gatita">
-          <img data-photo src="img/posts/demo/gatita_2.jpg" alt="Gatita 2" style="display:none">
-          <div class="demo-badge-overlay"><i class="bi bi-flag-fill"></i> DEMO</div>
-          <span class="photo-counter">1/2</span>
-          <button class="photo-nav prev" style="display:none"><i class="bi bi-chevron-left"></i></button>
-          <button class="photo-nav next"><i class="bi bi-chevron-right"></i></button>
-        </div>
-
-        <div class="card-actions">
-          <button class="action-btn" data-action="like"><i class="bi bi-heart"></i> <span class="like-count">42</span></button>
-          <button class="action-btn"><i class="bi bi-chat"></i> 1</button>
-          <button class="action-btn"><i class="bi bi-share"></i> 31</button>
-          <button class="action-btn" style="margin-left:auto"><i class="bi bi-geo-alt"></i> Mapa</button>
-        </div>
-
-        <div class="card-contact-btns">
-          <button class="contact-btn contact-btn-found">✅ ¡Ya fue encontrado!</button>
-          <button class="contact-btn contact-btn-msg"><i class="bi bi-chat-dots"></i> Contactar</button>
-        </div>
-
-        <div class="card-details">
-          <div class="card-pet-name">Gatita encontrada en estación</div>
-          <div class="card-species-tags">
-            <span class="species-tag">🐱 Gato</span>
-            <span class="species-tag">Siamés mestizo</span>
-            <span class="species-tag">Hembra</span>
-          </div>
-          <p class="card-description">Encontré esta gatita asustada resguardándose de la lluvia en una estación de servicio. Tiene ojos celestes intensos y collar rosa sin identificación. La tengo en tránsito.</p>
-          <div class="card-location"><i class="bi bi-geo-alt-fill"></i> Av. Santa Fe y Scalabrini Ortiz, CABA</div>
-        </div>
-
-        <div class="card-comments">
-          <div class="comment-item">
-            <img class="comment-avatar" src="img/posts/demo/avatar_gonzalo.jpg" alt="Gonzalo">
-            <div class="comment-bubble">
-              <div class="comment-name">Gonzalo Paz</div>
-              <div class="comment-text">Tiene carita de estar bien cuidada, seguro su familia la está buscando.</div>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- ══════════ SPONSORED AD 1 ══════════ -->
-      <div class="ad-card">
-        <div class="ad-card-header">
-          <span class="ad-badge-label">PUBLICIDAD PATROCINADA</span>
-          <span class="ad-city" style="margin-left:auto">📍 Palermo, CABA</span>
-        </div>
-        <img class="ad-photo" src="img/posts/demo/ad_vet.jpg" alt="Veterinaria San Roque">
-        <div class="ad-body">
-          <div class="ad-business-name">Veterinaria &amp; Urgencias 24h San Roque</div>
-          <div class="ad-category">🏥 Veterinaria 24h</div>
-          <p class="ad-desc">🩺 Atención médica veterinaria, guardias 24 horas, ecografías, cirugías y vacunación completa para tus mascotas. ¡Mencionando Buscapet tenés un 15% de descuento en la primera consulta!</p>
-          <div class="ad-btns">
-            <button class="ad-btn-wa"><i class="bi bi-whatsapp"></i> WhatsApp</button>
-            <button class="ad-btn-web"><i class="bi bi-globe2"></i> Sitio Web</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══════════ POST 3 — Luna (Adopción) ══════════ -->
-      <article class="pet-card border-adopt" data-type="adopt">
-        <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN DE MUESTRA / DEMO ]</div>
-        <div class="card-header-row">
-          <img class="card-avatar" src="img/posts/demo/avatar_valentina.jpg" alt="Valentina Díaz">
-          <div class="card-user-info">
-            <div class="card-username">Valentina Díaz</div>
-            <div class="card-meta">Nueva Córdoba, Córdoba · Hace 12 h</div>
-          </div>
-          <div class="card-badges">
-            <span class="badge-demo">DEMO</span>
-            <span class="badge-type badge-adopt">🟣 Adopción</span>
-          </div>
-        </div>
-
-        <div class="card-photo-wrap">
-          <img data-photo src="img/posts/demo/luna_1.jpg" alt="Luna">
-          <img data-photo src="img/posts/demo/luna_2.jpg" alt="Luna 2" style="display:none">
-          <div class="demo-badge-overlay"><i class="bi bi-flag-fill"></i> DEMO</div>
-          <span class="photo-counter">1/2</span>
-          <button class="photo-nav prev" style="display:none"><i class="bi bi-chevron-left"></i></button>
-          <button class="photo-nav next"><i class="bi bi-chevron-right"></i></button>
-        </div>
-
-        <div class="card-actions">
-          <button class="action-btn" data-action="like"><i class="bi bi-heart"></i> <span class="like-count">65</span></button>
-          <button class="action-btn"><i class="bi bi-chat"></i> 1</button>
-          <button class="action-btn"><i class="bi bi-share"></i> 48</button>
-          <button class="action-btn" style="margin-left:auto"><i class="bi bi-geo-alt"></i> Mapa</button>
-        </div>
-
-        <div class="card-contact-btns">
-          <button class="contact-btn contact-btn-adopt">🏠 ¡Ya fue adoptado!</button>
-          <button class="contact-btn contact-btn-msg"><i class="bi bi-chat-dots"></i> Contactar</button>
-        </div>
-
-        <div class="card-details">
-          <div class="card-pet-name">Luna</div>
-          <div class="card-species-tags">
-            <span class="species-tag">🐶 Perro</span>
-            <span class="species-tag">Mestiza mediana</span>
-            <span class="species-tag">Hembra</span>
-          </div>
-          <p class="card-description">Luna tiene 6 meses, está desparasitada y con la primera vacuna. Es súper juguetona y sociable con otros animales y niños. Se entrega en adopción responsable con compromiso de castración.</p>
-          <div class="card-location"><i class="bi bi-geo-alt-fill"></i> Zona Nueva Córdoba, Córdoba Capital</div>
-        </div>
-
-        <div class="card-comments">
-          <div class="comment-item">
-            <img class="comment-avatar" src="img/posts/demo/avatar_carla.jpg" alt="Carla">
-            <div class="comment-bubble">
-              <div class="comment-name">Carla Méndez</div>
-              <div class="comment-text">¡Hermosa Luna! Ojalá encuentre un hogar lleno de amor. 🐾</div>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <!-- ══════════ POST 4 — Pastor Alemán (Visto) ══════════ -->
-      <article class="pet-card border-spotted" data-type="spotted">
-        <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN DE MUESTRA / DEMO ]</div>
-        <div class="card-header-row">
-          <img class="card-avatar" src="img/posts/demo/avatar_federico.jpg" alt="Federico Álvarez">
-          <div class="card-user-info">
-            <div class="card-username">Federico Álvarez</div>
-            <div class="card-meta">San Carlos de Bariloche, Río Negro · Ayer</div>
-          </div>
-          <div class="card-badges">
-            <span class="badge-demo">DEMO</span>
-            <span class="badge-type badge-spotted">👁️ Vistos en vía pública</span>
-          </div>
-        </div>
-
-        <div class="card-photo-wrap">
-          <img data-photo src="img/posts/demo/pastor_1.jpg" alt="Pastor Alemán">
-          <div class="demo-badge-overlay"><i class="bi bi-flag-fill"></i> DEMO</div>
-        </div>
-
-        <div class="card-actions">
-          <button class="action-btn" data-action="like"><i class="bi bi-heart"></i> <span class="like-count">38</span></button>
-          <button class="action-btn"><i class="bi bi-chat"></i> 0</button>
-          <button class="action-btn"><i class="bi bi-share"></i> 22</button>
-          <button class="action-btn" style="margin-left:auto"><i class="bi bi-geo-alt"></i> Mapa</button>
-        </div>
-
-        <div class="card-contact-btns">
-          <button class="contact-btn contact-btn-found">✅ ¡Ya fue encontrado!</button>
-          <button class="contact-btn contact-btn-msg"><i class="bi bi-chat-dots"></i> Contactar</button>
-        </div>
-
-        <div class="card-details">
-          <div class="card-pet-name">Pastor Alemán visto en la costa</div>
-          <div class="card-species-tags">
-            <span class="species-tag">🐶 Perro</span>
-            <span class="species-tag">Pastor Alemán</span>
-            <span class="species-tag">Macho</span>
-          </div>
-          <p class="card-description">Vi este perro deambulando cerca de la costa del lago. Parece perdido y desorientado, tiene collar de cuero marrón pero no se deja agarrar. Anda por la zona del centro cívico.</p>
-          <div class="card-location"><i class="bi bi-geo-alt-fill"></i> Av. 12 de Octubre y Costanera, Bariloche</div>
-        </div>
-      </article>
-
-      <!-- ══════════ SPONSORED AD 2 ══════════ -->
-      <div class="ad-card">
-        <div class="ad-card-header">
-          <span class="ad-badge-label">PUBLICIDAD PATROCINADA</span>
-          <span class="ad-city" style="margin-left:auto">📍 San Carlos de Bariloche</span>
-        </div>
-        <img class="ad-photo" src="img/posts/demo/ad_petshop.jpg" alt="Pet Shop Huellitas Felices">
-        <div class="ad-body">
-          <div class="ad-business-name">Pet Shop &amp; Boutique Huellitas Felices</div>
-          <div class="ad-category">🛍️ Pet Shop &amp; Alimentos</div>
-          <p class="ad-desc">🍖 Alimento balanceado premium de todas las marcas con envío a domicilio sin cargo en el día. Snacks naturales, juguetes interactivos, camas ortopédicas y accesorios.</p>
-          <div class="ad-btns">
-            <button class="ad-btn-wa"><i class="bi bi-whatsapp"></i> WhatsApp</button>
-            <button class="ad-btn-web"><i class="bi bi-globe2"></i> Sitio Web</button>
-          </div>
-        </div>
-      </div>
+      <!-- ══════════ DYNAMIC POSTS FEED CONTAINER ══════════ -->
+      <div id="feed-posts-container" style="width:100%;"></div>
 
       <!-- ══════════ MOBILE SIDEBAR CARDS (solo móvil) ══════════ -->
       <div class="mobile-sidebar-cards">
@@ -462,8 +206,8 @@
             <span style="font-size:12.5px;font-weight:800;color:var(--warning);flex:1">¿Tenés una Veterinaria o negocio?</span>
           </div>
           <p style="font-size:11.5px;color:var(--text-muted);line-height:1.35;margin-bottom:12px">Anunciá en Buscapet para llegar a miles de familias que aman a sus mascotas en toda Latinoamérica.</p>
-          <button class="sidebar-btn-primary">
-            <i class="bi bi-megaphone-fill"></i> Solicitar Publicidad ($14.000 ARS)
+          <button class="sidebar-btn-primary" onclick="BuscapetAds.openAdModal()">
+            <i class="bi bi-megaphone-fill"></i> Solicitar Publicidad (<span class="ad-price-display">$14.000 ARS</span>)
           </button>
         </div>
         <!-- Cafecito -->
@@ -473,7 +217,7 @@
             <span style="font-size:13px;font-weight:800;color:var(--warning)">Apoyá a Buscapet ☕</span>
           </div>
           <p style="font-size:11.5px;color:var(--text-muted);line-height:1.35;margin-bottom:12px">Buscapet es 100% gratuita y sin fines de lucro. Tu cafecito nos ayuda a costear servidores.</p>
-          <button class="sidebar-btn-outline">
+          <button class="sidebar-btn-outline" onclick="window.open('https://cafecito.app/buscapet','_blank')">
             <i class="bi bi-cup-hot-fill"></i> Donar un Cafecito
           </button>
         </div>
@@ -492,8 +236,8 @@
         <span class="sidebar-card-title" style="margin:0">¿Tenés una Veterinaria o negocio?</span>
       </div>
       <p class="sidebar-card-desc">Anunciá en Buscapet para llegar a miles de familias que aman a sus mascotas en toda Latinoamérica.</p>
-      <button class="sidebar-btn-primary">
-        <i class="bi bi-megaphone-fill"></i> Solicitar Publicidad ($14.000 ARS)
+      <button class="sidebar-btn-primary" onclick="BuscapetAds.openAdModal()">
+        <i class="bi bi-megaphone-fill"></i> Solicitar Publicidad (<span class="ad-price-display">$14.000 ARS</span>)
       </button>
     </div>
 
@@ -504,7 +248,7 @@
         <span class="sidebar-card-title" style="margin:0">Apoyá a Buscapet ☕</span>
       </div>
       <p class="sidebar-card-desc">Buscapet es 100% gratuita y sin fines de lucro. Tu cafecito nos ayuda a costear servidores.</p>
-      <button class="sidebar-btn-outline">
+      <button class="sidebar-btn-outline" onclick="window.open('https://cafecito.app/buscapet','_blank')">
         <i class="bi bi-cup-hot-fill"></i> Donar un Cafecito
       </button>
     </div>
@@ -513,10 +257,10 @@
     <div class="sidebar-card sidebar-card-app">
       <div class="sidebar-card-title-white">📱 Llevá Buscapet en tu celular</div>
       <p class="sidebar-card-desc">Publicá reportes al instante con GPS y cámara desde la calle.</p>
-      <button class="sidebar-btn-android">
+      <button class="sidebar-btn-android" onclick="buscapetToast('🤖 Próximamente en Google Play Store')">
         <i class="bi bi-android2"></i> Android App (Próximamente)
       </button>
-      <button class="sidebar-btn-ios">
+      <button class="sidebar-btn-ios" onclick="buscapetToast('🍎 Próximamente en Apple App Store')">
         <i class="bi bi-apple"></i> iOS App (Próximamente)
       </button>
     </div>
@@ -563,10 +307,436 @@
   </div>
 </nav>
 
+<!-- ══════════════════════════════════════════════════════════
+     MODAL 1: PUBLICAR REPORTE (MULTITIPO CON GPS Y FOTOS)
+══════════════════════════════════════════════════════════ -->
+<div class="buscapet-modal" id="publish-modal">
+  <div class="buscapet-modal-dialog">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">
+        <span>🐾</span> <span>Publicar Reporte de Mascota</span>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="BuscapetPublish.closeModal()">✕</button>
+    </div>
+    <div class="modal-body-custom">
+      <!-- Tabs de tipo -->
+      <div class="publish-tabs-bar">
+        <button type="button" class="publish-tab-btn active" data-tab="lost" onclick="BuscapetPublish.selectTab('lost')">🔴 Perdida</button>
+        <button type="button" class="publish-tab-btn" data-tab="found" onclick="BuscapetPublish.selectTab('found')">🟢 Encontrada</button>
+        <button type="button" class="publish-tab-btn" data-tab="adopt" onclick="BuscapetPublish.selectTab('adopt')">🟣 Adopción</button>
+        <button type="button" class="publish-tab-btn" data-tab="spotted" onclick="BuscapetPublish.selectTab('spotted')">🟡 Avistamiento</button>
+      </div>
+
+      <!-- Fotos -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">📸 Fotos de la mascota (hasta 5 fotos)</label>
+        <input type="file" id="publish-photo-input" accept="image/*" multiple style="display:none;">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button type="button" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;font-size:12px;padding:8px 14px;" onclick="document.getElementById('publish-photo-input').click()">
+            <i class="bi bi-camera-fill"></i> Subir Fotos
+          </button>
+          <div id="publish-photo-previews" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        </div>
+      </div>
+
+      <!-- Datos generales -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="form-group-custom">
+          <label class="form-label-custom">Nombre de la mascota</label>
+          <input type="text" class="form-input-custom" id="publish-name" placeholder="Ej: Milo, Luna...">
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom">Especie</label>
+          <select class="form-select-custom" id="publish-species">
+            <option value="Perro" selected>🐶 Perro</option>
+            <option value="Gato">🐱 Gato</option>
+            <option value="Ave">🦜 Ave</option>
+            <option value="Otro">🐾 Otro</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="form-group-custom">
+          <label class="form-label-custom">Raza / Cruza</label>
+          <input type="text" class="form-input-custom" id="publish-breed" placeholder="Ej: Mestizo, Golden...">
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom">Sexo</label>
+          <select class="form-select-custom" id="publish-gender">
+            <option value="Macho">Macho</option>
+            <option value="Hembra">Hembra</option>
+            <option value="Desconocido">No se sabe</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Collar / Chapita -->
+      <div class="form-group-custom" id="publish-collar-row">
+        <label style="font-size:12px;color:var(--text-main);display:flex;align-items:center;gap:6px;cursor:pointer;">
+          <input type="checkbox" id="publish-collar">
+          <span>¿Llevaba collar o chapita de identificación?</span>
+        </label>
+        <input type="text" class="form-input-custom" id="publish-collar-details" placeholder="Color del collar o texto de la chapita..." style="margin-top:6px;">
+      </div>
+
+      <!-- Campos Adopcion -->
+      <div id="publish-adopt-fields" style="display:none;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:10px;padding:10px;margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:700;color:var(--adopt);margin-bottom:6px;">Requisitos de Adopción Responsable:</div>
+        <label style="font-size:11.5px;display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <input type="checkbox" checked> Vacunas al día y desparasitado
+        </label>
+        <label style="font-size:11.5px;display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <input type="checkbox" checked> Compromiso de castración / Castrado
+        </label>
+      </div>
+
+      <!-- Descripcion -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">Descripción y características importantes *</label>
+        <textarea class="form-textarea-custom" id="publish-desc" rows="3" placeholder="Describe cómo ocurrió, señas particulares, comportamiento, medicación requerida..."></textarea>
+      </div>
+
+      <!-- Telefono / WhatsApp -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">Teléfono / WhatsApp de contacto *</label>
+        <input type="tel" class="form-input-custom" id="publish-phone" placeholder="Ej: +5491155554321">
+      </div>
+
+      <!-- Ubicacion con mapa Leaflet -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">📍 Ubicación del hecho</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+          <select class="form-select-custom" id="publish-country"></select>
+          <select class="form-select-custom" id="publish-state">
+            <option value="">Seleccionar Provincia</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
+          <select class="form-select-custom" id="publish-city">
+            <option value="">Seleccionar Ciudad</option>
+          </select>
+          <input type="text" class="form-input-custom" id="publish-address" placeholder="Calle o esquina aprox...">
+        </div>
+
+        <div id="publish-fast-gps-row" style="margin-bottom:8px;display:none;">
+          <button type="button" class="btn btn-sm btn-success" style="width:100%;font-weight:800;border-radius:8px;" onclick="BuscapetPublish.useGPS()">
+            <i class="bi bi-geo-alt-fill"></i> ⚡ 1-Clic: Capturar mi GPS Actual
+          </button>
+        </div>
+
+        <!-- Leaflet Map Picker -->
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Arrastrá el pin en el mapa para marcar el punto exacto:</div>
+        <div id="form-map-picker" style="height:170px;border-radius:10px;overflow:hidden;border:1px solid var(--border);"></div>
+      </div>
+
+      <button type="button" class="btn-login" style="margin-top:14px;padding:12px;" onclick="BuscapetPublish.submitPost(event)">
+        🐾 Publicar Reporte Inmediato
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL 2: MAPA INTERACTIVO (LEAFLET POST VIEWER)
+══════════════════════════════════════════════════════════ -->
+<div class="buscapet-modal" id="map-modal">
+  <div class="buscapet-modal-dialog" style="max-width:640px;">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom" id="map-modal-title">
+        <span>📍</span> <span>Ubicación de la Mascota</span>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="BuscapetMap.closeMapModal()">✕</button>
+    </div>
+    <div class="modal-body-custom" style="padding:0;">
+      <div id="map-modal-container" style="height:380px;width:100%;"></div>
+      <div style="padding:12px 16px;background:var(--bg-input);font-size:12.5px;color:var(--text-main);" id="map-modal-desc">
+        Cargando ubicación...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL 3: MENSAJES DIRECTOS / CHAT IN-APP
+══════════════════════════════════════════════════════════ -->
+<div class="buscapet-modal" id="chat-modal">
+  <div class="buscapet-modal-dialog chat-dialog">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">
+        <img id="chat-active-avatar" src="img/posts/demo/avatar_nicolas.jpg" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
+        <div>
+          <div id="chat-active-title" style="font-size:13.5px;font-weight:800;">Mensajes Directos</div>
+          <div id="chat-active-sub" style="font-size:11px;color:var(--text-muted);font-weight:500;">Comunidad Buscapet</div>
+        </div>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="BuscapetChat.closeChatModal()">✕</button>
+    </div>
+    <div class="chat-container-layout">
+      <!-- Bandeja de entrada -->
+      <div class="chat-inbox-pane" id="chat-inbox-list"></div>
+      <!-- Conversación activa -->
+      <div class="chat-active-pane">
+        <div class="chat-messages-box" id="chat-messages-box"></div>
+        <form class="chat-input-row" onsubmit="event.preventDefault();BuscapetChat.sendMessage();">
+          <input type="text" class="form-input-custom" id="chat-input-field" placeholder="Escribe un mensaje de ayuda o consulta..." autocomplete="off">
+          <button type="submit" class="btn-filter-apply" style="width:auto;padding:8px 16px;">
+            <i class="bi bi-send-fill"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL 4: PUBLICIDAD DE NEGOCIOS Y PAGOS (MERCADO PAGO)
+══════════════════════════════════════════════════════════ -->
+<div class="buscapet-modal" id="ad-modal">
+  <div class="buscapet-modal-dialog">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">
+        <span>📢</span> <span>Publicitá tu Negocio o Veterinaria</span>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="BuscapetAds.closeAdModal()">✕</button>
+    </div>
+    <div class="modal-body-custom">
+      <!-- PASO 1: Formulario -->
+      <div id="ad-form-view">
+        <p style="font-size:12.5px;color:var(--text-sub);line-height:1.4;margin-bottom:14px;">
+          Llegá a miles de familias que aman a sus mascotas en tu ciudad. Tu anuncio se mostrará destacado dentro del feed con botón directo a tu WhatsApp y sitio web.
+        </p>
+        <div class="form-group-custom">
+          <label class="form-label-custom">Nombre del Negocio o Veterinaria *</label>
+          <input type="text" class="form-input-custom" id="ad-req-name" placeholder="Ej: Veterinaria San Roque">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-group-custom">
+            <label class="form-label-custom">Rubro / Categoría *</label>
+            <input type="text" class="form-input-custom" id="ad-req-category" placeholder="Ej: Veterinaria 24h, Pet Shop...">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom">Ciudad / Zona *</label>
+            <input type="text" class="form-input-custom" id="ad-req-city" placeholder="Ej: Palermo, CABA">
+          </div>
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom">Texto del anuncio / Beneficio para la comunidad *</label>
+          <textarea class="form-textarea-custom" id="ad-req-promo" rows="2" placeholder="Ej: 15% de descuento en vacunas mencionando a Buscapet. Urgencias las 24 hs..."></textarea>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-group-custom">
+            <label class="form-label-custom">WhatsApp / Teléfono *</label>
+            <input type="tel" class="form-input-custom" id="ad-req-phone" placeholder="Ej: +5491155550000">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom">Sitio Web / Instagram</label>
+            <input type="url" class="form-input-custom" id="ad-req-web" placeholder="https://instagram.com/tu_negocio">
+          </div>
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom">Banner publicitario (Imagen)</label>
+          <input type="file" accept="image/*" class="form-input-custom" onchange="BuscapetAds.handleBannerUpload(event)">
+          <img id="ad-banner-preview" style="display:none;width:100%;height:120px;object-fit:cover;border-radius:8px;margin-top:6px;border:1px solid var(--border);">
+        </div>
+        <button type="button" class="hero-btn hero-btn-lost" style="width:100%;padding:12px;font-size:13px;background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;" onclick="BuscapetAds.submitAdRequest(event)">
+          Continuar al Pago (<span class="ad-price-display">$14.000 ARS</span>) →
+        </button>
+      </div>
+
+      <!-- PASO 2: Datos de Cobro (Mercado Pago / PayPal) -->
+      <div id="ad-payment-view" style="display:none;">
+        <div style="text-align:center;margin-bottom:16px;">
+          <div style="font-size:36px;margin-bottom:4px;">💳</div>
+          <div style="font-size:16px;font-weight:800;color:var(--text-main);">Pauta Publicitaria Mensual</div>
+          <div style="font-size:14px;font-weight:900;color:var(--warning);" id="ad-modal-price">$14.000 ARS (o $15 USD)</div>
+        </div>
+
+        <!-- Tarjeta Mercado Pago -->
+        <div style="background:rgba(0,158,227,0.1);border:1.5px solid #009EE3;border-radius:12px;padding:14px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <span style="background:#009EE3;color:#fff;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:900;">MERCADO PAGO</span>
+            <span style="font-size:12.5px;font-weight:700;color:var(--text-main);">Transferencia Bancaria / CVU</span>
+          </div>
+          <div style="font-size:11.5px;color:var(--text-muted);">Alias de Cobro:</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:4px 0 8px;">
+            <span style="font-family:monospace;font-size:13px;font-weight:800;color:#009EE3;" id="ad-modal-alias">buscapet.oficial.mp</span>
+            <button class="btn btn-sm btn-primary" id="btn-copy-alias" style="font-size:11px;padding:2px 8px;" onclick="BuscapetAds.copyAlias()">COPIAR ALIAS</button>
+          </div>
+          <div style="font-size:11.5px;color:var(--text-sub);">
+            Titular: <strong style="color:var(--text-main);" id="ad-modal-holder">Oscar Nicolás Stella</strong>
+          </div>
+        </div>
+
+        <!-- Tarjeta PayPal -->
+        <div style="background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:14px;">
+          <div style="font-size:11.5px;color:var(--text-muted);">Internacional vía PayPal:</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:6px 12px;margin-top:4px;">
+            <span style="font-size:12px;color:var(--text-main);" id="ad-modal-paypal">pagos@buscapet.click</span>
+            <button class="btn btn-sm btn-outline-secondary" id="btn-copy-paypal" style="font-size:10.5px;padding:2px 8px;" onclick="BuscapetAds.copyPaypal()">COPIAR</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-success" style="width:100%;font-weight:800;padding:10px;background:#22C55E;border-color:#22C55E;font-size:13px;" onclick="BuscapetAds.sendProofWhatsApp()">
+          <i class="bi bi-whatsapp"></i> Enviar Comprobante por WhatsApp
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL 5: PANEL DE CONTROL OSCARSOFT (PIN oscar2026)
+══════════════════════════════════════════════════════════ -->
+<div class="buscapet-modal" id="admin-modal">
+  <div class="buscapet-modal-dialog">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom" style="color:var(--warning);">
+        <i class="bi bi-shield-lock-fill"></i> Panel de Administración OscarSoft
+      </div>
+      <button type="button" class="modal-close-btn" onclick="BuscapetAdmin.closeModal()">✕</button>
+    </div>
+    <div class="modal-body-custom">
+      <!-- Pantalla PIN -->
+      <div id="admin-pin-view">
+        <p style="font-size:12.5px;color:var(--text-muted);text-align:center;margin-bottom:14px;">
+          Ingresa el PIN de seguridad de OscarSoft para gestionar publicidad y cobros.
+        </p>
+        <form onsubmit="BuscapetAdmin.verifyPin(event)" style="max-width:280px;margin:0 auto;">
+          <input type="password" class="form-input-custom" id="admin-pin-input" placeholder="PIN de acceso (oscar2026)" style="text-align:center;font-size:16px;letter-spacing:3px;">
+          <div id="admin-pin-error" style="color:var(--danger);font-size:11.5px;text-align:center;margin-top:6px;display:none;"></div>
+          <button type="submit" class="btn-login" style="margin-top:10px;padding:10px;">Ingresar al Panel</button>
+        </form>
+      </div>
+
+      <!-- Pantalla Dashboard -->
+      <div id="admin-dash-view" style="display:none;">
+        <div style="display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;">
+          <button class="admin-tab-btn active" data-tab="settings" onclick="BuscapetAdmin.selectTab('settings')">⚙️ Cobros</button>
+          <button class="admin-tab-btn" data-tab="pending" onclick="BuscapetAdmin.selectTab('pending')">📥 Solicitudes</button>
+          <button class="admin-tab-btn" data-tab="active" onclick="BuscapetAdmin.selectTab('active')">📢 Anuncios Activos</button>
+        </div>
+
+        <!-- Panel Settings -->
+        <div id="admin-panel-settings">
+          <form onsubmit="BuscapetAdmin.saveSettings(event)">
+            <div class="form-group-custom">
+              <label class="form-label-custom">Mercado Pago Alias</label>
+              <input type="text" class="form-input-custom" id="admin-mp-alias">
+            </div>
+            <div class="form-group-custom">
+              <label class="form-label-custom">Titular de Cuenta</label>
+              <input type="text" class="form-input-custom" id="admin-mp-holder">
+            </div>
+            <div class="form-group-custom">
+              <label class="form-label-custom">PayPal Email</label>
+              <input type="email" class="form-input-custom" id="admin-paypal-email">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="form-group-custom">
+                <label class="form-label-custom">Precio en ARS ($)</label>
+                <input type="number" class="form-input-custom" id="admin-price-ars">
+              </div>
+              <div class="form-group-custom">
+                <label class="form-label-custom">Precio en USD ($)</label>
+                <input type="number" class="form-input-custom" id="admin-price-usd">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-warning" style="width:100%;font-weight:800;padding:10px;margin-top:6px;">
+              💾 Guardar Cambios de Cobro
+            </button>
+          </form>
+        </div>
+
+        <!-- Panel Solicitudes Pendientes -->
+        <div id="admin-panel-pending" style="display:none;">
+          <div id="admin-pending-list"></div>
+        </div>
+
+        <!-- Panel Anuncios Activos -->
+        <div id="admin-panel-active" style="display:none;">
+          <div id="admin-active-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL 6: COMPARTIR EN REDES SOCIALES
+══════════════════════════════════════════════════════════ -->
+<div class="buscapet-modal" id="share-modal">
+  <div class="buscapet-modal-dialog" style="max-width:440px;">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">
+        <span>📢</span> <span>Compartir Alerta de Mascota</span>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="BuscapetFeed.closeShareModal()">✕</button>
+    </div>
+    <div class="modal-body-custom">
+      <p style="font-size:12.5px;color:var(--text-sub);margin-bottom:12px;">Difundí en redes sociales para que los vecinos del barrio puedan ayudar a encontrarlo:</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <a id="share-wa-btn" class="btn btn-success" style="font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;" target="_blank">
+          <i class="bi bi-whatsapp"></i> WhatsApp
+        </a>
+        <a id="share-fb-btn" class="btn btn-primary" style="font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;" target="_blank">
+          <i class="bi bi-facebook"></i> Facebook
+        </a>
+        <a id="share-tw-btn" class="btn btn-dark" style="font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;" target="_blank">
+          <i class="bi bi-twitter-x"></i> X / Twitter
+        </a>
+        <button class="btn btn-outline-secondary" style="font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;" onclick="navigator.clipboard.writeText(document.getElementById('share-url-input').value);buscapetToast('🔗 Enlace copiado al portapapeles','success');">
+          <i class="bi bi-link-45deg"></i> Copiar Link
+        </button>
+      </div>
+      <input type="text" id="share-url-input" class="form-input-custom" readonly style="font-size:11px;color:var(--text-muted);text-align:center;">
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL 7: PERFIL / AUTENTICACIÓN SOLIDARIA
+══════════════════════════════════════════════════════════ -->
+<div class="buscapet-modal" id="auth-modal">
+  <div class="buscapet-modal-dialog" style="max-width:440px;">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">
+        <span>👤</span> <span>Perfil Solidario Buscapet</span>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="document.getElementById('auth-modal').classList.remove('show');document.getElementById('auth-modal').style.display='none';document.body.classList.remove('modal-open');">✕</button>
+    </div>
+    <div class="modal-body-custom" style="text-align:center;">
+      <div class="avatar-initials" style="width:64px;height:64px;font-size:24px;margin:0 auto 12px;">I</div>
+      <div style="font-size:16px;font-weight:800;color:var(--text-main);">Invitado Solidario</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Navegando en la red gratuita de Buscapet</div>
+      <p style="font-size:12px;color:var(--text-sub);line-height:1.4;margin-bottom:16px;">
+        Podés reportar mascotas perdidas, encontradas o en adopción sin necesidad de registro previo obligatorio.
+      </p>
+      <button class="btn-login" style="margin-bottom:8px;" onclick="BuscapetPublish.openModal('lost');document.getElementById('auth-modal').style.display='none';">
+        <i class="bi bi-plus-circle-fill"></i> Publicar una Mascota Ahora
+      </button>
+      <button class="btn-cafecito" onclick="window.open('https://cafecito.app/buscapet','_blank')">
+        ☕ Donar un Cafecito
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- App JS -->
-<script src="js/buscapet.js?v=3"></script>
-<script src="js/app.js?v=3"></script>
+
+<!-- Buscapet Modules -->
+<script src="js/i18n.js?v=4"></script>
+<script src="js/locations-data.js?v=4"></script>
+<script src="js/map.js?v=4"></script>
+<script src="js/chat.js?v=4"></script>
+<script src="js/ads.js?v=4"></script>
+<script src="js/admin.js?v=4"></script>
+<script src="js/publish.js?v=4"></script>
+<script src="js/feed.js?v=4"></script>
+<script src="js/app.js?v=4"></script>
+
 </body>
 </html>
