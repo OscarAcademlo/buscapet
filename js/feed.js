@@ -1,6 +1,7 @@
-// ==========================================================================
+// =============================================================================
 // BUSCAPET - FEED CONTROLLER (POSTS, CAROUSELS, FILTERS & INTERACTIONS)
-// ==========================================================================
+// Basado en HomeScreen, PetCard y PetPost de Flutter
+// =============================================================================
 
 var BuscapetFeed = window.BuscapetFeed = {
   posts: [],
@@ -47,7 +48,6 @@ var BuscapetFeed = window.BuscapetFeed = {
       liked: false,
       shares: 18,
       isResolved: false,
-      resolvedType: null, // 'reunited' | 'adopted'
       comments: [
         {
           id: 'cmt-1',
@@ -92,13 +92,12 @@ var BuscapetFeed = window.BuscapetFeed = {
       liked: false,
       shares: 31,
       isResolved: false,
-      resolvedType: null,
       comments: [
         {
           id: 'cmt-2',
           userName: 'Gonzalo Paz',
           userAvatar: 'img/posts/demo/avatar_gonzalo.jpg',
-          text: 'Tiene carita de estar bien cuidada, seguro su familia la está buscando desesperada.',
+          text: 'Tiene carita de estar bien cuidada, seguro su familia la está buscando.',
           time: 'Hace 3 h'
         }
       ]
@@ -116,36 +115,33 @@ var BuscapetFeed = window.BuscapetFeed = {
       ],
       description: 'Luna tiene 6 meses, está desparasitada y con la primera vacuna. Es súper juguetona y sociable con otros animales y niños. Se entrega en adopción responsable con compromiso de castración.',
       hasCollar: false,
-      vaccines: true,
-      neutered: false,
-      adoptionReqs: 'Seguimiento por fotos y compromiso de castración a los 8 meses.',
+      collarDetails: '',
       location: {
         countryCode: 'AR',
         countryName: 'Argentina',
-        stateName: 'CABA',
-        cityName: 'Villa Urquiza',
-        address: 'Plaza Echeverría, Villa Urquiza, CABA',
-        lat: -34.5732,
-        lng: -58.4877
+        stateName: 'Córdoba',
+        cityName: 'Córdoba Capital',
+        address: 'Zona Nueva Córdoba, Córdoba Capital',
+        lat: -31.4284,
+        lng: -64.1888
       },
-      date: 'Ayer',
+      date: 'Hace 12 h',
       user: {
         id: 'usr-103',
         name: 'Valentina Díaz',
         avatar: 'img/posts/demo/avatar_valentina.jpg',
-        phone: '+5491133332211'
+        phone: '+5493515551234'
       },
       likes: 65,
       liked: false,
-      shares: 45,
+      shares: 48,
       isResolved: false,
-      resolvedType: null,
       comments: [
         {
           id: 'cmt-3',
           userName: 'Carla Méndez',
           userAvatar: 'img/posts/demo/avatar_carla.jpg',
-          text: '¡Hermosa Luna! Ojalá encuentre un hogar lleno de amor.',
+          text: '¡Hermosa Luna! Ojalá encuentre un hogar lleno de amor. 🐾',
           time: 'Hace 8 h'
         }
       ]
@@ -153,7 +149,7 @@ var BuscapetFeed = window.BuscapetFeed = {
     {
       id: 'post-4',
       type: 'spotted',
-      petName: 'Pastor Alemán desorientado',
+      petName: 'Pastor Alemán visto en la costa',
       species: 'Perro',
       breed: 'Pastor Alemán',
       gender: 'Macho',
@@ -168,7 +164,7 @@ var BuscapetFeed = window.BuscapetFeed = {
         countryName: 'Argentina',
         stateName: 'Río Negro',
         cityName: 'San Carlos de Bariloche',
-        address: 'Centro Cívico, San Carlos de Bariloche, Río Negro',
+        address: 'Av. 12 de Octubre y Costanera, Bariloche',
         lat: -41.1335,
         lng: -71.3103
       },
@@ -183,7 +179,6 @@ var BuscapetFeed = window.BuscapetFeed = {
       liked: false,
       shares: 27,
       isResolved: false,
-      resolvedType: null,
       comments: []
     }
   ],
@@ -192,7 +187,12 @@ var BuscapetFeed = window.BuscapetFeed = {
     const saved = localStorage.getItem('buscapet_posts');
     if (saved) {
       try {
-        this.posts = JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.posts = parsed;
+        } else {
+          this.posts = [...this.initialPosts];
+        }
       } catch (e) {
         this.posts = [...this.initialPosts];
       }
@@ -225,7 +225,6 @@ var BuscapetFeed = window.BuscapetFeed = {
     this.selectedCity = city || '';
     this.renderFeed();
 
-    // Update location label in hero
     const locText = document.querySelector('.hero-location-text');
     if (locText) {
       if (city) locText.textContent = `📍 ${city}, ${state || country}`;
@@ -242,25 +241,28 @@ var BuscapetFeed = window.BuscapetFeed = {
 
   getFilteredPosts() {
     return this.posts.filter(post => {
-      // Type filter
+      if (!post) return false;
+
+      // Filtro de Categoría
       if (this.activeFilter !== 'all' && post.type !== this.activeFilter) {
         return false;
       }
 
-      // Location filter
-      if (this.selectedCountry && post.location && post.location.countryCode !== this.selectedCountry && post.location.countryName !== this.selectedCountry) {
-        // Allow pass if matching country name or code
+      // Filtro de Ubicación
+      if (this.selectedState && post.location && post.location.stateName) {
+        if (!post.location.stateName.toLowerCase().includes(this.selectedState.toLowerCase())) {
+          return false;
+        }
       }
-      if (this.selectedState && post.location && !post.location.stateName.toLowerCase().includes(this.selectedState.toLowerCase())) {
-        return false;
-      }
-      if (this.selectedCity && post.location && !post.location.cityName.toLowerCase().includes(this.selectedCity.toLowerCase())) {
-        return false;
+      if (this.selectedCity && post.location && post.location.cityName) {
+        if (!post.location.cityName.toLowerCase().includes(this.selectedCity.toLowerCase())) {
+          return false;
+        }
       }
 
-      // Search query
+      // Búsqueda en vivo
       if (this.searchQuery) {
-        const text = `${post.petName} ${post.species} ${post.breed} ${post.description} ${post.location?.cityName || ''} ${post.location?.stateName || ''}`.toLowerCase();
+        const text = `${post.petName || ''} ${post.species || ''} ${post.breed || ''} ${post.description || ''} ${post.location?.cityName || ''} ${post.location?.address || ''}`.toLowerCase();
         if (!text.includes(this.searchQuery)) return false;
       }
 
@@ -291,10 +293,10 @@ var BuscapetFeed = window.BuscapetFeed = {
     filtered.forEach((post, idx) => {
       html += this.buildPostCardHtml(post);
 
-      // Interleave sponsored ads from BuscapetAds
+      // Anuncios patrocinados intercalados de BuscapetAds
       if (window.BuscapetAds && (idx === 0 || idx === 2)) {
         const ad = window.BuscapetAds.getAdForIndex(idx);
-        if (ad) html += window.BuscapetAds.buildAdCardHtml(ad);
+        if (ad) html += this.buildAdCardHtml(ad);
       }
     });
 
@@ -302,38 +304,37 @@ var BuscapetFeed = window.BuscapetFeed = {
   },
 
   buildPostCardHtml(post) {
-    const t = window.BuscapetI18n ? window.BuscapetI18n.t.bind(window.BuscapetI18n) : (k => k);
-    const photos = post.photos && post.photos.length > 0 ? post.photos : ['img/posts/demo/milo_1.jpg'];
+    const photos = (post.photos && post.photos.length > 0) ? post.photos : ['img/posts/demo/milo_1.jpg'];
     const currentIdx = this.photoIndices[post.id] || 0;
     const currentPhoto = photos[currentIdx] || photos[0];
+    const user = post.user || { name: 'Comunidad Buscapet', avatar: 'img/posts/demo/avatar_nicolas.jpg', phone: '+5491155554321' };
+    const loc = post.location || { cityName: 'Argentina', stateName: '', address: 'Zona reportada' };
 
-    // Badge styling & labels
     let badgeClass = 'badge-lost';
-    let badgeText = t('badge_lost');
+    let badgeText = '🔴 Perdida';
     let borderClass = 'border-lost';
     if (post.type === 'found') {
       badgeClass = 'badge-found';
-      badgeText = t('badge_found');
+      badgeText = '🟢 Encontrada';
       borderClass = 'border-found';
     } else if (post.type === 'adopt') {
       badgeClass = 'badge-adopt';
-      badgeText = t('badge_adopt');
+      badgeText = '🟣 En Adopción';
       borderClass = 'border-adopt';
     } else if (post.type === 'spotted') {
       badgeClass = 'badge-spotted';
-      badgeText = t('badge_spotted');
+      badgeText = '🟡 Avistamiento';
       borderClass = 'border-spotted';
     }
 
-    // Resolved status (Final Feliz)
     const isResolved = !!post.isResolved;
-    const resolvedLabel = post.type === 'adopt' ? t('badge_adopted') : t('badge_resolved');
-    const markResolvedBtnText = post.type === 'adopt' ? t('mark_adopted') : t('mark_resolved');
+    const resolvedLabel = post.type === 'adopt' ? '¡ADOPTADO CON ÉXITO!' : '¡YA FUE ENCONTRADO!';
+    const markResolvedBtnText = post.type === 'adopt' ? '🏠 ¡Ya fue adoptado!' : '✅ ¡Ya fue encontrado!';
 
     return `
       <article class="pet-card ${borderClass}" id="card-${post.id}" data-type="${post.type}">
         ${isResolved ? `
-          <div style="background:linear-gradient(90deg,#22C55E,#16A34A);color:#fff;padding:7px 10px;font-size:12.5px;font-weight:900;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <div style="background:linear-gradient(90deg,#22C55E,#16A34A);color:#fff;padding:7px 10px;font-size:12px;font-weight:900;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;">
             <span>🎉</span> <span>${resolvedLabel}</span>
           </div>
         ` : `
@@ -341,10 +342,10 @@ var BuscapetFeed = window.BuscapetFeed = {
         `}
 
         <div class="card-header-row">
-          <img class="card-avatar" src="${post.user.avatar || 'img/posts/demo/avatar_nicolas.jpg'}" alt="${post.user.name}">
+          <img class="card-avatar" src="${user.avatar || 'img/posts/demo/avatar_nicolas.jpg'}" alt="${user.name}">
           <div class="card-user-info">
-            <div class="card-username">${post.user.name}</div>
-            <div class="card-meta">${post.location ? `${post.location.cityName}, ${post.location.stateName}` : ''} &bull; ${post.date}</div>
+            <div class="card-username">${user.name}</div>
+            <div class="card-meta">${loc.cityName ? `${loc.cityName}, ${loc.stateName || ''}` : 'Argentina'} &bull; ${post.date}</div>
           </div>
           <div class="card-badges">
             <span class="badge-type ${badgeClass}">${badgeText}</span>
@@ -378,35 +379,35 @@ var BuscapetFeed = window.BuscapetFeed = {
             <i class="bi bi-share"></i>
             <span>${post.shares || 0}</span>
           </button>
-          ${post.location && post.location.lat ? `
+          ${loc && loc.lat ? `
             <button class="action-btn" style="margin-left:auto;color:var(--primary);" onclick="BuscapetMap.openMapForPost('${post.id}')">
-              <i class="bi bi-geo-alt-fill"></i> ${t('view_map')}
+              <i class="bi bi-geo-alt-fill"></i> Ver en Mapa
             </button>
           ` : ''}
         </div>
 
         <div class="card-contact-btns">
-          <a class="contact-btn contact-btn-found" href="https://wa.me/${(post.user.phone || '').replace(/[^0-9]/g, '')}?text=Hola%20${encodeURIComponent(post.user.name)},%20te%20contacto%20desde%20Buscapet%20por%20${encodeURIComponent(post.petName)}" target="_blank">
-            <i class="bi bi-whatsapp"></i> ${t('contact_whatsapp')}
+          <a class="contact-btn contact-btn-found" href="https://wa.me/${(user.phone || '').replace(/[^0-9]/g, '')}?text=Hola%20${encodeURIComponent(user.name)},%20te%20contacto%20desde%20Buscapet%20por%20${encodeURIComponent(post.petName)}" target="_blank">
+            <i class="bi bi-whatsapp"></i> WhatsApp
           </a>
-          <button class="contact-btn contact-btn-msg" onclick="BuscapetChat.openDirectChat('${post.id}', '${post.user.name}', '${post.petName}', '${post.user.avatar}')">
-            <i class="bi bi-chat-dots"></i> ${t('contact_chat')}
+          <button class="contact-btn contact-btn-msg" onclick="BuscapetChat.openDirectChat('${post.id}', '${user.name}', '${post.petName}', '${user.avatar}')">
+            <i class="bi bi-chat-dots"></i> Chat Interno
           </button>
         </div>
 
         <div class="card-details">
           <div class="card-pet-name">${post.petName}</div>
           <div class="card-species-tags">
-            <span class="species-tag">${post.species}</span>
+            <span class="species-tag">🐶 ${post.species}</span>
             <span class="species-tag">${post.breed}</span>
             <span class="species-tag">${post.gender}</span>
-            ${post.hasCollar ? `<span class="species-tag" style="border-color:var(--warning);color:var(--warning);">🏷️ ${post.collarDetails || t('collar_yes')}</span>` : ''}
+            ${post.hasCollar ? `<span class="species-tag" style="border-color:var(--warning);color:var(--warning);">🏷️ ${post.collarDetails || 'Con collar'}</span>` : ''}
           </div>
           <div class="card-description">${post.description}</div>
-          ${post.location ? `
+          ${loc ? `
             <div class="card-location-row" style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-muted);margin-top:6px;">
               <i class="bi bi-geo-alt-fill" style="color:var(--primary)"></i>
-              <span>${post.location.address || `${post.location.cityName}, ${post.location.stateName}`}</span>
+              <span>${loc.address || `${loc.cityName}, ${loc.stateName}`}</span>
             </div>
           ` : ''}
 
@@ -434,10 +435,44 @@ var BuscapetFeed = window.BuscapetFeed = {
             `).join('')}
           </div>
           <div style="display:flex;gap:6px;">
-            <input type="text" class="filter-select" style="margin:0;flex:1;" id="comment-input-${post.id}" placeholder="${t('write_comment')}">
+            <input type="text" class="filter-select" style="margin:0;flex:1;" id="comment-input-${post.id}" placeholder="Escribe un mensaje de apoyo...">
             <button class="btn-filter-apply" style="width:auto;padding:6px 14px;" onclick="BuscapetFeed.submitComment('${post.id}')">
               <i class="bi bi-send-fill"></i>
             </button>
+          </div>
+        </div>
+      </article>
+    `;
+  },
+
+  buildAdCardHtml(ad) {
+    return `
+      <article class="pet-card border-ad" style="border-color:rgba(245,158,11,.6);background:linear-gradient(135deg,#1c160e 0%,#151820 100%);">
+        <div style="background:linear-gradient(90deg,#F59E0B,#D97706);color:#000;padding:4px 10px;font-size:10px;font-weight:900;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;">
+          <span>📢 PUBLICIDAD PATROCINADA</span>
+          <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">DESTACADO</span>
+        </div>
+        <div class="card-header-row" style="padding:10px 12px 6px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,.2);border:1.5px solid var(--warning);display:flex;align-items:center;justify-content:center;font-size:18px;">
+            🏥
+          </div>
+          <div class="card-user-info">
+            <div class="card-username" style="color:var(--warning);font-size:13.5px;">${ad.businessName}</div>
+            <div class="card-meta" style="color:var(--text-sub);">${ad.category} &bull; ${ad.city}</div>
+          </div>
+        </div>
+        <div class="card-photo-wrap" style="cursor:default;">
+          <img src="${ad.bannerUrl}" alt="${ad.businessName}">
+        </div>
+        <div class="card-details" style="padding:10px 12px;">
+          <div style="font-size:13px;color:var(--text-main);line-height:1.45;margin-bottom:8px;">${ad.promoText}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+            <a class="contact-btn" style="background:#22C55E;color:#fff;" href="https://wa.me/${ad.whatsapp}?text=Hola,%20los%20contacto%20desde%20el%20anuncio%20de%20Buscapet!" target="_blank">
+              <i class="bi bi-whatsapp"></i> WhatsApp
+            </a>
+            <a class="contact-btn" style="background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;" href="${ad.website || '#'}" target="_blank">
+              <i class="bi bi-globe2"></i> Sitio Web
+            </a>
           </div>
         </div>
       </article>
@@ -455,6 +490,8 @@ var BuscapetFeed = window.BuscapetFeed = {
   },
 
   prevPhoto(postId) {
+    const post = this.posts.find(p => p.id === postId);
+    if (!post || !post.photos || post.photos.length <= 1) return;
     const current = this.photoIndices[postId] || 0;
     if (current > 0) {
       this.photoIndices[postId] = current - 1;
@@ -468,19 +505,7 @@ var BuscapetFeed = window.BuscapetFeed = {
     post.liked = !post.liked;
     post.likes = (post.likes || 0) + (post.liked ? 1 : -1);
     this.save();
-
-    const countEl = document.getElementById(`likes-${postId}`);
-    if (countEl) countEl.textContent = post.likes;
-
-    const card = document.getElementById(`card-${postId}`);
-    if (card) {
-      const btn = card.querySelector('.card-actions .action-btn:first-child');
-      if (btn) {
-        btn.className = `action-btn ${post.liked ? 'liked' : ''}`;
-        const icon = btn.querySelector('i');
-        if (icon) icon.className = `bi ${post.liked ? 'bi-heart-fill' : 'bi-heart'}`;
-      }
-    }
+    this.renderFeed();
   },
 
   toggleComments(postId) {
@@ -500,33 +525,26 @@ var BuscapetFeed = window.BuscapetFeed = {
     if (!post.comments) post.comments = [];
     post.comments.push({
       id: 'cmt-' + Date.now(),
-      userName: 'Tú (Usuario)',
+      userName: 'Tú (Vecino Solidario)',
       userAvatar: 'img/posts/demo/avatar_nicolas.jpg',
       text: input.value.trim(),
-      time: 'Hace un instante'
+      time: 'Hace un momento'
     });
 
     input.value = '';
     this.save();
     this.renderFeed();
-
-    // Reopen comments box after rerender
-    setTimeout(() => {
-      const box = document.getElementById(`comments-box-${postId}`);
-      if (box) box.style.display = 'block';
-    }, 50);
+    this.toggleComments(postId);
   },
 
   toggleResolved(postId) {
     const post = this.posts.find(p => p.id === postId);
     if (!post) return;
-
     post.isResolved = !post.isResolved;
     this.save();
     this.renderFeed();
-
-    if (post.isResolved) {
-      alert(`🎉 ¡Excelente noticia! ${post.petName} fue marcado como caso resuelto. La comunidad de Buscapet celebra este reencuentro.`);
+    if (window.buscapetToast) {
+      window.buscapetToast(post.isResolved ? '🎉 ¡Qué gran noticia! Mascota marcada como reencontrada' : 'Caso reabierto');
     }
   },
 
@@ -547,7 +565,6 @@ var BuscapetFeed = window.BuscapetFeed = {
         url: shareUrl
       }).catch(() => {});
     } else {
-      // Open share modal
       const modal = document.getElementById('share-modal');
       const input = document.getElementById('share-url-input');
       const waBtn = document.getElementById('share-wa-btn');

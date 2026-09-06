@@ -1,10 +1,10 @@
-// ==========================================================================
+// =============================================================================
 // BUSCAPET — MAIN APP BOOTSTRAPPER & EVENT ORCHESTRATOR
-// ==========================================================================
+// =============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // 1. Initialize Subsystems
+  // 1. Inicializar Módulos
   if (window.BuscapetI18n) window.BuscapetI18n.init();
   if (window.BuscapetAds) window.BuscapetAds.init();
   if (window.BuscapetFeed) window.BuscapetFeed.init();
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const t = document.createElement('div');
     t.className = 'buscapet-toast';
-    const bg = type === 'success' ? '#16A34A' : (type === 'error' ? '#EF4444' : '#1E2330');
+    const bg = type === 'success' ? '#10B981' : (type === 'error' ? '#EF4444' : '#1A1D27');
     t.style.cssText = `
       position: fixed;
       bottom: 85px;
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
       font-size: 13px;
       z-index: 999999;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.15);
+      border: 1.5px solid rgba(255,255,255,0.15);
       font-family: 'Outfit', sans-serif;
       text-align: center;
       white-space: nowrap;
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2800);
   };
 
-  // 3. Theme Toggle (Dark / Light)
+  // 3. Alternador de Tema (Modo Claro / Modo Oscuro)
   const themeBtn = document.getElementById('btn-theme-toggle');
   const savedTheme = localStorage.getItem('buscapet_theme') || 'dark';
   if (savedTheme === 'light') {
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 4. Multi-language Selectors
+  // 4. Idiomas (ES, EN, PT)
   document.querySelectorAll('[data-lang]').forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 5. Populate Location Filters (Sidebar)
+  // 5. Filtros de Ubicación en Barra Lateral
   const countrySelect = document.getElementById('filter-country');
   const stateSelect = document.getElementById('filter-state');
   const citySelect = document.getElementById('filter-city');
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 6. Live Search Bar
+  // 6. Búsqueda en Vivo
   const searchInput = document.getElementById('topbar-search-input');
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 7. Hero Banner Action Buttons
+  // 7. Botones del Banner Principal (Hero)
   const btnHeroLost = document.getElementById('btn-hero-lost');
   const btnHeroFound = document.getElementById('btn-hero-found');
   const btnHeroAdopt = document.getElementById('btn-hero-adopt');
@@ -188,13 +188,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (countrySelect) {
         countrySelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
         countrySelect.focus();
-        countrySelect.style.borderColor = 'var(--primary)';
-        setTimeout(() => countrySelect.style.borderColor = '', 2000);
       }
     });
   }
 
-  // 8. Topbar & Sidebar General Buttons
+  // 8. Botones de Publicar y Anunciar
   document.querySelectorAll('.publish-btn, .btn-publish-big').forEach(btn => {
     btn.addEventListener('click', () => {
       if (window.BuscapetPublish) window.BuscapetPublish.openModal('lost');
@@ -208,10 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // 9. Donaciones y Cafecito — Abre Checkout de Mercado Pago / Alias / PayPal
   document.querySelectorAll('.topbar-icon-coffee, .btn-cafecito, .sidebar-card-cafecito button, .mobile-card-cafecito button').forEach(btn => {
     btn.closest('button')?.addEventListener('click', (e) => {
       e.preventDefault();
-      window.open('https://cafecito.app/buscapet', '_blank');
+      if (window.BuscapetAds) {
+        window.BuscapetAds.openDonationModal();
+      }
     });
   });
 
@@ -222,13 +223,11 @@ document.addEventListener('DOMContentLoaded', () => {
         authModal.classList.add('show');
         authModal.style.display = 'block';
         document.body.classList.add('modal-open');
-      } else {
-        window.buscapetToast('👋 ¡Hola! Estás navegando como Invitado Solidario.');
       }
     });
   });
 
-  // 9. Bottom Navigation Tabs
+  // 10. Navegación Inferior (Móvil)
   const bottomNavItems = document.querySelectorAll('.bottom-nav-item[data-tab]');
   bottomNavItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -254,39 +253,12 @@ document.addEventListener('DOMContentLoaded', () => {
           authModal.classList.add('show');
           authModal.style.display = 'block';
           document.body.classList.add('modal-open');
-        } else {
-          window.buscapetToast('👤 Perfil Solidario Buscapet');
         }
       }
     });
   });
 
-  // 10. Sidebar Navigation Items
-  document.querySelectorAll('.left-sidebar .nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-      document.querySelectorAll('.left-sidebar .nav-item').forEach(n => n.classList.remove('active'));
-      item.classList.add('active');
-      const text = item.textContent.trim().toLowerCase();
-      if (text.includes('inicio')) {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        if (window.BuscapetFeed) window.BuscapetFeed.setFilter('all');
-      } else if (text.includes('buscar')) {
-        const topSearch = document.getElementById('topbar-search-input');
-        if (topSearch) topSearch.focus();
-      } else if (text.includes('mensajes')) {
-        if (window.BuscapetChat) window.BuscapetChat.openChatList();
-      } else if (text.includes('perfil')) {
-        const authModal = document.getElementById('auth-modal');
-        if (authModal) {
-          authModal.classList.add('show');
-          authModal.style.display = 'block';
-          document.body.classList.add('modal-open');
-        }
-      }
-    });
-  });
-
-  // 11. OscarSoft Admin Entrypoint (Footer / Admin Button)
+  // 11. Acceso a Panel OscarSoft
   const adminEntryBtn = document.getElementById('btn-admin-entry');
   if (adminEntryBtn) {
     adminEntryBtn.addEventListener('click', (e) => {

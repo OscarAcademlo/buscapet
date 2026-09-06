@@ -1,43 +1,47 @@
-// ==========================================================================
-// BUSCAPET - MONETIZATION & SPONSORED ADS CONTROLLER (MERCADO PAGO & PAYPAL)
-// ==========================================================================
+// =============================================================================
+// BUSCAPET - MONETIZATION, ADS & DONATIONS (MERCADO PAGO CHECKOUT PRO & PAYPAL)
+// Basado en AppSettings, DonationModal y AdRequestModal de Flutter
+// =============================================================================
 
 var BuscapetAds = window.BuscapetAds = {
   activeAds: [
     {
       id: 'ad-1',
-      businessName: 'Veterinaria & Urgencias 24h San Martín',
+      businessName: 'Veterinaria & Urgencias 24h San Roque',
       category: 'Veterinaria 24h · Guardias y Cirugías',
       city: 'Palermo, CABA',
       bannerUrl: 'img/posts/demo/ad_vet.jpg',
-      promoText: 'Atención de emergencias las 24 hs. Quirófano, internación y ambulancia veterinaria. 15% de descuento mencionando a Buscapet.',
+      promoText: 'Atención de emergencias veterinarias las 24 hs, cirugías, ecografías y vacunación completa. Mencionando a Buscapet obtenés 15% de descuento.',
       phone: '+5491155550024',
       whatsapp: '5491155550024',
-      website: 'https://veterinaria-demo.com',
+      website: 'https://instagram.com/veterinaria_sanroque',
       badge: 'VETERINARIA 24H',
       active: true
     },
     {
       id: 'ad-2',
-      businessName: 'Pet Shop & Alimentos Huellitas',
+      businessName: 'Pet Shop & Boutique Huellitas Felices',
       category: 'Pet Shop · Alimentos Balanceados',
-      city: 'Caballito, CABA',
+      city: 'Bariloche, Río Negro',
       bannerUrl: 'img/posts/demo/ad_petshop.jpg',
-      promoText: 'Envíos a domicilio sin cargo en el día. Todas las marcas premium, accesorios, correas reforzadas y antiparasitarios.',
-      phone: '+5491144440055',
-      whatsapp: '5491144440055',
-      website: 'https://petshop-demo.com',
+      promoText: 'Envíos a domicilio en el día sin cargo. Alimentos balanceados premium de todas las marcas, accesorios, correas reforzadas y antiparasitarios.',
+      phone: '+5492944550055',
+      whatsapp: '5492944550055',
+      website: 'https://instagram.com/huellitas_felices_pet',
       badge: 'PET SHOP DESTACADO',
       active: true
     }
   ],
 
+  // Credenciales y datos oficiales de Oscar Nicolás Stella (idénticos a AppSettings Flutter)
   paymentSettings: {
-    mpAlias: 'buscapet.oficial.mp',
+    mpAlias: 'oscar.stella.mp',
     mpHolder: 'Oscar Nicolás Stella',
-    paypalEmail: 'pagos@buscapet.click',
+    paypalEmail: 'oscarnicolasstella@yahoo.com.ar',
+    paypalLink: 'https://www.paypal.com/paypalme/oscarns',
     priceArs: 14000,
-    priceUsd: 15
+    priceUsd: 15,
+    donationPriceArs: 2000
   },
 
   uploadedBanner: null,
@@ -68,79 +72,90 @@ var BuscapetAds = window.BuscapetAds = {
       el.textContent = formattedArs;
     });
 
-    const bannerBtnText = document.querySelector('.hero-ad-btn span');
-    if (bannerBtnText) {
-      bannerBtnText.textContent = `📢 Anunciá tu Veterinaria o Negocio (${formattedArs})`;
+    const heroAdText = document.querySelector('.hero-ad-btn span');
+    if (heroAdText) {
+      heroAdText.textContent = `📢 Anunciá tu Veterinaria o Negocio (${formattedArs})`;
+    }
+
+    // Actualizar Alias y Titular en modales
+    const aliasElements = document.querySelectorAll('.dynamic-mp-alias');
+    aliasElements.forEach(el => { el.textContent = this.paymentSettings.mpAlias; });
+
+    const holderElements = document.querySelectorAll('.dynamic-mp-holder');
+    holderElements.forEach(el => { el.textContent = this.paymentSettings.mpHolder; });
+
+    const paypalElements = document.querySelectorAll('.dynamic-paypal-email');
+    paypalElements.forEach(el => { el.textContent = this.paymentSettings.paypalEmail; });
+  },
+
+  // ============ MODAL DE DONACIÓN / CAFECITO ============
+  openDonationModal() {
+    const modal = document.getElementById('donation-modal');
+    if (!modal) return;
+    this.updatePriceDisplays();
+    modal.classList.add('show');
+    modal.style.display = 'block';
+    document.body.classList.add('modal-open');
+  },
+
+  closeDonationModal() {
+    const modal = document.getElementById('donation-modal');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+      document.body.classList.remove('modal-open');
     }
   },
 
-  getAdForIndex(feedIndex) {
-    const active = this.activeAds.filter(a => a.active);
-    if (active.length === 0) return null;
-    const idx = feedIndex % active.length;
-    return active[idx];
+  payDonationWithMercadoPago(amount = 2000) {
+    if (window.MercadoPagoService) {
+      window.MercadoPagoService.openDonationCheckout(amount);
+    } else {
+      window.open('https://link.mercadopago.com.ar/', '_blank');
+    }
   },
 
-  buildAdCardHtml(ad) {
-    return `
-      <article class="pet-card border-ad" style="border-color:rgba(245,158,11,.6);background:linear-gradient(135deg,#1c160e 0%,#151820 100%);">
-        <div style="background:linear-gradient(90deg,#F59E0B,#D97706);color:#000;padding:4px 10px;font-size:10px;font-weight:900;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;">
-          <span>📢 PUBLICIDAD PATROCINADA</span>
-          <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">DESTACADO</span>
-        </div>
-
-        <div class="card-header-row" style="padding:10px 12px 6px;">
-          <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,.2);border:1.5px solid var(--warning);display:flex;align-items:center;justify-content:center;font-size:18px;">
-            🏥
-          </div>
-          <div class="card-user-info">
-            <div class="card-username" style="color:var(--warning);font-size:13.5px;">${ad.businessName}</div>
-            <div class="card-meta" style="color:var(--text-sub);">${ad.category} &bull; ${ad.city}</div>
-          </div>
-        </div>
-
-        <div class="card-photo-wrap" style="cursor:default;">
-          <img src="${ad.bannerUrl}" alt="${ad.businessName}">
-        </div>
-
-        <div class="card-details" style="padding:10px 12px;">
-          <div style="font-size:13px;color:var(--text-main);line-height:1.45;margin-bottom:8px;">${ad.promoText}</div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
-            <a class="contact-btn" style="background:#22C55E;color:#fff;" href="https://wa.me/${ad.whatsapp}?text=Hola,%20los%20contacto%20desde%20el%20anuncio%20de%20Buscapet!" target="_blank">
-              <i class="bi bi-whatsapp"></i> WhatsApp
-            </a>
-            <a class="contact-btn" style="background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;" href="tel:${ad.phone}">
-              <i class="bi bi-telephone-fill"></i> Llamar
-            </a>
-          </div>
-        </div>
-      </article>
-    `;
+  openPayPalDonation() {
+    window.open(this.paymentSettings.paypalLink || 'https://www.paypal.com/paypalme/oscarns', '_blank');
   },
 
+  copyAlias(btnId = 'btn-copy-alias') {
+    navigator.clipboard.writeText(this.paymentSettings.mpAlias).then(() => {
+      if (window.buscapetToast) window.buscapetToast(`📋 Alias copiado: ${this.paymentSettings.mpAlias}`, 'success');
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        const prev = btn.textContent;
+        btn.textContent = '¡COPIADO!';
+        setTimeout(() => { btn.textContent = prev; }, 2000);
+      }
+    });
+  },
+
+  copyPayPal(btnId = 'btn-copy-paypal') {
+    navigator.clipboard.writeText(this.paymentSettings.paypalEmail).then(() => {
+      if (window.buscapetToast) window.buscapetToast(`📋 PayPal copiado: ${this.paymentSettings.paypalEmail}`, 'success');
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        const prev = btn.textContent;
+        btn.textContent = '¡COPIADO!';
+        setTimeout(() => { btn.textContent = prev; }, 2000);
+      }
+    });
+  },
+
+  // ============ MODAL DE PUBLICIDAD ============
   openAdModal() {
     const modal = document.getElementById('ad-modal');
     if (!modal) return;
 
     this.uploadedBanner = null;
 
-    // Reset view to form
     const formView = document.getElementById('ad-form-view');
     const paymentView = document.getElementById('ad-payment-view');
     if (formView) formView.style.display = 'block';
     if (paymentView) paymentView.style.display = 'none';
 
-    // Populate payment data
-    const aliasEl = document.getElementById('ad-modal-alias');
-    const holderEl = document.getElementById('ad-modal-holder');
-    const paypalEl = document.getElementById('ad-modal-paypal');
-    const priceEl = document.getElementById('ad-modal-price');
-
-    if (aliasEl) aliasEl.textContent = this.paymentSettings.mpAlias;
-    if (holderEl) holderEl.textContent = this.paymentSettings.mpHolder;
-    if (paypalEl) paypalEl.textContent = this.paymentSettings.paypalEmail;
-    if (priceEl) priceEl.textContent = `$${Number(this.paymentSettings.priceArs).toLocaleString('es-AR')} ARS (o $${this.paymentSettings.priceUsd} USD)`;
+    this.updatePriceDisplays();
 
     modal.classList.add('show');
     modal.style.display = 'block';
@@ -183,7 +198,7 @@ var BuscapetAds = window.BuscapetAds = {
     const website = document.getElementById('ad-req-web')?.value.trim();
 
     if (!name || !promo || !phone) {
-      alert('Por favor completa el nombre del negocio, teléfono y texto del anuncio.');
+      alert('Por favor completa el nombre del negocio, WhatsApp y texto del anuncio.');
       return;
     }
 
@@ -201,40 +216,29 @@ var BuscapetAds = window.BuscapetAds = {
       active: false
     };
 
-    // Store in pending ads
     const pendingList = JSON.parse(localStorage.getItem('buscapet_pending_ads') || '[]');
     pendingList.push(pendingAd);
     localStorage.setItem('buscapet_pending_ads', JSON.stringify(pendingList));
 
-    // Show Step 2: Payment screen
+    // Pasar al paso de pago
     const formView = document.getElementById('ad-form-view');
     const paymentView = document.getElementById('ad-payment-view');
     if (formView) formView.style.display = 'none';
     if (paymentView) paymentView.style.display = 'block';
   },
 
-  copyAlias() {
-    navigator.clipboard.writeText(this.paymentSettings.mpAlias).then(() => {
-      const btn = document.getElementById('btn-copy-alias');
-      if (btn) {
-        btn.textContent = '¡COPIADO!';
-        setTimeout(() => { btn.textContent = 'COPIAR ALIAS'; }, 2000);
-      }
-    });
-  },
-
-  copyPaypal() {
-    navigator.clipboard.writeText(this.paymentSettings.paypalEmail).then(() => {
-      const btn = document.getElementById('btn-copy-paypal');
-      if (btn) {
-        btn.textContent = '¡COPIADO!';
-        setTimeout(() => { btn.textContent = 'COPIAR PAYPAL'; }, 2000);
-      }
-    });
+  payAdWithMercadoPago() {
+    const name = document.getElementById('ad-req-name')?.value.trim() || 'Anunciante';
+    if (window.MercadoPagoService) {
+      window.MercadoPagoService.openAdCheckout(name, this.paymentSettings.priceArs);
+    } else {
+      window.open('https://link.mercadopago.com.ar/', '_blank');
+    }
   },
 
   sendProofWhatsApp() {
-    const text = encodeURIComponent(`Hola OscarSoft / Buscapet, acabo de transferir la pauta publicitaria. Adjunto mi comprobante para la activación.`);
+    const name = document.getElementById('ad-req-name')?.value.trim() || 'mi negocio';
+    const text = encodeURIComponent(`Hola OscarSoft / Buscapet, acabo de transferir la pauta publicitaria para ${name}. Adjunto mi comprobante para la activación.`);
     window.open(`https://wa.me/5491155554321?text=${text}`, '_blank');
   }
 };

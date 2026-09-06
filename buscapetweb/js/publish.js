@@ -1,16 +1,31 @@
-// ==========================================================================
+// =============================================================================
 // BUSCAPET - MULTI-TYPE POST PUBLISHER (LOST, FOUND 1-CLICK, ADOPT, SIGHTING)
-// ==========================================================================
+// Basado fielmente en ReportScreen de Flutter
+// =============================================================================
 
 var BuscapetPublish = window.BuscapetPublish = {
   currentType: 'lost',
   uploadedPhotos: [],
 
   init() {
-    // Setup file input listeners
     const fileInput = document.getElementById('publish-photo-input');
     if (fileInput) {
       fileInput.addEventListener('change', (e) => this.handlePhotoUpload(e));
+    }
+
+    // Configurar autocompletado de calles OpenStreetMap Nominatim
+    const addressInput = document.getElementById('publish-address');
+    const suggestionsBox = document.getElementById('publish-address-suggestions');
+    if (addressInput && suggestionsBox && window.LocationAutocompleteService) {
+      window.LocationAutocompleteService.attachAutocomplete(addressInput, suggestionsBox, (selected) => {
+        if (window.BuscapetMap && window.BuscapetMap.pickerMap && selected.lat && selected.lng) {
+          window.BuscapetMap.pickerMap.setView([selected.lat, selected.lng], 16);
+          if (window.BuscapetMap.pickerMarker) {
+            window.BuscapetMap.pickerMarker.setLatLng([selected.lat, selected.lng]);
+          }
+          window.BuscapetMap.currentPickedCoords = { lat: selected.lat, lng: selected.lng };
+        }
+      });
     }
   },
 
@@ -28,10 +43,9 @@ var BuscapetPublish = window.BuscapetPublish = {
     modal.style.display = 'block';
     document.body.classList.add('modal-open');
 
-    // Populate country/province selectors in publish modal if available
     this.populateLocationDropdowns();
 
-    // Init picker map
+    // Inicializar mapa de Leaflet en el formulario
     setTimeout(() => {
       if (window.BuscapetMap && typeof window.BuscapetMap.initPickerMap === 'function') {
         window.BuscapetMap.initPickerMap();
@@ -51,14 +65,9 @@ var BuscapetPublish = window.BuscapetPublish = {
   selectTab(type) {
     this.currentType = type;
     document.querySelectorAll('.publish-tab-btn').forEach(btn => {
-      if (btn.getAttribute('data-tab') === type) {
-        btn.classList.add('active');
-      } else {
-        btn.classList.remove('active');
-      }
+      btn.classList.toggle('active', btn.getAttribute('data-tab') === type);
     });
 
-    // Toggle specific fields according to type
     const adoptFields = document.getElementById('publish-adopt-fields');
     const collarRow = document.getElementById('publish-collar-row');
     const fastGpsBtn = document.getElementById('publish-fast-gps-row');
@@ -84,19 +93,19 @@ var BuscapetPublish = window.BuscapetPublish = {
       const states = window.BuscapetLocations.getStates(code);
       if (stateSelect) {
         stateSelect.innerHTML = '<option value="">Seleccionar Provincia / Estado</option>' + states.map(s => `
-          <option value="${s.name}">${s.name}</option>
+          <option value="${s.name}" ${s.name === 'CABA' ? 'selected' : ''}>${s.name}</option>
         `).join('');
       }
-      if (citySelect) citySelect.innerHTML = '<option value="">Seleccionar Ciudad</option>';
+      updateCities();
     };
 
     const updateCities = () => {
       const code = countrySelect.value;
-      const state = stateSelect ? stateSelect.value : '';
+      const state = (stateSelect && stateSelect.value) || 'CABA';
       const cities = window.BuscapetLocations.getCities(code, state);
       if (citySelect) {
-        citySelect.innerHTML = '<option value="">Seleccionar Ciudad</option>' + cities.map(c => `
-          <option value="${c}">${c}</option>
+        citySelect.innerHTML = '<option value="">Seleccionar Ciudad / Barrio</option>' + cities.map(c => `
+          <option value="${c}" ${c === 'Palermo' ? 'selected' : ''}>${c}</option>
         `).join('');
       }
     };
@@ -139,14 +148,29 @@ var BuscapetPublish = window.BuscapetPublish = {
   },
 
   useGPS() {
-    if (window.BuscapetMap && typeof window.BuscapetMap.useCurrentGPSLocation === 'function') {
-      window.BuscapetMap.useCurrentGPSLocation((lat, lng) => {
-        const addressInput = document.getElementById('publish-address');
-        if (addressInput) {
-          addressInput.value = `GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    if (navigator.geolocation) {
+      if (window.buscapetToast) window.buscapetToast('📍 Obteniendo GPS...', 'info');
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          const addressInput = document.getElementById('publish-address');
+          if (addressInput) {
+            addressInput.value = `Ubicación GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+          }
+          if (window.BuscapetMap && window.BuscapetMap.pickerMap) {
+            window.BuscapetMap.pickerMap.setView([lat, lng], 16);
+            if (window.BuscapetMap.pickerMarker) {
+              window.BuscapetMap.pickerMarker.setLatLng([lat, lng]);
+            }
+            window.BuscapetMap.currentPickedCoords = { lat, lng };
+          }
+          if (window.buscapetToast) window.buscapetToast('✅ ¡GPS capturado con éxito!', 'success');
+        },
+        (err) => {
+          alert('No se pudo acceder al GPS. Podés mover el pin directamente en el mapa.');
         }
-        alert('📍 ¡Ubicación GPS capturada con éxito!');
-      });
+      );
     }
   },
 
@@ -174,7 +198,7 @@ var BuscapetPublish = window.BuscapetPublish = {
       return;
     }
 
-    const coords = (window.BuscapetMap && window.BuscapetMap.currentPickedCoords) || { lat: -34.6037, lng: -58.3816 };
+    const coords = (window.BuscapetMap && window.BuscapetMap.currentPickedCoords) || { lat: -34.5889, lng: -58.4305 };
 
     const newPost = {
       id: 'post-' + Date.now(),
@@ -191,7 +215,7 @@ var BuscapetPublish = window.BuscapetPublish = {
         countryCode: countrySelect ? countrySelect.value : 'AR',
         countryName: countrySelect ? countrySelect.options[countrySelect.selectedIndex]?.text : 'Argentina',
         stateName: (stateSelect && stateSelect.value) || 'CABA',
-        cityName: (citySelect && citySelect.value) || 'Caballito',
+        cityName: (citySelect && citySelect.value) || 'Palermo',
         address: (addressInput && addressInput.value.trim()) || 'Ubicación reportada',
         lat: coords.lat,
         lng: coords.lng
@@ -217,6 +241,10 @@ var BuscapetPublish = window.BuscapetPublish = {
     }
 
     this.closeModal();
-    alert(`🎉 ¡Reporte publicado con éxito! Ya está visible para toda la comunidad de Buscapet.`);
+    if (window.buscapetToast) {
+      window.buscapetToast('🎉 ¡Reporte publicado con éxito en Buscapet!', 'success');
+    } else {
+      alert('🎉 ¡Reporte publicado con éxito!');
+    }
   }
 };

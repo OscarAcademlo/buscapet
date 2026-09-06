@@ -1,6 +1,7 @@
-// ==========================================================================
-// BUSCAPET — OSCARSOFT ADMIN CONTROL PANEL CONTROLLER (PIN: oscar2026)
-// ==========================================================================
+// =============================================================================
+// BUSCAPET — OSCARSOFT ADMIN CONTROL PANEL (PIN: oscar2026)
+// Basado en AdminScreen de Flutter (OscarSoft Master Admin)
+// =============================================================================
 
 var BuscapetAdmin = window.BuscapetAdmin = {
   authenticated: false,
@@ -81,6 +82,7 @@ var BuscapetAdmin = window.BuscapetAdmin = {
     this.populateSettings();
     this.renderPendingAds();
     this.renderActiveAds();
+    this.renderPetsList();
   },
 
   selectTab(tabKey) {
@@ -91,13 +93,16 @@ var BuscapetAdmin = window.BuscapetAdmin = {
     const settingsPanel = document.getElementById('admin-panel-settings');
     const pendingPanel = document.getElementById('admin-panel-pending');
     const activePanel = document.getElementById('admin-panel-active');
+    const petsPanel = document.getElementById('admin-panel-pets');
 
     if (settingsPanel) settingsPanel.style.display = (tabKey === 'settings') ? 'block' : 'none';
     if (pendingPanel) pendingPanel.style.display = (tabKey === 'pending') ? 'block' : 'none';
     if (activePanel) activePanel.style.display = (tabKey === 'active') ? 'block' : 'none';
+    if (petsPanel) petsPanel.style.display = (tabKey === 'pets') ? 'block' : 'none';
 
     if (tabKey === 'pending') this.renderPendingAds();
     if (tabKey === 'active') this.renderActiveAds();
+    if (tabKey === 'pets') this.renderPetsList();
   },
 
   populateSettings() {
@@ -108,35 +113,40 @@ var BuscapetAdmin = window.BuscapetAdmin = {
     const mpHolder = document.getElementById('admin-mp-holder');
     const paypalEmail = document.getElementById('admin-paypal-email');
     const priceArs = document.getElementById('admin-price-ars');
-    const priceUsd = document.getElementById('admin-price-usd');
+    const donationArs = document.getElementById('admin-donation-ars');
 
-    if (mpAlias) mpAlias.value = s.mpAlias || '';
-    if (mpHolder) mpHolder.value = s.mpHolder || '';
-    if (paypalEmail) paypalEmail.value = s.paypalEmail || '';
+    if (mpAlias) mpAlias.value = s.mpAlias || 'oscar.stella.mp';
+    if (mpHolder) mpHolder.value = s.mpHolder || 'Oscar Nicolás Stella';
+    if (paypalEmail) paypalEmail.value = s.paypalEmail || 'oscarnicolasstella@yahoo.com.ar';
     if (priceArs) priceArs.value = s.priceArs || 14000;
-    if (priceUsd) priceUsd.value = s.priceUsd || 15;
+    if (donationArs) donationArs.value = s.donationPriceArs || 2000;
   },
 
   saveSettings(e) {
     if (e) e.preventDefault();
     if (!window.BuscapetAds) return;
 
-    const mpAlias = document.getElementById('admin-mp-alias')?.value.trim();
-    const mpHolder = document.getElementById('admin-mp-holder')?.value.trim();
-    const paypalEmail = document.getElementById('admin-paypal-email')?.value.trim();
+    const mpAlias = document.getElementById('admin-mp-alias')?.value.trim() || 'oscar.stella.mp';
+    const mpHolder = document.getElementById('admin-mp-holder')?.value.trim() || 'Oscar Nicolás Stella';
+    const paypalEmail = document.getElementById('admin-paypal-email')?.value.trim() || 'oscarnicolasstella@yahoo.com.ar';
     const priceArs = Number(document.getElementById('admin-price-ars')?.value) || 14000;
-    const priceUsd = Number(document.getElementById('admin-price-usd')?.value) || 15;
+    const donationPriceArs = Number(document.getElementById('admin-donation-ars')?.value) || 2000;
 
     window.BuscapetAds.paymentSettings = {
+      ...window.BuscapetAds.paymentSettings,
       mpAlias,
       mpHolder,
       paypalEmail,
       priceArs,
-      priceUsd
+      donationPriceArs
     };
 
     window.BuscapetAds.save();
-    window.buscapetToast ? window.buscapetToast('✅ Configuración de cobros guardada con éxito', 'success') : alert('Configuración guardada.');
+    if (window.buscapetToast) {
+      window.buscapetToast('✅ Configuración de cobros guardada correctamente', 'success');
+    } else {
+      alert('Configuración guardada.');
+    }
   },
 
   renderPendingAds() {
@@ -147,7 +157,7 @@ var BuscapetAdmin = window.BuscapetAdmin = {
 
     if (pendingList.length === 0) {
       container.innerHTML = `
-        <div style="padding:24px;text-align:center;color:var(--text-muted);font-size:13px;">
+        <div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12.5px;">
           No hay solicitudes de publicidad pendientes de revisión.
         </div>
       `;
@@ -182,25 +192,20 @@ var BuscapetAdmin = window.BuscapetAdmin = {
     const ad = pendingList.find(a => a.id === adId);
     if (!ad) return;
 
-    // Remove from pending
     pendingList = pendingList.filter(a => a.id !== adId);
     localStorage.setItem('buscapet_pending_ads', JSON.stringify(pendingList));
 
-    // Add to active
     ad.active = true;
     if (window.BuscapetAds) {
       window.BuscapetAds.activeAds.unshift(ad);
       window.BuscapetAds.save();
     }
 
-    // Refresh feed
-    if (window.BuscapetFeed) {
-      window.BuscapetFeed.renderFeed();
-    }
+    if (window.BuscapetFeed) window.BuscapetFeed.renderFeed();
 
     this.renderPendingAds();
     this.renderActiveAds();
-    window.buscapetToast ? window.buscapetToast('🎉 Anuncio aprobado y publicado en el feed!', 'success') : alert('Anuncio aprobado.');
+    if (window.buscapetToast) window.buscapetToast('🎉 Anuncio aprobado y publicado en el feed!', 'success');
   },
 
   rejectAd(adId) {
@@ -218,7 +223,7 @@ var BuscapetAdmin = window.BuscapetAdmin = {
     const ads = window.BuscapetAds.activeAds;
 
     if (ads.length === 0) {
-      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">No hay anuncios registrados.</div>';
+      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">No hay anuncios activos.</div>';
       return;
     }
 
@@ -261,9 +266,31 @@ var BuscapetAdmin = window.BuscapetAdmin = {
     this.renderActiveAds();
   },
 
-  logout() {
-    this.authenticated = false;
-    sessionStorage.removeItem('buscapet_admin_auth');
-    this.showPinScreen();
+  renderPetsList() {
+    const container = document.getElementById('admin-pets-list');
+    if (!container || !window.BuscapetFeed) return;
+
+    const posts = window.BuscapetFeed.posts || [];
+    container.innerHTML = posts.map(p => `
+      <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+        <img src="${(p.photos && p.photos[0]) || 'img/posts/demo/milo_1.jpg'}" style="width:45px;height:45px;border-radius:6px;object-fit:cover;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:12.5px;color:var(--text-main);">${p.petName} (${p.species})</div>
+          <div style="font-size:11px;color:var(--text-muted);">${p.location?.cityName || ''} &bull; ${p.isResolved ? '✅ Reencontrado' : '🔴 Activo'}</div>
+        </div>
+        <button class="btn btn-sm btn-outline-danger" style="font-size:10.5px;padding:3px 8px;" onclick="BuscapetAdmin.deletePost('${p.id}')">
+          Eliminar
+        </button>
+      </div>
+    `).join('');
+  },
+
+  deletePost(postId) {
+    if (!confirm('¿Eliminar esta publicación?')) return;
+    if (!window.BuscapetFeed) return;
+    window.BuscapetFeed.posts = window.BuscapetFeed.posts.filter(p => p.id !== postId);
+    window.BuscapetFeed.save();
+    window.BuscapetFeed.renderFeed();
+    this.renderPetsList();
   }
 };
