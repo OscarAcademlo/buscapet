@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import '../theme.dart';
 import '../models/sponsored_ad.dart';
+import '../services/app_settings.dart';
 
 class SponsoredAdCard extends StatelessWidget {
   final SponsoredAd ad;
@@ -45,6 +46,8 @@ class SponsoredAdCard extends StatelessWidget {
     try {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(uri);
       }
     } catch (_) {}
   }
@@ -131,9 +134,9 @@ class SponsoredAdCard extends StatelessWidget {
               children: [
                 const Icon(Icons.stars_rounded, size: 15, color: Color(0xFFF59E0B)),
                 const SizedBox(width: 6),
-                const Text(
-                  'PUBLICIDAD PATROCINADA',
-                  style: TextStyle(
+                Text(
+                  AppSettings.tr('sponsored_ad_badge'),
+                  style: const TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 0.6,
@@ -211,9 +214,9 @@ class SponsoredAdCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 6),
-                          const Text(
-                            'Verificado ✔',
-                            style: TextStyle(fontSize: 10, color: BuscapetTheme.success, fontWeight: FontWeight.w600),
+                          Text(
+                            AppSettings.tr('verified'),
+                            style: const TextStyle(fontSize: 10, color: BuscapetTheme.success, fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -222,7 +225,7 @@ class SponsoredAdCard extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.share_outlined, size: 18, color: BuscapetTheme.textMuted),
-                  tooltip: 'Compartir anuncio',
+                  tooltip: AppSettings.tr('share'),
                   onPressed: () {
                     Share.share('Mirá este servicio recomendado en Buscapet: ${ad.businessName} - ${ad.description}');
                   },
@@ -307,9 +310,9 @@ class SponsoredAdCard extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () => _openWebsite(context),
                       icon: const Icon(Icons.public_rounded, size: 16, color: BuscapetTheme.primary),
-                      label: const Text(
-                        'Sitio Web',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: BuscapetTheme.primary),
+                      label: Text(
+                        AppSettings.tr('website'),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: BuscapetTheme.primary),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: BuscapetTheme.primary),

@@ -301,11 +301,12 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Perfil usuario mini
+          // Perfil usuario mini con botón Iniciar / Cerrar Sesión
           StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, snap) {
               final user = snap.data;
+              final isLoggedIn = user != null;
               return Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -313,40 +314,78 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: BuscapetTheme.border),
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
-                      backgroundColor: BuscapetTheme.border,
-                      child: user?.photoURL == null
-                          ? const Icon(Icons.person_rounded, size: 20, color: BuscapetTheme.textMuted)
-                          : null,
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
+                          backgroundColor: BuscapetTheme.border,
+                          child: user?.photoURL == null
+                              ? const Icon(Icons.person_rounded, size: 20, color: BuscapetTheme.textMuted)
+                              : null,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                user?.displayName ?? (isLoggedIn ? AppSettings.tr('profile') : AppSettings.tr('guest')),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: BuscapetTheme.textMain,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                user?.email ?? AppSettings.tr('guest_sub'),
+                                style: const TextStyle(fontSize: 11, color: BuscapetTheme.textMuted),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            user?.displayName ?? (user != null ? AppSettings.tr('profile') : 'Invitado'),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w800,
-                              color: BuscapetTheme.textMain,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 10),
+                    if (isLoggedIn)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 32,
+                        child: OutlinedButton.icon(
+                          onPressed: () async {
+                            await _auth.signOut();
+                            if (mounted) setState(() {});
+                          },
+                          icon: const Icon(Icons.logout_rounded, size: 14, color: BuscapetTheme.danger),
+                          label: Text(AppSettings.tr('logout'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: BuscapetTheme.danger)),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: BuscapetTheme.danger, width: 1),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
-                          Text(
-                            user?.email ?? 'Iniciá sesión para publicar',
-                            style: const TextStyle(fontSize: 11, color: BuscapetTheme.textMuted),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        ),
+                      )
+                    else
+                      SizedBox(
+                        width: double.infinity,
+                        height: 32,
+                        child: ElevatedButton.icon(
+                          onPressed: () => setState(() => _currentTab = 4),
+                          icon: const Icon(Icons.login_rounded, size: 14, color: Colors.white),
+                          label: Text(AppSettings.tr('login'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: BuscapetTheme.primary,
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               );
@@ -807,7 +846,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             return ListView.builder(
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.only(bottom: 90),
               itemCount: items.length,
               itemBuilder: (context, index) => items[index],
             );
@@ -839,18 +878,18 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ☕ TARJETA CAFECITO / APOYAR A BUSCAPET (MERCADO PAGO / PAYPAL)
+          // 📢 TARJETA PUBLICIDAD / ANUNCIAR NEGOCIO O VETERINARIA
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF262015), Color(0xFF1B1710)],
+                colors: [Color(0xFF241C12), Color(0xFF1B150E)],
               ),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.5)),
+              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.6)),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.08),
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -859,13 +898,81 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Text('☕', style: TextStyle(fontSize: 18)),
-                    SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'PUBLICIDAD',
+                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.black),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        AppSettings.tr('ad_title'),
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFFF59E0B),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  AppSettings.tr('ad_desc'),
+                  style: const TextStyle(fontSize: 11.5, color: BuscapetTheme.textMuted, height: 1.35),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _openAdRequest,
+                    icon: const Icon(Icons.campaign_rounded, size: 16, color: Colors.black),
+                    label: Text(
+                      '${AppSettings.tr('request_ad')} (${_settings.adPriceArsString})',
+                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w900, color: Colors.black),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF59E0B),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // ☕ TARJETA CAFECITO / APOYAR A BUSCAPET (MERCADO PAGO / PAYPAL)
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF262015), Color(0xFF1B1710)],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('☕', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
                     Text(
-                      'Apoyar a Buscapet',
-                      style: TextStyle(
+                      AppSettings.tr('support_buscapet'),
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFFF59E0B),
@@ -874,22 +981,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Buscapet es 100% gratuita y sin fines de lucro. Tu cafecito nos ayuda a costear servidores y mapas online.',
-                  style: TextStyle(fontSize: 11.5, color: BuscapetTheme.textMuted, height: 1.35),
+                Text(
+                  AppSettings.tr('support_desc'),
+                  style: const TextStyle(fontSize: 11.5, color: BuscapetTheme.textMuted, height: 1.35),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
+                  child: OutlinedButton.icon(
                     onPressed: _openDonationModal,
-                    icon: const Icon(Icons.coffee_rounded, size: 16, color: Colors.black87),
-                    label: const Text(
-                      'Donar un Cafecito',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.black87),
+                    icon: const Icon(Icons.coffee_rounded, size: 16, color: Color(0xFFF59E0B)),
+                    label: Text(
+                      AppSettings.tr('donate_coffee'),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFFF59E0B)),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF59E0B),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFF59E0B)),
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),

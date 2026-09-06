@@ -137,13 +137,13 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Text('☕', style: TextStyle(fontSize: 20)),
-                    SizedBox(width: 8),
+                    const Text('☕', style: TextStyle(fontSize: 20)),
+                    const SizedBox(width: 8),
                     Text(
-                      'Invitanos un Cafecito ☕',
-                      style: TextStyle(
+                      AppSettings.tr('support_buscapet'),
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: Color(0xFFF59E0B),
@@ -152,9 +152,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ],
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Buscapet es 100% comunitaria y sin fines de lucro. Tu apoyo nos ayuda a costear servidores para reunir más mascotas.',
-                  style: TextStyle(fontSize: 11.5, color: BuscapetTheme.textLight, height: 1.35),
+                Text(
+                  AppSettings.tr('support_desc'),
+                  style: const TextStyle(fontSize: 11.5, color: BuscapetTheme.textLight, height: 1.35),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -167,7 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       );
                     },
                     icon: const Icon(Icons.coffee_rounded, size: 16, color: Colors.black87),
-                    label: const Text('Donar con Mercado Pago / PayPal'),
+                    label: Text(AppSettings.tr('donate_coffee')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFF59E0B),
                       foregroundColor: Colors.black87,
@@ -197,13 +197,13 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.campaign_rounded, color: BuscapetTheme.warning, size: 20),
-                    SizedBox(width: 8),
+                    const Icon(Icons.campaign_rounded, color: BuscapetTheme.warning, size: 20),
+                    const SizedBox(width: 8),
                     Text(
-                      'Publicitar en Buscapet 📢',
-                      style: TextStyle(
+                      '${AppSettings.tr('request_ad')} 📢',
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: BuscapetTheme.textMain,
@@ -212,9 +212,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ],
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  '¿Tenés una veterinaria, pet shop, paseador o servicio para mascotas? Publicá tu anuncio destacado en la app.',
-                  style: TextStyle(fontSize: 11.5, color: BuscapetTheme.textLight, height: 1.35),
+                Text(
+                  AppSettings.tr('request_ad_desc'),
+                  style: const TextStyle(fontSize: 11.5, color: BuscapetTheme.textLight, height: 1.35),
                 ),
                 const SizedBox(height: 10),
                 SizedBox(
@@ -227,7 +227,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       );
                     },
                     icon: const Icon(Icons.add_business_rounded, size: 16),
-                    label: const Text('Solicitar Publicidad'),
+                    label: Text('${AppSettings.tr('request_ad')} (${_settings.adPriceArsString})'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: BuscapetTheme.warning,
                       foregroundColor: Colors.black,
@@ -244,7 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           const SizedBox(height: 20),
 
           // Mis publicaciones
-          _sectionTitle('📋 Mis Publicaciones'),
+          _sectionTitle(AppSettings.tr('my_posts')),
           const SizedBox(height: 10),
           _buildMyPosts(user),
 
@@ -255,7 +255,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             child: OutlinedButton.icon(
               onPressed: _handleSignOut,
               icon: const Icon(Icons.logout_rounded, size: 16),
-              label: const Text('Cerrar Sesión'),
+              label: Text(AppSettings.tr('logout')),
               style: OutlinedButton.styleFrom(
                 foregroundColor: BuscapetTheme.danger,
                 side: const BorderSide(color: BuscapetTheme.danger),
@@ -293,7 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      isDark ? 'Modo Oscuro (Dark)' : 'Modo Claro (Light)',
+                      isDark ? AppSettings.tr('dark_mode') : AppSettings.tr('light_mode'),
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -322,10 +322,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                 children: [
                   const Icon(Icons.language_rounded, color: BuscapetTheme.secondary, size: 20),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'Idioma / Language',
-                      style: TextStyle(
+                      AppSettings.tr('language'),
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                         color: BuscapetTheme.textMain,
@@ -337,9 +337,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                     dropdownColor: BuscapetTheme.bgInput,
                     underline: const SizedBox(),
                     items: const [
-                      DropdownMenuItem(value: 'es', child: Text('🇦🇷 ES')),
-                      DropdownMenuItem(value: 'en', child: Text('🇺🇸 EN')),
-                      DropdownMenuItem(value: 'pt', child: Text('🇧🇷 PT')),
+                      DropdownMenuItem(value: 'es', child: Text('🇦🇷 Español (ES)')),
+                      DropdownMenuItem(value: 'en', child: Text('🇺🇸 English (EN)')),
+                      DropdownMenuItem(value: 'pt', child: Text('🇧🇷 Português (PT)')),
                     ],
                     onChanged: (lang) {
                       if (lang != null) _settings.setLanguage(lang);
@@ -468,7 +468,7 @@ class _ProfileScreenState extends State<ProfileScreen>
           unselectedLabelColor: BuscapetTheme.textMuted,
           labelStyle: const TextStyle(
               fontFamily: 'Outfit', fontWeight: FontWeight.w700, fontSize: 13),
-          tabs: const [Tab(text: 'Iniciar Sesión'), Tab(text: 'Registrarse')],
+          tabs: [Tab(text: AppSettings.tr('login')), Tab(text: AppSettings.tr('register'))],
         ),
         Expanded(
           child: TabBarView(
@@ -488,14 +488,14 @@ class _ProfileScreenState extends State<ProfileScreen>
           const SizedBox(height: 16),
           const Text('🐾', style: TextStyle(fontSize: 48)),
           const SizedBox(height: 8),
-          const Text('Bienvenido a Buscapet',
-              style: TextStyle(
+          Text(AppSettings.tr('welcome_title'),
+              style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: BuscapetTheme.textMain)),
           const SizedBox(height: 4),
-          const Text('Iniciá sesión para reportar y comentar',
-              style: TextStyle(fontSize: 12, color: BuscapetTheme.textMuted)),
+          Text(AppSettings.tr('welcome_sub'),
+              style: const TextStyle(fontSize: 12, color: BuscapetTheme.textMuted)),
           const SizedBox(height: 24),
 
           // Google Sign In
@@ -510,7 +510,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 backgroundColor: BuscapetTheme.bgInput,
               ),
               icon: const Text('G', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-              label: const Text('Continuar con Google'),
+              label: Text(AppSettings.tr('login_with_google')),
             ),
           ),
           const SizedBox(height: 12),
@@ -530,9 +530,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             style: const TextStyle(fontSize: 13, color: BuscapetTheme.textMain),
-            decoration: const InputDecoration(
-              labelText: 'Correo electrónico',
-              prefixIcon: Icon(Icons.email_outlined, size: 18),
+            decoration: InputDecoration(
+              labelText: AppSettings.tr('email_label'),
+              prefixIcon: const Icon(Icons.email_outlined, size: 18),
             ),
           ),
           const SizedBox(height: 10),
@@ -540,9 +540,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             controller: _passController,
             obscureText: true,
             style: const TextStyle(fontSize: 13, color: BuscapetTheme.textMain),
-            decoration: const InputDecoration(
-              labelText: 'Contraseña',
-              prefixIcon: Icon(Icons.lock_outline_rounded, size: 18),
+            decoration: InputDecoration(
+              labelText: AppSettings.tr('password_label'),
+              prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18),
             ),
           ),
           const SizedBox(height: 12),
@@ -551,9 +551,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: BuscapetTheme.danger.withOpacity(0.1),
+                color: BuscapetTheme.danger.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: BuscapetTheme.danger.withOpacity(0.3)),
+                border: Border.all(color: BuscapetTheme.danger.withValues(alpha: 0.3)),
               ),
               child: Text(_error!,
                   style: const TextStyle(
@@ -571,7 +571,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       width: 18,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : const Text('Iniciar Sesión'),
+                  : Text(AppSettings.tr('login')),
             ),
           ),
         ],
@@ -585,8 +585,8 @@ class _ProfileScreenState extends State<ProfileScreen>
       child: Column(
         children: [
           const SizedBox(height: 16),
-          const Text('Crear Cuenta Gratis',
-              style: TextStyle(
+          Text(AppSettings.tr('register'),
+              style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: BuscapetTheme.textMain)),
@@ -594,9 +594,9 @@ class _ProfileScreenState extends State<ProfileScreen>
           TextField(
             controller: _nameController,
             style: const TextStyle(fontSize: 13, color: BuscapetTheme.textMain),
-            decoration: const InputDecoration(
-              labelText: 'Nombre Completo o Alias *',
-              prefixIcon: Icon(Icons.person_outline_rounded, size: 18),
+            decoration: InputDecoration(
+              labelText: AppSettings.tr('name_label'),
+              prefixIcon: const Icon(Icons.person_outline_rounded, size: 18),
             ),
           ),
           const SizedBox(height: 10),
@@ -604,9 +604,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             controller: _regEmailController,
             keyboardType: TextInputType.emailAddress,
             style: const TextStyle(fontSize: 13, color: BuscapetTheme.textMain),
-            decoration: const InputDecoration(
-              labelText: 'Correo Electrónico *',
-              prefixIcon: Icon(Icons.email_outlined, size: 18),
+            decoration: InputDecoration(
+              labelText: AppSettings.tr('email_label'),
+              prefixIcon: const Icon(Icons.email_outlined, size: 18),
             ),
           ),
           const SizedBox(height: 10),
@@ -614,9 +614,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             controller: _regPassController,
             obscureText: true,
             style: const TextStyle(fontSize: 13, color: BuscapetTheme.textMain),
-            decoration: const InputDecoration(
-              labelText: 'Contraseña (mínimo 6 caracteres) *',
-              prefixIcon: Icon(Icons.lock_outline_rounded, size: 18),
+            decoration: InputDecoration(
+              labelText: AppSettings.tr('password_label'),
+              prefixIcon: const Icon(Icons.lock_outline_rounded, size: 18),
             ),
           ),
           const SizedBox(height: 10),
@@ -624,9 +624,9 @@ class _ProfileScreenState extends State<ProfileScreen>
             controller: _phoneController,
             keyboardType: TextInputType.phone,
             style: const TextStyle(fontSize: 13, color: BuscapetTheme.textMain),
-            decoration: const InputDecoration(
-              labelText: '📱 WhatsApp de contacto (opcional)',
-              prefixIcon: Icon(Icons.phone_outlined, size: 18),
+            decoration: InputDecoration(
+              labelText: AppSettings.tr('phone_label'),
+              prefixIcon: const Icon(Icons.phone_outlined, size: 18),
             ),
           ),
           const SizedBox(height: 16),
@@ -636,9 +636,9 @@ class _ProfileScreenState extends State<ProfileScreen>
               padding: const EdgeInsets.all(10),
               margin: const EdgeInsets.only(bottom: 10),
               decoration: BoxDecoration(
-                color: BuscapetTheme.danger.withOpacity(0.1),
+                color: BuscapetTheme.danger.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: BuscapetTheme.danger.withOpacity(0.3)),
+                border: Border.all(color: BuscapetTheme.danger.withValues(alpha: 0.3)),
               ),
               child: Text(_error!,
                   style: const TextStyle(
@@ -657,7 +657,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       width: 18,
                       child: CircularProgressIndicator(
                           strokeWidth: 2, color: Colors.white))
-                  : const Text('Crear mi Cuenta Gratis'),
+                  : Text(AppSettings.tr('register')),
             ),
           ),
         ],
@@ -726,6 +726,20 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Future<void> _handleSignOut() async {
+    setState(() => _loading = true);
     await _auth.signOut();
+    if (mounted) {
+      setState(() {
+        _loading = false;
+        _error = null;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppSettings.tr('logout')),
+          backgroundColor: BuscapetTheme.primary,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }

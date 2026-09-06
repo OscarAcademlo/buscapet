@@ -8,6 +8,7 @@ import '../theme.dart';
 import '../models/pet_post.dart';
 import '../services/firestore_service.dart';
 import '../services/auth_service.dart';
+import '../services/app_settings.dart';
 import '../services/storage_service.dart';
 import '../services/location_autocomplete_service.dart';
 import 'map_modal.dart';
@@ -201,27 +202,27 @@ class _PetCardState extends State<PetCard> {
     String label;
     Color color;
     if (post.isReunited) {
-      label = '✅ Encontrado';
+      label = AppSettings.tr('already_found');
       color = BuscapetTheme.success;
     } else if (post.isAdopted) {
-      label = '🏡 Adoptado';
+      label = AppSettings.tr('already_adopted');
       color = BuscapetTheme.success;
     } else {
       switch (post.type) {
         case 'lost':
-          label = '🔴 Perdido';
+          label = AppSettings.tr('lost_pets');
           color = BuscapetTheme.danger;
           break;
         case 'found':
-          label = '🟢 Encontrado';
+          label = AppSettings.tr('found_pets');
           color = BuscapetTheme.success;
           break;
         case 'adopt':
-          label = '💜 Adopción';
+          label = AppSettings.tr('adopt_pets');
           color = BuscapetTheme.adopt;
           break;
         case 'spotted':
-          label = '👁️ Visto';
+          label = AppSettings.tr('spotted_pets');
           color = BuscapetTheme.warning;
           break;
         default:
@@ -246,13 +247,13 @@ class _PetCardState extends State<PetCard> {
   Widget _buildStatusBadge() {
     if (!post.isReunited && !post.isAdopted) return const SizedBox();
     final label = post.isReunited
-        ? '🎉 ¡Esta mascota fue encontrada y está con su familia!'
-        : '🏡 ¡Esta mascota ya fue adoptada!';
+        ? '🎉 ${AppSettings.tr('already_found')}'
+        : '🏡 ${AppSettings.tr('already_adopted')}';
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      color: BuscapetTheme.success.withOpacity(0.1),
+      color: BuscapetTheme.success.withValues(alpha: 0.1),
       child: Text(label,
           textAlign: TextAlign.center,
           style: const TextStyle(
