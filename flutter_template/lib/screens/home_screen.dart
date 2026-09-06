@@ -606,21 +606,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.campaign_rounded, size: 17, color: Colors.white),
-                    SizedBox(width: 8),
+                    const Icon(Icons.campaign_rounded, size: 17, color: Colors.white),
+                    const SizedBox(width: 8),
                     Text(
-                      '📢 Publicitar mi Negocio o Veterinaria (\$14.000 ARS)',
-                      style: TextStyle(
+                      '${AppSettings.tr('ad_hero_btn')} (${_settings.adPriceArsString})',
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
                       ),
                     ),
-                    SizedBox(width: 6),
-                    Icon(Icons.arrow_forward_ios_rounded, size: 10, color: Colors.white70),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 10, color: Colors.white70),
                   ],
                 ),
               ),

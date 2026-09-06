@@ -268,13 +268,17 @@ class _PetCardState extends State<PetCard> {
 
     return Stack(
       children: [
-        AspectRatio(
-          aspectRatio: 4 / 3,
+        Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(minHeight: 220, maxHeight: 420),
+          color: const Color(0xFF0D0F14),
           child: ClipRRect(
             child: CachedNetworkImage(
               imageUrl: post.photos[_photoIndex],
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
+              alignment: Alignment.center,
               placeholder: (context, url) => Container(
+                height: 260,
                 color: BuscapetTheme.bgInput,
                 child: const Center(
                   child: SizedBox(
@@ -285,6 +289,7 @@ class _PetCardState extends State<PetCard> {
                 ),
               ),
               errorWidget: (context, url, error) => Container(
+                height: 260,
                 color: BuscapetTheme.bgInput,
                 child: const Center(
                   child: Icon(Icons.pets_rounded, size: 48, color: BuscapetTheme.textMuted),
