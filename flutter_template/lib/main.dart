@@ -4,7 +4,6 @@ import 'firebase_options.dart';
 import 'theme.dart';
 import 'screens/home_screen.dart';
 import 'services/app_settings.dart';
-import 'widgets/device_simulator_frame.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,9 +31,6 @@ class BuscapetApp extends StatelessWidget {
               theme: BuscapetTheme.lightTheme,
               darkTheme: BuscapetTheme.theme,
               themeMode: themeMode,
-              builder: (context, child) => DeviceSimulatorFrame(
-                child: child ?? const SizedBox.shrink(),
-              ),
               home: HomeScreen(key: ValueKey('$lang-${themeMode.name}')),
             );
           },
