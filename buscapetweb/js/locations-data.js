@@ -285,6 +285,84 @@ var BuscapetLocations = window.BuscapetLocations = {
         { name: "Carabobo", cities: ["Valencia", "Naguanagua", "San Diego", "Puerto Cabello"] },
         { name: "Lara", cities: ["Barquisimeto", "Cabudare", "Carora"] }
       ]
+    },
+    {
+      code: "CU",
+      name: "Cuba",
+      flag: "🇨🇺",
+      states: [
+        { name: "La Habana", cities: ["La Habana Vieja", "Plaza de la Revolución", "Playa", "Centro Habana", "Vedado", "Boyeros"] },
+        { name: "Santiago de Cuba", cities: ["Santiago de Cuba", "Palma Soriano", "San Luis"] },
+        { name: "Camagüey", cities: ["Camagüey", "Florida", "Nuevitas"] },
+        { name: "Holguín", cities: ["Holguín", "Banes", "Gibara"] }
+      ]
+    },
+    {
+      code: "DO",
+      name: "República Dominicana",
+      flag: "🇩🇴",
+      states: [
+        { name: "Distrito Nacional", cities: ["Santo Domingo (Zona Colonial)", "Piantini", "Naco", "Bella Vista", "Gazcue"] },
+        { name: "Santo Domingo", cities: ["Santo Domingo Este", "Santo Domingo Norte", "Santo Domingo Oeste", "Boca Chica"] },
+        { name: "Santiago", cities: ["Santiago de los Caballeros", "Villa González", "Licey al Medio"] },
+        { name: "La Altagracia", cities: ["Punta Cana", "Higüey", "Bávaro"] },
+        { name: "Puerto Plata", cities: ["Puerto Plata", "Sosúa", "Cabarete"] }
+      ]
+    },
+    {
+      code: "GT",
+      name: "Guatemala",
+      flag: "🇬🇹",
+      states: [
+        { name: "Guatemala", cities: ["Ciudad de Guatemala", "Mixco", "Villa Nueva", "Santa Catarina Pinula", "San Miguel Petapa"] },
+        { name: "Sacatepéquez", cities: ["Antigua Guatemala", "Ciudad Vieja", "Jocotenango"] },
+        { name: "Quetzaltenango", cities: ["Quetzaltenango (Xela)", "Salcajá", "Coatepeque"] },
+        { name: "Escuintla", cities: ["Escuintla", "Santa Lucía Cotzumalguapa", "Puerto San José"] }
+      ]
+    },
+    {
+      code: "HN",
+      name: "Honduras",
+      flag: "🇭🇳",
+      states: [
+        { name: "Francisco Morazán", cities: ["Tegucigalpa", "Comayagüela", "Valle de Ángeles", "Santa Lucía"] },
+        { name: "Cortés", cities: ["San Pedro Sula", "Choloma", "Puerto Cortés", "Villanueva"] },
+        { name: "Atlántida", cities: ["La Ceiba", "Tela"] },
+        { name: "Islas de la Bahía", cities: ["Roatán", "Utila", "Guanaja"] }
+      ]
+    },
+    {
+      code: "NI",
+      name: "Nicaragua",
+      flag: "🇳🇮",
+      states: [
+        { name: "Managua", cities: ["Managua", "Tipitapa", "Ciudad Sandino"] },
+        { name: "León", cities: ["León", "Nagarote"] },
+        { name: "Granada", cities: ["Granada", "Nandaime"] },
+        { name: "Masaya", cities: ["Masaya", "Nindirí"] }
+      ]
+    },
+    {
+      code: "PR",
+      name: "Puerto Rico",
+      flag: "🇵🇷",
+      states: [
+        { name: "Área Metropolitana", cities: ["San Juan", "Bayamón", "Carolina", "Guaynabo", "Trujillo Alto"] },
+        { name: "Norte", cities: ["Arecibo", "Dorado", "Toa Baja", "Manatí"] },
+        { name: "Sur", cities: ["Ponce", "Coamo", "Juana Díaz"] },
+        { name: "Oeste", cities: ["Mayagüez", "Rincón", "Aguadilla", "Cabo Rojo"] }
+      ]
+    },
+    {
+      code: "SV",
+      name: "El Salvador",
+      flag: "🇸🇻",
+      states: [
+        { name: "San Salvador", cities: ["San Salvador", "Santa Tecla", "Soyapango", "Mejicanos", "Ilopango"] },
+        { name: "La Libertad", cities: ["Antiguo Cuscatlán", "Colón", "Zaragoza", "Puerto de La Libertad"] },
+        { name: "Santa Ana", cities: ["Santa Ana", "Chalchuapa", "Metapán"] },
+        { name: "San Miguel", cities: ["San Miguel", "Chinameca"] }
+      ]
     }
   ],
 

@@ -254,6 +254,14 @@ var BuscapetFeed = window.BuscapetFeed = {
       }
 
       // Filtro de Ubicación
+      if (this.selectedCountry && post.location) {
+        const pCode = (post.location.countryCode || '').toLowerCase();
+        const pName = (post.location.countryName || '').toLowerCase();
+        const sCode = this.selectedCountry.toLowerCase();
+        if (pCode && pCode !== sCode && !pName.includes(sCode)) {
+          return false;
+        }
+      }
       if (this.selectedState && post.location && post.location.stateName) {
         if (!post.location.stateName.toLowerCase().includes(this.selectedState.toLowerCase())) {
           return false;

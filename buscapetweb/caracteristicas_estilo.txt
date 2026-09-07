@@ -1,0 +1,142 @@
+================================================================================
+   🐾 BUSCAPET WEB — GUÍA OFICIAL DE CARACTERÍSTICAS DE ESTILO Y DISEÑO
+================================================================================
+Versión del Documento: 2.0 (Fidelidad Visual Preservada)
+Propósito: Mantener la estética premium, moderna y responsiva de Buscapet Web
+           sin alterar la vista móvil ni escritorio en ninguna futura modificación.
+
+--------------------------------------------------------------------------------
+1. PALETA DE COLORES Y VARIABLES CSS (DARK THEME NATIVO)
+--------------------------------------------------------------------------------
+Buscapet utiliza un tema oscuro elegante con acentos vibrantes inspirados en
+Airbnb/Instagram y alto contraste para visibilidad en exteriores y móviles.
+
+Variables globales (:root):
+  --bg-main:      #0B0E14    (Fondo principal de toda la página, carbón ultra profundo)
+  --bg-card:      #131823    (Superficie de tarjetas, topbar, modales y sidebars)
+  --bg-input:     #1C2333    (Fondo de inputs, selects, buscadores y áreas de texto)
+  --border:       #263044    (Borde sutil para delimitar tarjetas sin saturar la vista)
+  
+  --primary:      #FF5A5F    (Color insignia Coral Buscapet - Botones principales, acentos)
+  --primary-2:    #FF7E40    (Naranja cálido de soporte para degradados vibrantes)
+  --accent:       #38BDF8    (Azul celeste para enlaces, tags y detalles interactivos)
+  --warning:      #F59E0B    (Ámbar dorado para mascotas vistas, avisos y destacados)
+  --success:      #22C55E    (Verde esmeralda para mascotas encontradas y botón GPS)
+  
+  --text-main:    #F8FAFC    (Texto de títulos y cuerpo principal, blanco suave)
+  --text-sub:     #94A3B8    (Texto secundario, etiquetas y botones secundarios)
+  --text-muted:   #64748B    (Metadatos, fechas, horas y placeholders tenues)
+
+Degradado de Marca:
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+--------------------------------------------------------------------------------
+2. TIPOGRAFÍA Y ESCALA VISUAL
+--------------------------------------------------------------------------------
+Fuente Principal:
+  'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif
+
+Pesos Utilizados:
+  - 400 (Regular): Textos descriptivos de mascotas, notas al pie.
+  - 600 (Semi-Bold): Etiquetas de filtros, fechas, nombres de usuario secundarios.
+  - 700 / 800 (Bold / Extra-Bold): Nombres de mascotas, títulos de sección, botones.
+  - 900 (Black): Titular del Logo "Buscapet" y chips destacados.
+
+Jerarquía de Tamaños:
+  - Logo Buscapet: 18px (800) en escritorio / 16px en móvil
+  - Nombres de Mascota en el Feed: 15.5px (800)
+  - Textos de Botones Principales: 13px - 13.5px (800)
+  - Textos de Formularios y Selects: 12.5px - 13px (600)
+  - Etiquetas de estado y Badges: 11px - 11.5px (700)
+  - Metadatos (hace 2 horas, coordenadas): 10.5px - 11px (400)
+
+--------------------------------------------------------------------------------
+3. ESTRUCTURA Y COMPONENTES EN ESCRITORIO (DESKTOP >= 1100px)
+--------------------------------------------------------------------------------
+Diseño en 3 Columnas Flotantes:
+  - Altura del Topbar: 56px fija (--nav-h), posición fixed, z-index: 1000.
+  - Columna Izquierda (Sidebar): ancho fijo 270px (--sidebar-w), borde derecho 1px.
+    Contiene: Tarjeta de usuario/login, botón de publicar, navegación y filtro de ubicación.
+  - Columna Central (Feed): ancho adaptable, padding horizontal 16px, max-width ~640px.
+    Contiene: Hero banner de rescate, chips de filtro rápido y tarjetas del feed.
+  - Columna Derecha (Widgets): ancho fijo 290px (--right-w), borde izquierdo 1px.
+    Contiene: Tarjetas de Cafecito, Publicidad y Descarga de App Android/iOS.
+
+Bordes y Sombras:
+  - Radio general de tarjetas: border-radius: 12px a 14px.
+  - Borde estándar: 1px solid var(--border).
+  - Sombras: Sutiles, 0 4px 20px rgba(0,0,0,0.35).
+
+--------------------------------------------------------------------------------
+4. ADAPTACIÓN RESPONSIVA Y VISTA MÓVIL (MOBILE <= 900px)
+--------------------------------------------------------------------------------
+Para garantizar que la experiencia móvil sea idéntica a una aplicación nativa:
+
+1. Ocultamiento de Columnas Secundarias:
+   - .left-sidebar y .right-sidebar se ocultan automáticamente (display: none !important).
+   - El Feed ocupa el 100% del ancho de la pantalla con un margen controlado.
+
+2. Barra de Navegación Inferior (Bottom Nav):
+   - Se muestra únicamente en pantallas <= 768px (display: flex).
+   - Altura: 60px + soporte de área segura para iPhone (env(safe-area-inset-bottom)).
+   - Fondo: rgba(21, 24, 32, 0.98) con efecto glassmorphism (backdrop-filter: blur(16px)).
+   - 5 Iconos táctiles proporcionales:
+     1) Inicio (Casita)
+     2) Buscar (Lupa)
+     3) Publicar (Botón central destacado de rescate)
+     4) Mensajes (Chat)
+     5) Mi Perfil (Acceso a Login / Registro / Perfil)
+
+3. Hero Banner en Móviles:
+   - Cuadrícula de 2x2 para los botones rápidos:
+     🔴 Perdí mi Mascota | 🟢 Encontré Mascota
+     🟣 Ver Adopciones   | 🤝 Dar en Adopción
+   - Indicador de Ubicación táctil ("📍 Cambiar Ciudad →") con apertura del modal de selección.
+
+4. Espaciado Inferior en el Feed:
+   - padding-bottom: calc(75px + env(safe-area-inset-bottom)) para que la barra inferior
+     nunca tape los comentarios, fotos o botones de la última mascota.
+
+--------------------------------------------------------------------------------
+5. CÓDIGO DE COLORES POR ESTADO DE MASCOTA
+--------------------------------------------------------------------------------
+Cada tarjeta del feed tiene un borde superior o izquierdo de 3px-4px que identifica
+inmediatamente la situación del animal:
+
+  - PERDIDO (Lost):       Rojo Coral   (#FF5A5F / border-lost)
+  - ENCONTRADO (Found):   Verde Éxito  (#22C55E / border-found)
+  - EN ADOPCIÓN (Adopt):  Violeta Real (#8B5CF6 / border-adopt)
+  - VISTO EN VÍA (Spot):  Ámbar Alerta (#F59E0B / border-spotted)
+
+--------------------------------------------------------------------------------
+6. MODALES Y FORMULARIOS (LOGIN, UBICACIÓN, PUBLICAR)
+--------------------------------------------------------------------------------
+  - Fondo backdrop: rgba(0, 0, 0, 0.75) con desenfoque de fondo.
+  - Cuadro modal: Fondo var(--bg-card), borde 1px solid var(--border), radio 14px.
+  - Inputs y Selects:
+    * Altura: 38px a 42px.
+    * Fondo: var(--bg-input).
+    * Borde inactivo: 1px solid var(--border).
+    * Borde activo (focus): 1.5px solid var(--primary) con outline: none.
+    * Texto: Blanco suave (var(--text-main)).
+  - Botones de acción primaria (.btn-login, .btn-filter-apply):
+    * Fondo con gradiente linear-gradient(90deg, var(--primary), var(--primary-2)).
+    * Texto blanco en negrita (800), radio de 10px, padding 10px-12px.
+  - Botón de GPS inteligente:
+    * Fondo con gradiente verde linear-gradient(90deg, #22C55E, #16A34A).
+    * Icono satelital y detección en 1 solo clic.
+
+--------------------------------------------------------------------------------
+7. REGLAS FUNDAMENTALES PARA PRESERVAR LA VISTA SIN ALTERACIONES
+--------------------------------------------------------------------------------
+1. NO cambiar los nombres de las variables CSS en :root.
+2. NO forzar anchos fijos en el contenedor del feed (#feed-posts-container); debe ser 100%.
+3. Mantener siempre el fondo de pantalla en #0B0E14 para evitar destellos blancos.
+4. En inputs de CSS vendor, mantener siempre la propiedad estándar al lado:
+   -webkit-background-clip: text;
+   background-clip: text;
+5. La barra inferior móvil debe permanecer siempre visible en smartphones con z-index >= 1050.
+================================================================================

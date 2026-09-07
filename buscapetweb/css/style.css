@@ -19,7 +19,7 @@ a{color:inherit;text-decoration:none}
 
 /* TOPBAR */
 .topbar{position:fixed;top:0;left:0;right:0;width:100%;max-width:100vw;height:var(--nav-h);background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:8px;z-index:1000;box-sizing:border-box}
-.topbar-brand{display:flex;align-items:center;gap:5px;font-size:18px;font-weight:800;background:linear-gradient(90deg,var(--primary),var(--primary-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;flex-shrink:0}
+.topbar-brand{display:flex;align-items:center;gap:5px;font-size:18px;font-weight:800;background:linear-gradient(90deg,var(--primary),var(--primary-2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;flex-shrink:0}
 .topbar-search{flex:1;max-width:280px;background:var(--bg-input);border:1px solid var(--border);border-radius:20px;height:36px;padding:0 14px;display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:13px;cursor:pointer;transition:border-color .2s}
 .topbar-search:hover{border-color:var(--primary)}
 .topbar-actions{display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0}

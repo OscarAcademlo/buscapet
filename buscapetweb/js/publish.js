@@ -45,6 +45,14 @@ var BuscapetPublish = window.BuscapetPublish = {
 
     this.populateLocationDropdowns();
 
+    // Pre-llenar teléfono si el usuario está conectado en Firebase
+    if (window.BuscapetFirebase && window.BuscapetFirebase.currentUser) {
+      const phoneInput = document.getElementById('publish-phone');
+      if (phoneInput && !phoneInput.value && window.BuscapetFirebase.currentUser.phone) {
+        phoneInput.value = window.BuscapetFirebase.currentUser.phone;
+      }
+    }
+
     // Inicializar mapa de Leaflet en el formulario
     setTimeout(() => {
       if (window.BuscapetMap && typeof window.BuscapetMap.initPickerMap === 'function') {
@@ -222,10 +230,10 @@ var BuscapetPublish = window.BuscapetPublish = {
       },
       date: 'Hace un momento',
       user: {
-        id: 'usr-current',
-        name: 'Tú (Usuario)',
-        avatar: 'img/posts/demo/avatar_nicolas.jpg',
-        phone: (phoneInput && phoneInput.value.trim()) || '+5491155551234'
+        id: (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.uid) || 'usr-current',
+        name: (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.displayName) || 'Tú (Usuario)',
+        avatar: (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.photoURL) || 'img/posts/demo/avatar_nicolas.jpg',
+        phone: (phoneInput && phoneInput.value.trim()) || (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.phone) || '+5491155551234'
       },
       likes: 1,
       liked: true,

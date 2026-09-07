@@ -258,6 +258,9 @@
     <!-- Location filter -->
     <div class="filter-section" style="margin-top:6px">
       <div class="filter-title"><i class="bi bi-geo-alt-fill" style="color:var(--primary)"></i> Filtrar por Ubicación</div>
+      <button type="button" class="btn btn-sm w-100" id="btn-sidebar-gps" style="background:linear-gradient(90deg,#22C55E,#16A34A);color:#fff;border:none;border-radius:8px;font-size:11.5px;font-weight:700;margin-bottom:8px;padding:7px;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Outfit',sans-serif;" onclick="if(window.BuscapetLocationsUI)BuscapetLocationsUI.detectGPS()">
+        <i class="bi bi-geo-alt-fill"></i> ⚡ Detectar mi Ubicación
+      </button>
       <div class="filter-label">País:</div>
       <select class="filter-select" id="filter-country">
         <option value="AR" selected>🇦🇷 Argentina</option>
@@ -295,7 +298,7 @@
           <span>📢 Anunciá tu Veterinaria o Negocio (<span class="ad-price-display">$14.000 ARS</span>)</span>
           <i class="bi bi-chevron-right" style="font-size:10px;opacity:.8;flex-shrink:0"></i>
         </button>
-        <div class="hero-location">
+        <div class="hero-location" style="cursor:pointer;" onclick="if(window.BuscapetLocationsUI)BuscapetLocationsUI.openModal()">
           <i class="bi bi-geo-alt-fill" style="color:var(--primary)"></i>
           <span class="hero-location-text">📍 Argentina</span>
           <span class="hero-location-change">Cambiar Ciudad →</span>
@@ -1221,35 +1224,175 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
-     MODAL DE PERFIL / INVITADO
+     MODAL DE AUTENTICACIÓN / PERFIL (FIREBASE AUTH)
 ══════════════════════════════════════════════════════════ -->
 <div class="buscapet-modal" id="auth-modal">
   <div class="buscapet-modal-dialog" style="max-width:440px;">
     <div class="modal-header-custom">
       <div class="modal-title-custom">
-        <span>👤</span> <span>Perfil Solidario Buscapet</span>
+        <span>👤</span> <span>Mi Cuenta en Buscapet</span>
       </div>
-      <button type="button" class="modal-close-btn" onclick="document.getElementById('auth-modal').classList.remove('show');document.getElementById('auth-modal').style.display='none';document.body.classList.remove('modal-open');">✕</button>
+      <button type="button" class="modal-close-btn" onclick="if(window.BuscapetFirebase)BuscapetFirebase.closeAuthModal();else{document.getElementById('auth-modal').style.display='none';document.body.classList.remove('modal-open');}">✕</button>
     </div>
-    <div class="modal-body-custom" style="text-align:center;">
-      <div class="avatar-initials" style="width:64px;height:64px;font-size:24px;margin:0 auto 12px;">I</div>
-      <div style="font-size:16px;font-weight:800;color:var(--text-main);">Invitado Solidario</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">Navegando en la red gratuita de Buscapet</div>
-      <p style="font-size:12px;color:var(--text-sub);line-height:1.4;margin-bottom:16px;">
-        Podés reportar mascotas perdidas, encontradas o en adopción sin necesidad de registro previo obligatorio.
-      </p>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px;">
-        <button class="btn-login" onclick="BuscapetPublish.openModal('lost');document.getElementById('auth-modal').style.display='none';">
-          <i class="bi bi-plus-circle-fill"></i> Publicar una Mascota Ahora
+    <div class="modal-body-custom">
+      
+      <!-- VISTA CONECTADO (LOGGED IN) -->
+      <div id="auth-logged-in-view" style="display:none;text-align:center;">
+        <div class="avatar-initials" id="auth-profile-initials" style="width:64px;height:64px;font-size:24px;margin:0 auto 12px;background:linear-gradient(135deg,var(--primary),var(--primary-2));border:2px solid var(--primary);box-shadow:0 0 16px rgba(255,90,95,0.3);">U</div>
+        <div id="auth-profile-name" style="font-size:18px;font-weight:800;color:var(--text-main);">Usuario Conectado</div>
+        <div id="auth-profile-email" style="font-size:12px;color:var(--primary);font-weight:600;margin-top:2px;"></div>
+        <div id="auth-profile-phone" style="font-size:12px;color:var(--text-muted);margin-top:2px;"></div>
+        
+        <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,0.15);color:var(--success);padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:700;margin:12px auto 16px;">
+          <i class="bi bi-check-circle-fill"></i> Sesión Oficial Verificada
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button type="button" class="btn-login" onclick="BuscapetPublish.openModal('lost');BuscapetFirebase.closeAuthModal();">
+            <i class="bi bi-plus-circle-fill"></i> Publicar Mascota Ahora
+          </button>
+          <button type="button" class="btn-cafecito" onclick="BuscapetAds.openDonationModal();BuscapetFirebase.closeAuthModal();">
+            <i class="bi bi-cup-hot-fill"></i> Donar un Cafecito ($2.000 ARS)
+          </button>
+          <button type="button" class="btn btn-dark" style="border:1px solid var(--border);border-radius:10px;font-size:12.5px;font-weight:700;color:var(--text-sub);padding:9px;" onclick="BuscapetAdmin.openModal();BuscapetFirebase.closeAuthModal();">
+            <i class="bi bi-shield-lock-fill" style="color:var(--warning);"></i> Abrir Panel de Control OscarSoft
+          </button>
+          <button type="button" class="btn btn-outline-danger" style="border:1px solid rgba(239,68,68,0.5);color:#EF4444;font-size:12.5px;font-weight:700;padding:9px;border-radius:10px;margin-top:4px;" onclick="BuscapetFirebase.logout()">
+            <i class="bi bi-box-arrow-left"></i> Cerrar Sesión
+          </button>
+        </div>
+      </div>
+
+      <!-- VISTA INVITADO / ACCESO (GUEST / LOGIN / REGISTER) -->
+      <div id="auth-guest-view">
+        <!-- Switcher Tabs -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--bg-input);padding:4px;border-radius:10px;margin-bottom:16px;">
+          <button type="button" id="auth-tab-login-btn" style="border:none;padding:8px 10px;font-family:'Outfit',sans-serif;font-size:12.5px;font-weight:700;border-radius:8px;cursor:pointer;background:var(--primary);color:#fff;transition:all 0.15s;" onclick="BuscapetFirebase.switchAuthTab('login')">
+            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+          </button>
+          <button type="button" id="auth-tab-register-btn" style="border:none;padding:8px 10px;font-family:'Outfit',sans-serif;font-size:12.5px;font-weight:700;border-radius:8px;cursor:pointer;background:transparent;color:var(--text-muted);transition:all 0.15s;" onclick="BuscapetFirebase.switchAuthTab('register')">
+            <i class="bi bi-person-plus-fill"></i> Registrarme
+          </button>
+        </div>
+
+        <!-- 1. LOGIN FORM -->
+        <div id="auth-login-form">
+          <!-- Google Fast Login -->
+          <button type="button" style="background:#4285F4;color:#fff;border:none;border-radius:10px;padding:10px;font-weight:700;font-size:13px;width:100%;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Outfit',sans-serif;margin-bottom:14px;transition:opacity .15s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'" onclick="BuscapetFirebase.loginWithGoogle()">
+            <i class="bi bi-google"></i> Continuar con Google
+          </button>
+
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <hr style="flex:1;border:0;border-top:1px solid var(--border);margin:0;">
+            <span style="font-size:10.5px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">O CON EMAIL Y CONTRASEÑA</span>
+            <hr style="flex:1;border:0;border-top:1px solid var(--border);margin:0;">
+          </div>
+
+          <div class="form-group-custom">
+            <label class="form-label-custom">Correo Electrónico</label>
+            <input type="email" id="auth-email-input" class="form-input-custom" placeholder="ejemplo@gmail.com" autocomplete="email">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom">Contraseña</label>
+            <input type="password" id="auth-pass-input" class="form-input-custom" placeholder="Ingresá tu contraseña" autocomplete="current-password" onkeypress="if(event.key==='Enter')BuscapetFirebase.loginWithEmail(document.getElementById('auth-email-input').value, document.getElementById('auth-pass-input').value)">
+          </div>
+
+          <button type="button" class="btn-login" style="margin-top:4px;padding:11px;font-size:13px;" onclick="BuscapetFirebase.loginWithEmail(document.getElementById('auth-email-input').value, document.getElementById('auth-pass-input').value)">
+            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+          </button>
+
+          <!-- Quick Guest Access -->
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;gap:8px;">
+            <button type="button" class="btn btn-dark w-100" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-sub);font-size:11.5px;padding:8px;border-radius:8px;font-family:'Outfit',sans-serif;" onclick="BuscapetFirebase.loginWithGoogle()">
+              👑 Admin (Oscar)
+            </button>
+            <button type="button" class="btn btn-dark w-100" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-muted);font-size:11.5px;padding:8px;border-radius:8px;font-family:'Outfit',sans-serif;" onclick="BuscapetFirebase.closeAuthModal()">
+              🐾 Navegar como Invitado
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. REGISTER FORM -->
+        <div id="auth-register-form" style="display:none;">
+          <div class="form-group-custom">
+            <label class="form-label-custom">Nombre Completo o Alias *</label>
+            <input type="text" id="reg-name-input" class="form-input-custom" placeholder="Ej: Oscar Stella">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom">Correo Electrónico *</label>
+            <input type="email" id="reg-email-input" class="form-input-custom" placeholder="tunombre@gmail.com">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom">Teléfono / WhatsApp de Contacto</label>
+            <input type="tel" id="reg-phone-input" class="form-input-custom" placeholder="Ej: +54 9 11 5555-1234">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom">Contraseña *</label>
+            <input type="password" id="reg-pass-input" class="form-input-custom" placeholder="Mínimo 6 caracteres">
+          </div>
+
+          <button type="button" class="btn-login" style="margin-top:6px;padding:11px;font-size:13px;" onclick="BuscapetFirebase.registerUser(document.getElementById('reg-name-input').value, document.getElementById('reg-email-input').value, document.getElementById('reg-pass-input').value, document.getElementById('reg-phone-input').value)">
+            <i class="bi bi-person-plus-fill"></i> Crear Cuenta Gratuita
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL DE UBICACIÓN (PAÍSES DE AMÉRICA Y GPS)
+══════════════════════════════════════════════════════════ -->
+<div class="buscapet-modal" id="location-modal">
+  <div class="buscapet-modal-dialog" style="max-width:440px;">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">
+        <span>📍</span> <span>Elegir Ubicación de Mascotas</span>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="BuscapetLocationsUI.closeModal()">✕</button>
+    </div>
+    <div class="modal-body-custom">
+      <!-- Fast GPS Button -->
+      <button type="button" id="btn-modal-gps" class="btn btn-success w-100" style="background:linear-gradient(90deg,#22C55E,#16A34A);border:none;font-weight:800;font-size:13px;padding:11px;border-radius:10px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Outfit',sans-serif;" onclick="BuscapetLocationsUI.detectGPS()">
+        <i class="bi bi-geo-alt-fill"></i> ⚡ Detectar mi Ubicación Automáticamente (GPS)
+      </button>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <hr style="flex:1;border:0;border-top:1px solid var(--border);margin:0;">
+        <span style="font-size:10.5px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;">O SELECCIONAR EN AMÉRICA</span>
+        <hr style="flex:1;border:0;border-top:1px solid var(--border);margin:0;">
+      </div>
+
+      <!-- Select País -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">🌎 País de América</label>
+        <select class="form-select-custom" id="modal-select-country"></select>
+      </div>
+
+      <!-- Select Provincia / Estado -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">🏛️ Provincia / Estado</label>
+        <select class="form-select-custom" id="modal-select-state">
+          <option value="">Todas las provincias / estados</option>
+        </select>
+      </div>
+
+      <!-- Select Ciudad -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">🏙️ Ciudad / Localidad</label>
+        <select class="form-select-custom" id="modal-select-city">
+          <option value="">Todas las ciudades</option>
+        </select>
+      </div>
+
+      <!-- Actions -->
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button type="button" class="btn-login" style="flex:1;padding:11px;font-size:13px;" onclick="BuscapetLocationsUI.applySelection()">
+          <i class="bi bi-check-lg"></i> Aplicar Ubicación
         </button>
-        <button class="btn-cafecito" onclick="BuscapetAds.openDonationModal();document.getElementById('auth-modal').style.display='none';">
-          <i class="bi bi-cup-hot-fill"></i> Donar un Cafecito ($2.000 ARS)
-        </button>
-        <button class="btn-cafecito" style="color:var(--warning);border-color:rgba(245,158,11,0.5);" onclick="BuscapetAds.openAdModal();document.getElementById('auth-modal').style.display='none';">
-          <i class="bi bi-megaphone-fill"></i> Publicitar mi Veterinaria o Negocio
-        </button>
-        <button class="btn btn-dark" style="border:1px solid var(--border);border-radius:10px;font-size:12.5px;font-weight:700;color:var(--text-sub);padding:9px;" onclick="BuscapetAdmin.openModal();document.getElementById('auth-modal').style.display='none';">
-          <i class="bi bi-shield-lock-fill" style="color:var(--warning);"></i> Abrir Panel de Control OscarSoft
+        <button type="button" class="btn btn-dark" style="border:1px solid var(--border);color:var(--text-sub);padding:11px 16px;border-radius:10px;font-size:12.5px;font-family:'Outfit',sans-serif;" onclick="BuscapetLocationsUI.clearFilter()">
+          Ver Todas
         </button>
       </div>
     </div>
@@ -1261,18 +1404,23 @@
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+<!-- Firebase SDKs (Official v10 compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
 <!-- Buscapet Modular Architecture -->
-<script src="js/mercadopago.js?v=6"></script>
-<script src="js/location-autocomplete.js?v=6"></script>
-<script src="js/i18n.js?v=6"></script>
-<script src="js/locations-data.js?v=6"></script>
-<script src="js/map.js?v=6"></script>
-<script src="js/chat.js?v=6"></script>
-<script src="js/ads.js?v=6"></script>
-<script src="js/admin.js?v=6"></script>
-<script src="js/publish.js?v=6"></script>
-<script src="js/feed.js?v=6"></script>
-<script src="js/app.js?v=6"></script>
+<script src="js/firebase-config.js?v=7"></script>
+<script src="js/mercadopago.js?v=7"></script>
+<script src="js/location-autocomplete.js?v=7"></script>
+<script src="js/i18n.js?v=7"></script>
+<script src="js/locations-data.js?v=7"></script>
+<script src="js/map.js?v=7"></script>
+<script src="js/chat.js?v=7"></script>
+<script src="js/ads.js?v=7"></script>
+<script src="js/admin.js?v=7"></script>
+<script src="js/publish.js?v=7"></script>
+<script src="js/feed.js?v=7"></script>
+<script src="js/app.js?v=7"></script>
 
 </body>
 </html>
