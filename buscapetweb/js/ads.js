@@ -65,7 +65,17 @@ var BuscapetAds = window.BuscapetAds = {
     } catch(e) {}
 
     if (savedAds) {
-      try { this.activeAds = JSON.parse(savedAds); } catch (e) {}
+      try {
+        const parsed = JSON.parse(savedAds);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.activeAds = parsed.map(ad => {
+            if (ad.id === 'ad-1' || ad.id === 'ad-2') {
+              return { ...ad, isDemo: true };
+            }
+            return ad;
+          });
+        }
+      } catch (e) {}
     }
 
     if (savedSettings) {

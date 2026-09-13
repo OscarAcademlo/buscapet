@@ -575,7 +575,7 @@ var BuscapetFeed = window.BuscapetFeed = {
   },
 
   buildAdCardHtml(ad) {
-    const isDemo = ad.isDemo !== false && (ad.id === 'ad-1' || ad.id === 'ad-2' || !ad.isPaid);
+    const isDemo = ad.isDemo === true || ad.id === 'ad-1' || ad.id === 'ad-2' || !ad.isPaid;
     const topBannerText = isDemo ? '📢 PUBLICIDAD DE DEMOSTRACIÓN' : '📢 PUBLICIDAD PATROCINADA';
     const tagText = isDemo ? 'DEMO' : 'DESTACADO';
     const icon = (ad.category && ad.category.toLowerCase().includes('pet')) ? '🐾' : '🏥';
