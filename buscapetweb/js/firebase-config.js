@@ -18,6 +18,68 @@ var BuscapetFirebase = window.BuscapetFirebase = {
     appId: "1:694866246233:web:97e000138a44d77a574f48"
   },
 
+  selectedRegAvatar: '',
+
+  // Obtiene la foto de perfil o el avatar por defecto del usuario
+  getAvatarUrl(user) {
+    if (!user) return '';
+    const em = (user.email || '').toLowerCase();
+    const name = (user.displayName || '').toLowerCase();
+    const isOscar = em.includes('oscar') || name.includes('oscar') || em === 'oscarns@gmail.com';
+
+    if (user.photoURL) {
+      // Si tenía asignada la foto anterior por error, corregirla a su avatar real de Google
+      if (isOscar && user.photoURL.includes('avatar_nicolas.jpg')) {
+        return 'img/posts/demo/avatar_oscar_google.png';
+      }
+      return user.photoURL;
+    }
+    if (isOscar) {
+      return 'img/posts/demo/avatar_oscar_google.png';
+    }
+    return '';
+  },
+
+  // Selector de avatar para el modal de cuenta y registro
+  toggleAvatarPicker() {
+    const p = document.getElementById('auth-avatar-picker-panel');
+    if (!p) return;
+    p.style.display = (p.style.display === 'none' || !p.style.display) ? 'block' : 'none';
+  },
+
+  selectUserAvatar(src) {
+    if (!this.currentUser) return;
+    this.currentUser.photoURL = src;
+    this.saveUser();
+    this.updateUserUI();
+    const p = document.getElementById('auth-avatar-picker-panel');
+    if (p) p.style.display = 'none';
+    if (window.buscapetToast) {
+      window.buscapetToast('📸 ¡Avatar actualizado con éxito!', 'success');
+    }
+  },
+
+  selectRegAvatar(src) {
+    this.selectedRegAvatar = src;
+    document.querySelectorAll('.reg-avatar-option').forEach(el => {
+      const match = el.getAttribute('data-src') === src;
+      el.style.border = match ? '2px solid var(--primary)' : '2px solid transparent';
+      el.style.transform = match ? 'scale(1.15)' : 'scale(1)';
+      el.style.boxShadow = match ? '0 0 8px rgba(255,90,95,0.6)' : 'none';
+    });
+  },
+
+  handleCustomAvatarUpload(input) {
+    if (!input || !input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      this.selectUserAvatar(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  },
+
   init() {
     // 1. Cargar usuario guardado previamente en almacenamiento seguro
     try {
@@ -25,6 +87,17 @@ var BuscapetFirebase = window.BuscapetFirebase = {
       const stored = storage.getItem('buscapet_user');
       if (stored) {
         this.currentUser = JSON.parse(stored);
+        if (this.currentUser) {
+          const em = (this.currentUser.email || '').toLowerCase();
+          const name = (this.currentUser.displayName || '').toLowerCase();
+          const isOscar = em.includes('oscar') || name.includes('oscar') || em === 'oscarns@gmail.com';
+          if (isOscar) {
+            if (!this.currentUser.photoURL || this.currentUser.photoURL.includes('avatar_nicolas.jpg')) {
+              this.currentUser.photoURL = 'img/posts/demo/avatar_oscar_google.png';
+              this.saveUser();
+            }
+          }
+        }
       }
     } catch (e) {
       console.warn('SafeStorage read error:', e);
@@ -42,11 +115,18 @@ var BuscapetFirebase = window.BuscapetFirebase = {
           firebase.auth().onAuthStateChanged(user => {
             if (user) {
               const currentInitials = (user.displayName || user.email || 'U').substring(0, 2).toUpperCase();
+              let photo = user.photoURL || '';
+              const em = (user.email || '').toLowerCase();
+              const name = (user.displayName || '').toLowerCase();
+              const isOscar = em.includes('oscar') || name.includes('oscar') || em === 'oscarns@gmail.com';
+              if (!photo && isOscar) {
+                photo = 'img/posts/demo/avatar_oscar_google.png';
+              }
               this.currentUser = {
                 uid: user.uid,
                 displayName: user.displayName || user.email.split('@')[0],
                 email: user.email,
-                photoURL: user.photoURL || '',
+                photoURL: photo,
                 phone: user.phoneNumber || (this.currentUser ? this.currentUser.phone : '') || '',
                 initials: currentInitials
               };
@@ -77,12 +157,19 @@ var BuscapetFirebase = window.BuscapetFirebase = {
         const result = await firebase.auth().signInWithPopup(provider);
         const user = result.user;
         const initials = (user.displayName || user.email || 'G').substring(0, 2).toUpperCase();
+        let photo = user.photoURL || '';
+        const em = (user.email || '').toLowerCase();
+        const name = (user.displayName || '').toLowerCase();
+        const isOscar = em.includes('oscar') || name.includes('oscar') || em === 'oscarns@gmail.com';
+        if (!photo && isOscar) {
+          photo = 'img/posts/demo/avatar_oscar_google.png';
+        }
 
         this.currentUser = {
           uid: user.uid,
           displayName: user.displayName || user.email.split('@')[0],
           email: user.email,
-          photoURL: user.photoURL || '',
+          photoURL: photo,
           phone: user.phoneNumber || '',
           initials: initials
         };
@@ -108,7 +195,7 @@ var BuscapetFirebase = window.BuscapetFirebase = {
       uid: 'usr-google-' + Date.now(),
       displayName: 'Oscar Stella (Google)',
       email: 'oscarns@gmail.com',
-      photoURL: '',
+      photoURL: 'img/posts/demo/avatar_oscar_google.png',
       phone: '+5491155551234',
       initials: 'OS'
     };
@@ -135,12 +222,17 @@ var BuscapetFirebase = window.BuscapetFirebase = {
         const userCredential = await firebase.auth().signInWithEmailAndPassword(cleanEmail, cleanPass);
         const user = userCredential.user;
         const initials = (user.displayName || cleanEmail).substring(0, 2).toUpperCase();
+        let photo = user.photoURL || '';
+        const em = (user.email || cleanEmail).toLowerCase();
+        if (!photo && em.includes('oscar')) {
+          photo = 'img/posts/demo/avatar_oscar_google.png';
+        }
 
         this.currentUser = {
           uid: user.uid,
           displayName: user.displayName || cleanEmail.split('@')[0],
           email: user.email,
-          photoURL: user.photoURL || '',
+          photoURL: photo,
           phone: '',
           initials: initials
         };
@@ -165,12 +257,14 @@ var BuscapetFirebase = window.BuscapetFirebase = {
 
     // Fallback local seguro para demostración offline o sin conexión
     const initials = cleanEmail.substring(0, 2).toUpperCase();
+    const em = cleanEmail.toLowerCase();
+    const photo = em.includes('oscar') ? 'img/posts/demo/avatar_oscar_google.png' : (this.selectedRegAvatar || '');
     this.currentUser = {
       uid: 'usr-' + Date.now(),
       displayName: cleanEmail.split('@')[0],
       email: cleanEmail,
       phone: '',
-      photoURL: '',
+      photoURL: photo,
       initials: initials
     };
     this.saveUser();
@@ -200,6 +294,8 @@ var BuscapetFirebase = window.BuscapetFirebase = {
 
     const displayName = cleanName || cleanEmail.split('@')[0];
     const initials = displayName.substring(0, 2).toUpperCase();
+    const em = cleanEmail.toLowerCase();
+    const defaultPhoto = (em.includes('oscar') || displayName.toLowerCase().includes('oscar')) ? 'img/posts/demo/avatar_oscar_google.png' : (this.selectedRegAvatar || '');
 
     try {
       if (typeof firebase !== 'undefined' && firebase.auth) {
@@ -213,7 +309,7 @@ var BuscapetFirebase = window.BuscapetFirebase = {
           displayName: displayName,
           email: u.email,
           phone: cleanPhone,
-          photoURL: '',
+          photoURL: defaultPhoto,
           initials: initials
         };
         this.saveUser();
@@ -237,7 +333,7 @@ var BuscapetFirebase = window.BuscapetFirebase = {
       displayName: displayName,
       email: cleanEmail,
       phone: cleanPhone,
-      photoURL: '',
+      photoURL: defaultPhoto,
       initials: initials
     };
     this.saveUser();
@@ -296,6 +392,7 @@ var BuscapetFirebase = window.BuscapetFirebase = {
     const loggedIn = this.isLoggedIn();
     const guestView = document.getElementById('auth-guest-view');
     const loggedInView = document.getElementById('auth-logged-in-view');
+    const avatarSrc = loggedIn ? this.getAvatarUrl(this.currentUser) : '';
 
     if (guestView && loggedInView) {
       if (loggedIn) {
@@ -310,14 +407,24 @@ var BuscapetFirebase = window.BuscapetFirebase = {
         if (profileName) profileName.textContent = this.currentUser.displayName || 'Usuario';
         if (profileEmail) profileEmail.textContent = this.currentUser.email || '';
         if (profilePhone) profilePhone.textContent = this.currentUser.phone ? `📱 ${this.currentUser.phone}` : '';
-        if (profileInitials) profileInitials.textContent = this.currentUser.initials || 'U';
+        if (profileInitials) {
+          if (avatarSrc) {
+            profileInitials.innerHTML = `<img src="${avatarSrc}" alt="${this.currentUser.displayName || 'Avatar'}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;pointer-events:none;">`;
+          } else {
+            profileInitials.textContent = this.currentUser.initials || 'U';
+          }
+        }
       } else {
         guestView.style.display = 'block';
         loggedInView.style.display = 'none';
+        const profileInitials = document.getElementById('auth-profile-initials');
+        if (profileInitials) {
+          profileInitials.textContent = 'U';
+        }
       }
     }
 
-    // Actualizar sidebar (desktop)
+    // Actualizar sidebar (desktop) y topbar
     const userCardName = document.querySelector('.user-card-name');
     const userCardSub = document.querySelector('.user-card-sub');
     const avatarInitials = document.querySelectorAll('.avatar-initials');
@@ -327,7 +434,12 @@ var BuscapetFirebase = window.BuscapetFirebase = {
       if (userCardName) userCardName.textContent = this.currentUser.displayName || 'Usuario Activo';
       if (userCardSub) userCardSub.textContent = this.currentUser.email || 'Usuario Conectado';
       avatarInitials.forEach(el => {
-        el.textContent = this.currentUser.initials || (this.currentUser.displayName ? this.currentUser.displayName.substring(0, 2).toUpperCase() : 'U');
+        if (el.id === 'auth-profile-initials') return;
+        if (avatarSrc) {
+          el.innerHTML = `<img src="${avatarSrc}" alt="${this.currentUser.displayName || 'Avatar'}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;pointer-events:none;">`;
+        } else {
+          el.textContent = this.currentUser.initials || (this.currentUser.displayName ? this.currentUser.displayName.substring(0, 2).toUpperCase() : 'U');
+        }
       });
       if (btnLogin) {
         btnLogin.innerHTML = '<i class="bi bi-person-check-fill"></i> Mi Perfil Conectado';
@@ -336,11 +448,16 @@ var BuscapetFirebase = window.BuscapetFirebase = {
       if (userCardName) userCardName.textContent = 'Invitado Solidario';
       if (userCardSub) userCardSub.textContent = 'Red Comunitaria Buscapet';
       avatarInitials.forEach(el => {
+        if (el.id === 'auth-profile-initials') return;
         el.textContent = 'I';
       });
       if (btnLogin) {
         btnLogin.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión';
       }
+    }
+
+    if (window.BuscapetFeed && typeof window.BuscapetFeed.renderFeed === 'function') {
+      window.BuscapetFeed.renderFeed();
     }
   },
 

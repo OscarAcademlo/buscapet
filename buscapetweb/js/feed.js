@@ -11,6 +11,7 @@ var BuscapetFeed = window.BuscapetFeed = {
   selectedCity: '',
   searchQuery: '',
   photoIndices: {},
+  currentEditingPostId: null,
 
   initialPosts: [
     {
@@ -212,6 +213,36 @@ var BuscapetFeed = window.BuscapetFeed = {
     } catch(e) {}
   },
 
+  getMyPostIds() {
+    try {
+      const storage = window.SafeStorage || window.localStorage;
+      if (!storage) return [];
+      const stored = storage.getItem('buscapet_my_posts');
+      return stored ? JSON.parse(stored) : [];
+    } catch(e) {
+      return [];
+    }
+  },
+
+  isAuthor(post) {
+    if (!post) return false;
+    // 1. Si el Master Admin OscarSoft está autenticado
+    if (window.BuscapetAdmin && window.BuscapetAdmin.authenticated) return true;
+
+    // 2. Si el post fue creado en este navegador/dispositivo
+    const myIds = this.getMyPostIds();
+    if (myIds.includes(post.id)) return true;
+
+    // 3. Si el usuario actual está logueado en Firebase y coincide UID o Email
+    const curUser = window.BuscapetFirebase && window.BuscapetFirebase.currentUser;
+    if (curUser) {
+      if (curUser.uid && (post.authorUid === curUser.uid || post.user?.id === curUser.uid)) return true;
+      if (curUser.email && (post.authorEmail === curUser.email || (post.user?.email && post.user.email.toLowerCase() === curUser.email.toLowerCase()))) return true;
+    }
+
+    return false;
+  },
+
   setFilter(type) {
     this.activeFilter = type;
     document.querySelectorAll('.chip').forEach(c => {
@@ -374,6 +405,8 @@ var BuscapetFeed = window.BuscapetFeed = {
     const isResolved = !!post.isResolved;
     const resolvedLabel = post.type === 'adopt' ? (window.BuscapetI18n?.currentLang === 'en' ? 'SUCCESSFULLY ADOPTED!' : window.BuscapetI18n?.currentLang === 'pt' ? 'ADOTADO COM SUCESSO!' : '¡ADOPTADO CON ÉXITO!') : (window.BuscapetI18n?.currentLang === 'en' ? 'ALREADY REUNITED!' : window.BuscapetI18n?.currentLang === 'pt' ? 'JÁ FOI ENCONTRADO!' : '¡YA FUE ENCONTRADO!');
     const markResolvedBtnText = post.type === 'adopt' ? (window.BuscapetI18n?.currentLang === 'en' ? '🏠 Adopted!' : window.BuscapetI18n?.currentLang === 'pt' ? '🏠 Já foi adotado!' : '🏠 ¡Ya fue adoptado!') : (window.BuscapetI18n?.currentLang === 'en' ? '✅ Reunited!' : window.BuscapetI18n?.currentLang === 'pt' ? '✅ Já foi encontrado!' : '✅ ¡Ya fue encontrado!');
+    const isAuthor = this.isAuthor(post);
+    const isUserLoggedIn = !!(window.BuscapetFirebase && (typeof window.BuscapetFirebase.isLoggedIn === 'function' ? window.BuscapetFirebase.isLoggedIn() : window.BuscapetFirebase.currentUser));
 
     return `
       <article class="pet-card ${borderClass}" id="card-${post.id}" data-type="${post.type}">
@@ -391,7 +424,8 @@ var BuscapetFeed = window.BuscapetFeed = {
             <div class="card-username">${user.name}</div>
             <div class="card-meta">${loc.cityName ? `${loc.cityName}, ${loc.stateName || ''}` : 'Argentina'} &bull; ${post.date}</div>
           </div>
-          <div class="card-badges">
+          <div class="card-badges" style="display:flex;gap:5px;align-items:center;">
+            ${isAuthor ? `<span class="badge" style="background:rgba(59,130,246,.15);color:#3B82F6;border:1px solid rgba(59,130,246,.4);font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700;"><i class="bi bi-person-check-fill"></i> ${window.BuscapetI18n ? window.BuscapetI18n.t('your_post') : 'Tu aviso'}</span>` : ''}
             <span class="badge-type ${badgeClass}">${badgeText}</span>
           </div>
         </div>
@@ -455,50 +489,106 @@ var BuscapetFeed = window.BuscapetFeed = {
             </div>
           ` : ''}
 
-          <!-- Botón de Resolución de Caso -->
-          <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-            <button class="hero-btn" style="font-size:11px;padding:6px 12px;background:rgba(34,197,94,.12);border:1px solid var(--success);color:var(--success);" onclick="BuscapetFeed.toggleResolved('${post.id}')">
-              <i class="bi bi-check-circle-fill"></i> ${isResolved ? (window.BuscapetI18n?.currentLang === 'en' ? 'Reopen case' : window.BuscapetI18n?.currentLang === 'pt' ? 'Reabrir caso' : 'Reabrir caso') : markResolvedBtnText}
-            </button>
+          <!-- Botón de Resolución y Modificación Exclusivo para el Autor -->
+          <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+            ${isAuthor ? `
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <button class="hero-btn" style="font-size:11px;padding:6px 12px;background:rgba(34,197,94,.12);border:1px solid var(--success);color:var(--success);" onclick="BuscapetFeed.toggleResolved('${post.id}')">
+                  <i class="bi bi-check-circle-fill"></i> ${isResolved ? (window.BuscapetI18n?.t('reopen_case') || 'Reabrir caso') : markResolvedBtnText}
+                </button>
+                <button class="hero-btn" style="font-size:11px;padding:6px 12px;background:rgba(59,130,246,.12);border:1px solid #3B82F6;color:#3B82F6;" onclick="BuscapetFeed.openEditModal('${post.id}')">
+                  <i class="bi bi-pencil-square"></i> ${window.BuscapetI18n?.t('edit_post') || 'Modificar aviso'}
+                </button>
+              </div>
+            ` : `
+              <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+                <i class="bi bi-shield-check" style="color:var(--primary);"></i> Aviso verificado
+              </div>
+            `}
             <span style="font-size:10.5px;color:var(--text-muted);">${post.date}</span>
+          </div>
+          <!-- Botón Destacado: Ver o agregar comentarios -->
+          <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+            <button type="button" class="btn btn-sm" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,107,0,.08);color:var(--primary);border:1px solid rgba(255,107,0,.3);border-radius:8px;font-weight:700;font-size:12px;padding:8px;" onclick="BuscapetFeed.toggleComments('${post.id}')">
+              <i class="bi bi-chat-dots-fill"></i>
+              <span>Ver o agregar comentarios (${(post.comments && post.comments.length) || 0})</span>
+              <i class="bi bi-chevron-down" id="comments-chevron-${post.id}"></i>
+            </button>
           </div>
         </div>
 
         <!-- Seccion de Comentarios Desplegable -->
-        <div class="comments-section" id="comments-box-${post.id}" style="display:none;background:var(--bg-input);padding:10px 12px;border-top:1px solid var(--border);">
-          <div class="comments-list" id="comments-list-${post.id}" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
-            ${(post.comments || []).map(c => `
+        <div class="comments-section" id="comments-box-${post.id}" style="display:none;background:var(--bg-input);padding:12px 14px;border-top:1px solid var(--border);">
+          <div style="font-size:12px;font-weight:800;color:var(--text-main);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <i class="bi bi-chat-text-fill" style="color:var(--primary);"></i> Comentarios de la comunidad (${(post.comments && post.comments.length) || 0})
+          </div>
+
+          <div class="comments-list" id="comments-list-${post.id}" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+            ${(post.comments && post.comments.length > 0) ? (post.comments.map(c => `
               <div style="display:flex;gap:8px;font-size:12px;">
-                <img src="${c.userAvatar || 'img/posts/demo/avatar_nicolas.jpg'}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">
-                <div style="background:var(--bg-card);padding:6px 10px;border-radius:8px;flex:1;">
-                  <strong style="color:var(--text-main);font-size:11.5px;">${c.userName}</strong>
-                  <div style="color:var(--text-sub);margin-top:2px;">${c.text}</div>
-                  <div style="font-size:9.5px;color:var(--text-muted);margin-top:3px;">${c.time}</div>
+                <img src="${c.userAvatar || 'img/posts/demo/avatar_nicolas.jpg'}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid var(--border);">
+                <div style="background:var(--bg-card);padding:7px 11px;border-radius:10px;flex:1;border:1px solid var(--border);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <strong style="color:var(--text-main);font-size:11.5px;">${c.userName}</strong>
+                    <span style="font-size:9.5px;color:var(--text-muted);">${c.time}</span>
+                  </div>
+                  <div style="color:var(--text-sub);margin-top:2px;line-height:1.35;">${c.text}</div>
                 </div>
               </div>
-            `).join('')}
+            `).join('')) : `
+              <div style="font-size:11.5px;color:var(--text-muted);text-align:center;padding:10px 0;background:var(--bg-card);border-radius:8px;border:1px dashed var(--border);">
+                🐾 Todavía no hay comentarios. ¡Sé el primero en dejar un mensaje o aportar datos sobre ${post.petName}!
+              </div>
+            `}
           </div>
-          <div style="display:flex;gap:6px;">
-            <input type="text" class="filter-select" style="margin:0;flex:1;" id="comment-input-${post.id}" placeholder="Escribe un mensaje de apoyo...">
-            <button class="btn-filter-apply" style="width:auto;padding:6px 14px;" onclick="BuscapetFeed.submitComment('${post.id}')">
-              <i class="bi bi-send-fill"></i>
-            </button>
-          </div>
+
+          <!-- Formulario de Agregar Comentario (Restringido a usuarios logueados) -->
+          ${isUserLoggedIn ? `
+            <div style="background:var(--bg-card);padding:10px;border-radius:10px;border:1px solid var(--border);">
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;gap:5px;">
+                <i class="bi bi-person-check-fill" style="color:var(--success);"></i> Comentando como <strong>${(window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.displayName) || 'Usuario'}</strong>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <input type="text" class="filter-select" style="margin:0;flex:1;background:var(--bg-input);" id="comment-input-${post.id}" placeholder="Escribe un mensaje de apoyo o información útil..." onkeydown="if(event.key==='Enter') BuscapetFeed.submitComment('${post.id}')">
+                <button class="btn-filter-apply" style="width:auto;padding:6px 14px;background:var(--primary);color:#fff;border-radius:8px;font-weight:700;display:flex;align-items:center;gap:4px;" onclick="BuscapetFeed.submitComment('${post.id}')">
+                  <i class="bi bi-send-fill"></i> Comentar
+                </button>
+              </div>
+            </div>
+          ` : `
+            <div style="background:rgba(255,107,0,.08);border:1.5px dashed var(--primary);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-main);font-weight:700;">
+                <i class="bi bi-lock-fill" style="color:var(--primary);font-size:16px;"></i>
+                <span>Tenés que iniciar sesión para comentar</span>
+              </div>
+              <div style="font-size:11.5px;color:var(--text-sub);line-height:1.4;">
+                Para comentar o aportar información sobre esta mascota, iniciá sesión de forma rápida y gratuita usando tu cuenta de <strong>Google</strong> o tu <strong>correo electrónico</strong>.
+              </div>
+              <button type="button" class="btn btn-sm btn-primary" style="align-self:flex-start;font-size:11.5px;font-weight:800;padding:6px 14px;border-radius:8px;display:flex;align-items:center;gap:6px;margin-top:2px;" onclick="BuscapetFirebase.openAuthModal()">
+                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión con Google o Correo
+              </button>
+            </div>
+          `}
         </div>
       </article>
     `;
   },
 
   buildAdCardHtml(ad) {
+    const isDemo = ad.isDemo !== false && (ad.id === 'ad-1' || ad.id === 'ad-2' || !ad.isPaid);
+    const topBannerText = isDemo ? '📢 PUBLICIDAD DE DEMOSTRACIÓN' : '📢 PUBLICIDAD PATROCINADA';
+    const tagText = isDemo ? 'DEMO' : 'DESTACADO';
+    const icon = (ad.category && ad.category.toLowerCase().includes('pet')) ? '🐾' : '🏥';
+
     return `
       <article class="pet-card border-ad" style="border-color:rgba(245,158,11,.6);background:linear-gradient(135deg,#1c160e 0%,#151820 100%);">
         <div style="background:linear-gradient(90deg,#F59E0B,#D97706);color:#000;padding:4px 10px;font-size:10px;font-weight:900;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;">
-          <span>📢 PUBLICIDAD PATROCINADA</span>
-          <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">DESTACADO</span>
+          <span>${topBannerText}</span>
+          <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">${tagText}</span>
         </div>
         <div class="card-header-row" style="padding:10px 12px 6px;">
           <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,.2);border:1.5px solid var(--warning);display:flex;align-items:center;justify-content:center;font-size:18px;">
-            🏥
+            ${icon}
           </div>
           <div class="card-user-info">
             <div class="card-username" style="color:var(--warning);font-size:13.5px;">${ad.businessName}</div>
@@ -506,12 +596,12 @@ var BuscapetFeed = window.BuscapetFeed = {
           </div>
         </div>
         <div class="card-photo-wrap" style="cursor:default;">
-          <img src="${ad.bannerUrl}" alt="${ad.businessName}">
+          <img src="${ad.bannerUrl || 'img/posts/demo/ad_vet.jpg'}" alt="${ad.businessName}">
         </div>
         <div class="card-details" style="padding:10px 12px;">
           <div style="font-size:13px;color:var(--text-main);line-height:1.45;margin-bottom:8px;">${ad.promoText}</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
-            <a class="contact-btn" style="background:#22C55E;color:#fff;" href="https://wa.me/${ad.whatsapp}?text=Hola,%20los%20contacto%20desde%20el%20anuncio%20de%20Buscapet!" target="_blank">
+            <a class="contact-btn" style="background:#22C55E;color:#fff;" href="https://wa.me/${(ad.whatsapp || '').replace(/[^0-9]/g, '')}?text=Hola,%20los%20contacto%20desde%20el%20anuncio%20de%20Buscapet!" target="_blank">
               <i class="bi bi-whatsapp"></i> WhatsApp
             </a>
             <a class="contact-btn" style="background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;" href="${ad.website || '#'}" target="_blank">
@@ -554,23 +644,45 @@ var BuscapetFeed = window.BuscapetFeed = {
 
   toggleComments(postId) {
     const box = document.getElementById(`comments-box-${postId}`);
+    const chevron = document.getElementById(`comments-chevron-${postId}`);
     if (box) {
-      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+      const isHidden = box.style.display === 'none';
+      box.style.display = isHidden ? 'block' : 'none';
+      if (chevron) {
+        chevron.className = isHidden ? 'bi bi-chevron-up' : 'bi bi-chevron-down';
+      }
     }
   },
 
   submitComment(postId) {
+    const isLoggedIn = !!(window.BuscapetFirebase && (typeof window.BuscapetFirebase.isLoggedIn === 'function' ? window.BuscapetFirebase.isLoggedIn() : window.BuscapetFirebase.currentUser));
+    if (!isLoggedIn) {
+      if (window.buscapetToast) {
+        window.buscapetToast('🔒 Tenés que iniciar sesión con Google o Correo para comentar.', 'warning');
+      } else {
+        alert('Tenés que iniciar sesión con Google o Correo para comentar.');
+      }
+      if (window.BuscapetFirebase && typeof window.BuscapetFirebase.openAuthModal === 'function') {
+        window.BuscapetFirebase.openAuthModal();
+      }
+      return;
+    }
+
     const input = document.getElementById(`comment-input-${postId}`);
     if (!input || !input.value.trim()) return;
 
     const post = this.posts.find(p => p.id === postId);
     if (!post) return;
 
+    const curUser = window.BuscapetFirebase.currentUser;
+    const authorName = (curUser && curUser.displayName) || 'Usuario de Buscapet';
+    const authorAvatar = (curUser && curUser.photoURL) || 'img/posts/demo/avatar_nicolas.jpg';
+
     if (!post.comments) post.comments = [];
     post.comments.push({
       id: 'cmt-' + Date.now(),
-      userName: 'Tú (Vecino Solidario)',
-      userAvatar: 'img/posts/demo/avatar_nicolas.jpg',
+      userName: authorName,
+      userAvatar: authorAvatar,
       text: input.value.trim(),
       time: 'Hace un momento'
     });
@@ -578,17 +690,160 @@ var BuscapetFeed = window.BuscapetFeed = {
     input.value = '';
     this.save();
     this.renderFeed();
-    this.toggleComments(postId);
+
+    // Mantener abierta la sección de comentarios después de enviar
+    const box = document.getElementById(`comments-box-${postId}`);
+    const chevron = document.getElementById(`comments-chevron-${postId}`);
+    if (box) box.style.display = 'block';
+    if (chevron) chevron.className = 'bi bi-chevron-up';
+
+    if (window.buscapetToast) {
+      window.buscapetToast('💬 ¡Comentario publicado con éxito!', 'success');
+    }
   },
 
   toggleResolved(postId) {
     const post = this.posts.find(p => p.id === postId);
     if (!post) return;
+
+    if (!this.isAuthor(post)) {
+      const msg = window.BuscapetI18n ? window.BuscapetI18n.t('only_author_can_edit') : 'Solo la persona que publicó este aviso puede modificarlo o marcarlo como encontrado.';
+      if (window.buscapetToast) {
+        window.buscapetToast(`🔒 ${msg}`, 'warning');
+      } else {
+        alert(msg);
+      }
+      return;
+    }
+
     post.isResolved = !post.isResolved;
     this.save();
     this.renderFeed();
     if (window.buscapetToast) {
       window.buscapetToast(post.isResolved ? '🎉 ¡Qué gran noticia! Mascota marcada como reencontrada' : 'Caso reabierto');
+    }
+  },
+
+  openEditModal(postId) {
+    const post = this.posts.find(p => p.id === postId);
+    if (!post) return;
+
+    if (!this.isAuthor(post)) {
+      const msg = window.BuscapetI18n ? window.BuscapetI18n.t('only_author_can_edit') : 'Solo la persona que publicó este aviso puede modificarlo o marcarlo como encontrado.';
+      if (window.buscapetToast) window.buscapetToast(`🔒 ${msg}`, 'warning');
+      else alert(msg);
+      return;
+    }
+
+    this.currentEditingPostId = postId;
+
+    const modal = document.getElementById('edit-post-modal');
+    if (!modal) return;
+
+    const nameInput = document.getElementById('edit-pet-name');
+    const speciesSelect = document.getElementById('edit-pet-species');
+    const breedInput = document.getElementById('edit-pet-breed');
+    const genderSelect = document.getElementById('edit-pet-gender');
+    const descInput = document.getElementById('edit-pet-desc');
+    const phoneInput = document.getElementById('edit-pet-phone');
+    const hasCollarCheck = document.getElementById('edit-pet-collar');
+    const collarDetailsInput = document.getElementById('edit-pet-collar-details');
+    const resolvedCheck = document.getElementById('edit-pet-resolved');
+
+    if (nameInput) nameInput.value = post.petName || '';
+    if (speciesSelect) speciesSelect.value = post.species || 'Perro';
+    if (breedInput) breedInput.value = post.breed || '';
+    if (genderSelect) genderSelect.value = post.gender || 'Macho';
+    if (descInput) descInput.value = post.description || '';
+    if (phoneInput) phoneInput.value = (post.user && post.user.phone) || '';
+    if (hasCollarCheck) {
+      hasCollarCheck.checked = !!post.hasCollar;
+      const detailsRow = document.getElementById('edit-collar-details-row');
+      if (detailsRow) detailsRow.style.display = post.hasCollar ? 'block' : 'none';
+    }
+    if (collarDetailsInput) collarDetailsInput.value = post.collarDetails || '';
+    if (resolvedCheck) resolvedCheck.checked = !!post.isResolved;
+
+    modal.classList.add('show');
+    modal.style.display = 'block';
+    document.body.classList.add('modal-open');
+  },
+
+  closeEditModal() {
+    const modal = document.getElementById('edit-post-modal');
+    if (modal) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+      document.body.classList.remove('modal-open');
+    }
+    this.currentEditingPostId = null;
+  },
+
+  saveEditedPost(e) {
+    if (e) e.preventDefault();
+    if (!this.currentEditingPostId) return;
+
+    const post = this.posts.find(p => p.id === this.currentEditingPostId);
+    if (!post) return;
+
+    if (!this.isAuthor(post)) {
+      alert('No tienes permiso para modificar este aviso.');
+      return;
+    }
+
+    const nameInput = document.getElementById('edit-pet-name');
+    const speciesSelect = document.getElementById('edit-pet-species');
+    const breedInput = document.getElementById('edit-pet-breed');
+    const genderSelect = document.getElementById('edit-pet-gender');
+    const descInput = document.getElementById('edit-pet-desc');
+    const phoneInput = document.getElementById('edit-pet-phone');
+    const hasCollarCheck = document.getElementById('edit-pet-collar');
+    const collarDetailsInput = document.getElementById('edit-pet-collar-details');
+    const resolvedCheck = document.getElementById('edit-pet-resolved');
+
+    if (descInput && !descInput.value.trim()) {
+      alert('La descripción no puede estar vacía.');
+      return;
+    }
+
+    if (nameInput) post.petName = nameInput.value.trim() || post.petName;
+    if (speciesSelect) post.species = speciesSelect.value;
+    if (breedInput) post.breed = breedInput.value.trim() || 'Mestizo';
+    if (genderSelect) post.gender = genderSelect.value;
+    if (descInput) post.description = descInput.value.trim();
+    if (hasCollarCheck) post.hasCollar = hasCollarCheck.checked;
+    if (collarDetailsInput) post.collarDetails = collarDetailsInput.value.trim();
+    if (phoneInput && post.user) post.user.phone = phoneInput.value.trim();
+    if (resolvedCheck) post.isResolved = resolvedCheck.checked;
+
+    this.save();
+    this.renderFeed();
+    this.closeEditModal();
+
+    if (window.buscapetToast) {
+      window.buscapetToast('✅ ¡Aviso modificado y actualizado con éxito!', 'success');
+    }
+  },
+
+  deleteMyPost(postId) {
+    const id = postId || this.currentEditingPostId;
+    const post = this.posts.find(p => p.id === id);
+    if (!post) return;
+
+    if (!this.isAuthor(post)) {
+      alert('Solo el autor puede eliminar este aviso.');
+      return;
+    }
+
+    if (!confirm('¿Estás seguro de que deseas eliminar este aviso de Buscapet?')) return;
+
+    this.posts = this.posts.filter(p => p.id !== id);
+    this.save();
+    this.renderFeed();
+    this.closeEditModal();
+
+    if (window.buscapetToast) {
+      window.buscapetToast('🗑️ Aviso eliminado correctamente.', 'info');
     }
   },
 

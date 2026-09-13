@@ -734,8 +734,9 @@
       </div>
       <span style="font-size:10px;color:var(--primary);font-weight:700">Publicar</span>
     </button>
-    <button class="bottom-nav-item" data-tab="messages">
+    <button class="bottom-nav-item" data-tab="messages" style="position:relative;">
       <i class="bi bi-chat-dots" style="font-size:20px"></i>
+      <span id="bottom-nav-chat-badge" style="display:none;position:absolute;top:4px;right:calc(50% - 16px);background:#EF4444;color:#fff;font-size:10px;font-weight:800;border-radius:10px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px;"></span>
       <span>Mensajes</span>
     </button>
     <button class="bottom-nav-item" data-tab="profile">
@@ -841,30 +842,30 @@
         </p>
         <div class="form-group-custom">
           <label class="form-label-custom">Nombre del Negocio o Veterinaria *</label>
-          <input type="text" class="form-input-custom" id="ad-req-name" placeholder="Ej: Veterinaria San Roque">
+          <input type="text" class="form-input-custom" id="ad-req-name" placeholder="Ej: Veterinaria San Roque" oninput="BuscapetAds.updateLivePreview()">
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <div class="form-group-custom">
             <label class="form-label-custom">Rubro / Categoría *</label>
-            <input type="text" class="form-input-custom" id="ad-req-category" placeholder="Ej: Veterinaria 24h, Pet Shop...">
+            <input type="text" class="form-input-custom" id="ad-req-category" placeholder="Ej: Veterinaria 24h, Pet Shop..." oninput="BuscapetAds.updateLivePreview()">
           </div>
           <div class="form-group-custom">
             <label class="form-label-custom">Ciudad / Zona *</label>
-            <input type="text" class="form-input-custom" id="ad-req-city" placeholder="Ej: Palermo, CABA">
+            <input type="text" class="form-input-custom" id="ad-req-city" placeholder="Ej: Palermo, CABA" oninput="BuscapetAds.updateLivePreview()">
           </div>
         </div>
         <div class="form-group-custom">
           <label class="form-label-custom">Texto del anuncio / Beneficio *</label>
-          <textarea class="form-textarea-custom" id="ad-req-promo" rows="2" placeholder="Ej: 15% de descuento en vacunas mencionando a Buscapet. Urgencias las 24 hs..."></textarea>
+          <textarea class="form-textarea-custom" id="ad-req-promo" rows="2" placeholder="Ej: 15% de descuento en vacunas mencionando a Buscapet. Urgencias las 24 hs..." oninput="BuscapetAds.updateLivePreview()"></textarea>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <div class="form-group-custom">
             <label class="form-label-custom">WhatsApp / Teléfono *</label>
-            <input type="tel" class="form-input-custom" id="ad-req-phone" placeholder="Ej: +5491155550000">
+            <input type="tel" class="form-input-custom" id="ad-req-phone" placeholder="Ej: +5491155550000" oninput="BuscapetAds.updateLivePreview()">
           </div>
           <div class="form-group-custom">
             <label class="form-label-custom">Sitio Web / Instagram</label>
-            <input type="url" class="form-input-custom" id="ad-req-web" placeholder="https://instagram.com/tu_negocio">
+            <input type="url" class="form-input-custom" id="ad-req-web" placeholder="https://instagram.com/tu_negocio" oninput="BuscapetAds.updateLivePreview()">
           </div>
         </div>
         <div class="form-group-custom">
@@ -872,6 +873,15 @@
           <input type="file" accept="image/*" class="form-input-custom" onchange="BuscapetAds.handleBannerUpload(event)">
           <img id="ad-banner-preview" style="display:none;width:100%;height:120px;object-fit:cover;border-radius:8px;margin-top:6px;border:1px solid var(--border);">
         </div>
+
+        <!-- Vista previa en vivo idéntica a los demos -->
+        <div style="margin-top:14px;margin-bottom:14px;background:var(--bg-input);padding:10px;border-radius:12px;border:1px solid var(--border);">
+          <div style="font-size:11.5px;font-weight:800;color:var(--warning);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            <i class="bi bi-eye-fill"></i> Vista previa de tu anuncio (mismo formato del demo):
+          </div>
+          <div id="ad-live-preview-box"></div>
+        </div>
+
         <button type="button" class="hero-btn hero-btn-lost" style="width:100%;padding:12px;font-size:13px;background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;" onclick="BuscapetAds.submitAdRequest(event)">
           Continuar al Pago (<span class="ad-price-display">$14.000 ARS</span>) →
         </button>
@@ -1056,6 +1066,104 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
+     MODAL DE MODIFICACIÓN DE AVISO (EXCLUSIVO AUTOR)
+══════════════════════════════════════════════════════════ -->
+<div class="buscapet-modal" id="edit-post-modal">
+  <div class="buscapet-modal-dialog">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">
+        <span>✏️</span> <span>Modificar Mi Publicación</span>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="BuscapetFeed.closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body-custom">
+      <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--text-main);display:flex;align-items:center;gap:8px;">
+        <i class="bi bi-shield-lock-fill" style="color:#3B82F6;font-size:16px;"></i>
+        <span>Sos el autor reconocido de esta publicación. Podés actualizar los datos o cambiar su estado.</span>
+      </div>
+
+      <!-- Datos generales -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="form-group-custom">
+          <label class="form-label-custom">Nombre de la mascota</label>
+          <input type="text" class="form-input-custom" id="edit-pet-name" placeholder="Nombre">
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom">Especie</label>
+          <select class="form-select-custom" id="edit-pet-species">
+            <option value="Perro">🐶 Perro</option>
+            <option value="Gato">🐱 Gato</option>
+            <option value="Ave">🦜 Ave</option>
+            <option value="Otro">🐾 Otro</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div class="form-group-custom">
+          <label class="form-label-custom">Raza / Cruza</label>
+          <input type="text" class="form-input-custom" id="edit-pet-breed" placeholder="Raza">
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom">Sexo</label>
+          <select class="form-select-custom" id="edit-pet-gender">
+            <option value="Macho">Macho</option>
+            <option value="Hembra">Hembra</option>
+            <option value="Desconocido">Desconocido</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">Descripción / Detalles del aviso</label>
+        <textarea class="form-input-custom" id="edit-pet-desc" rows="3" placeholder="Información sobre la mascota..."></textarea>
+      </div>
+
+      <!-- Teléfono de contacto -->
+      <div class="form-group-custom">
+        <label class="form-label-custom">Teléfono / WhatsApp de contacto</label>
+        <input type="tel" class="form-input-custom" id="edit-pet-phone" placeholder="Ej: +54 9 11 5555 1234">
+      </div>
+
+      <!-- Collar -->
+      <div class="form-group-custom">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12.5px;color:var(--text-main);">
+          <input type="checkbox" id="edit-pet-collar" onchange="document.getElementById('edit-collar-details-row').style.display = this.checked ? 'block' : 'none'">
+          <span>¿Lleva collar o chapita identificatoria?</span>
+        </label>
+      </div>
+
+      <div class="form-group-custom" id="edit-collar-details-row" style="display:none;">
+        <label class="form-label-custom">Detalles del collar / chapita</label>
+        <input type="text" class="form-input-custom" id="edit-pet-collar-details" placeholder="Color, chapita, datos grabados...">
+      </div>
+
+      <!-- Estado: Encontrado / Resuelto -->
+      <div style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:10px;padding:12px;margin:14px 0;">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--success);">
+          <input type="checkbox" id="edit-pet-resolved" style="width:18px;height:18px;cursor:pointer;">
+          <span>🎉 ¡Mascota ya reencontrada / caso resuelto!</span>
+        </label>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;padding-left:28px;">
+          Al marcar esta opción, el aviso mostrará el banner destacado de caso resuelto en la comunidad.
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button type="button" class="btn-login" style="flex:1;padding:12px;margin:0;" onclick="BuscapetFeed.saveEditedPost(event)">
+          💾 Guardar Cambios
+        </button>
+        <button type="button" class="btn btn-outline-danger" style="border-radius:10px;font-size:12px;padding:0 14px;" onclick="BuscapetFeed.deleteMyPost()">
+          <i class="bi bi-trash3"></i> Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
      MODAL DE MAPA INTERACTIVO (LEAFLET POST VIEWER)
 ══════════════════════════════════════════════════════════ -->
 <div class="buscapet-modal" id="map-modal">
@@ -1080,15 +1188,20 @@
 ══════════════════════════════════════════════════════════ -->
 <div class="buscapet-modal" id="chat-modal">
   <div class="buscapet-modal-dialog chat-dialog">
-    <div class="modal-header-custom">
-      <div class="modal-title-custom">
+    <div class="modal-header-custom" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div class="modal-title-custom" style="display:flex;align-items:center;gap:10px;">
         <img id="chat-active-avatar" src="img/posts/demo/avatar_nicolas.jpg" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
         <div>
           <div id="chat-active-title" style="font-size:13.5px;font-weight:800;">Mensajes Directos</div>
           <div id="chat-active-sub" style="font-size:11px;color:var(--text-muted);font-weight:500;">Comunidad Buscapet</div>
         </div>
       </div>
-      <button type="button" class="modal-close-btn" onclick="BuscapetChat.closeChatModal()">✕</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button type="button" id="btn-chat-push-toggle" onclick="BuscapetChat.requestPushPermission()" class="btn-filter-custom" style="padding:4px 10px;font-size:11px;border-radius:16px;cursor:pointer;border:1px solid transparent;font-weight:600;display:inline-flex;align-items:center;gap:5px;" title="Activar Notificaciones Push">
+          <i class="bi bi-bell"></i> Activar Notificaciones Push
+        </button>
+        <button type="button" class="modal-close-btn" onclick="BuscapetChat.closeChatModal()">✕</button>
+      </div>
     </div>
     <div class="chat-container-layout">
       <div class="chat-inbox-pane" id="chat-inbox-list"></div>
@@ -1238,12 +1351,63 @@
       
       <!-- VISTA CONECTADO (LOGGED IN) -->
       <div id="auth-logged-in-view" style="display:none;text-align:center;">
-        <div class="avatar-initials" id="auth-profile-initials" style="width:64px;height:64px;font-size:24px;margin:0 auto 12px;background:linear-gradient(135deg,var(--primary),var(--primary-2));border:2px solid var(--primary);box-shadow:0 0 16px rgba(255,90,95,0.3);">U</div>
+        <div style="position:relative;display:inline-block;margin:0 auto 4px;">
+          <div class="avatar-initials" id="auth-profile-initials" style="width:68px;height:68px;font-size:24px;margin:0 auto;background:linear-gradient(135deg,var(--primary),var(--primary-2));border:2.5px solid var(--primary);box-shadow:0 0 16px rgba(255,90,95,0.3);cursor:pointer;" onclick="BuscapetFirebase.toggleAvatarPicker()" title="Clic para cambiar foto">U</div>
+          <button type="button" onclick="BuscapetFirebase.toggleAvatarPicker()" title="Cambiar avatar" style="position:absolute;bottom:-2px;right:-2px;background:var(--primary);color:#fff;border:2px solid var(--bg-card);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;padding:0;">
+            <i class="bi bi-camera-fill"></i>
+          </button>
+        </div>
+
+        <div style="margin-bottom:8px;">
+          <button type="button" class="btn-filter-custom" id="btn-toggle-avatar-picker" onclick="BuscapetFirebase.toggleAvatarPicker()" style="font-size:11px;padding:3px 10px;border-radius:14px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;background:var(--bg-input);border:1px solid var(--border);color:var(--text-main);">
+            <i class="bi bi-person-bounding-box"></i> <span>Elegir / Cambiar Avatar</span>
+          </button>
+        </div>
+
+        <!-- Panel Desplegable de Selección de Avatar -->
+        <div id="auth-avatar-picker-panel" style="display:none;background:var(--bg-input);border:1px solid var(--border);border-radius:12px;padding:12px;margin:0 0 14px;text-align:left;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Elegí tu avatar:</span>
+            <button type="button" style="background:none;border:none;color:var(--text-muted);font-size:13px;cursor:pointer;" onclick="BuscapetFirebase.toggleAvatarPicker()">✕</button>
+          </div>
+
+          <div style="font-size:10.5px;font-weight:700;color:var(--primary);margin:4px 0 2px;">🐾 Mascotas / Neutro X / Google</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+            <img src="img/posts/demo/avatar_oscar_google.png" alt="Google Oscar" title="Cuenta Google (Perrito de Oscar)" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/avatar_oscar_google.png')">
+            <img src="img/posts/demo/milo_1.jpg" alt="Perrito Milo" title="Perrito Milo" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/milo_1.jpg')">
+            <img src="img/posts/demo/gatita_1.jpg" alt="Gatita" title="Gatita rescatada" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/gatita_1.jpg')">
+            <img src="img/posts/demo/pastor_1.jpg" alt="Pastor" title="Pastor Alemán" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/pastor_1.jpg')">
+          </div>
+
+          <div style="font-size:10.5px;font-weight:700;color:var(--primary);margin:4px 0 2px;">👨 Masculinos</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+            <img src="img/posts/demo/avatar_martin.jpg" alt="Masculino 1" title="Masculino 1" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/avatar_martin.jpg')">
+            <img src="img/posts/demo/avatar_federico.jpg" alt="Masculino 2" title="Masculino 2" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/avatar_federico.jpg')">
+            <img src="img/posts/demo/avatar_gonzalo.jpg" alt="Masculino 3" title="Masculino 3" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/avatar_gonzalo.jpg')">
+            <img src="img/posts/demo/avatar_nicolas.jpg" alt="Masculino 4" title="Masculino 4" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/avatar_nicolas.jpg')">
+          </div>
+
+          <div style="font-size:10.5px;font-weight:700;color:var(--primary);margin:4px 0 2px;">👩 Femeninos</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+            <img src="img/posts/demo/avatar_carla.jpg" alt="Femenino 1" title="Femenino 1" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/avatar_carla.jpg')">
+            <img src="img/posts/demo/avatar_sofia.jpg" alt="Femenino 2" title="Femenino 2" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/avatar_sofia.jpg')">
+            <img src="img/posts/demo/avatar_valentina.jpg" alt="Femenino 3" title="Femenino 3" style="width:36px;height:36px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" onclick="BuscapetFirebase.selectUserAvatar('img/posts/demo/avatar_valentina.jpg')">
+          </div>
+
+          <div style="border-top:1px solid var(--border);padding-top:8px;margin-top:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <label style="font-size:11px;color:var(--text-muted);cursor:pointer;display:inline-flex;align-items:center;gap:5px;">
+              <i class="bi bi-upload"></i> Subir foto propia
+              <input type="file" accept="image/*" style="display:none;" onchange="BuscapetFirebase.handleCustomAvatarUpload(this)">
+            </label>
+            <button type="button" style="background:none;border:none;color:var(--text-muted);font-size:10.5px;cursor:pointer;text-decoration:underline;" onclick="BuscapetFirebase.selectUserAvatar('')">Solo iniciales</button>
+          </div>
+        </div>
+
         <div id="auth-profile-name" style="font-size:18px;font-weight:800;color:var(--text-main);">Usuario Conectado</div>
         <div id="auth-profile-email" style="font-size:12px;color:var(--primary);font-weight:600;margin-top:2px;"></div>
         <div id="auth-profile-phone" style="font-size:12px;color:var(--text-muted);margin-top:2px;"></div>
         
-        <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,0.15);color:var(--success);padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:700;margin:12px auto 16px;">
+        <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,0.15);color:var(--success);padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:700;margin:10px auto 14px;">
           <i class="bi bi-check-circle-fill"></i> Sesión Oficial Verificada
         </div>
 
@@ -1329,6 +1493,20 @@
           <div class="form-group-custom">
             <label class="form-label-custom">Contraseña *</label>
             <input type="password" id="reg-pass-input" class="form-input-custom" placeholder="Mínimo 6 caracteres">
+          </div>
+
+          <!-- Selección de Avatar al registrarse -->
+          <div class="form-group-custom" style="margin-top:10px;">
+            <label class="form-label-custom">Elegí tu Avatar (Opcional - Masculino, Femenino o Mascota / X)</label>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 0;">
+              <img class="reg-avatar-option" data-src="img/posts/demo/avatar_oscar_google.png" src="img/posts/demo/avatar_oscar_google.png" alt="Google" title="Mascota / X" style="width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onclick="BuscapetFirebase.selectRegAvatar('img/posts/demo/avatar_oscar_google.png')">
+              <img class="reg-avatar-option" data-src="img/posts/demo/avatar_martin.jpg" src="img/posts/demo/avatar_martin.jpg" alt="Masculino 1" title="Masculino 1" style="width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onclick="BuscapetFirebase.selectRegAvatar('img/posts/demo/avatar_martin.jpg')">
+              <img class="reg-avatar-option" data-src="img/posts/demo/avatar_federico.jpg" src="img/posts/demo/avatar_federico.jpg" alt="Masculino 2" title="Masculino 2" style="width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onclick="BuscapetFirebase.selectRegAvatar('img/posts/demo/avatar_federico.jpg')">
+              <img class="reg-avatar-option" data-src="img/posts/demo/avatar_carla.jpg" src="img/posts/demo/avatar_carla.jpg" alt="Femenino 1" title="Femenino 1" style="width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onclick="BuscapetFirebase.selectRegAvatar('img/posts/demo/avatar_carla.jpg')">
+              <img class="reg-avatar-option" data-src="img/posts/demo/avatar_sofia.jpg" src="img/posts/demo/avatar_sofia.jpg" alt="Femenino 2" title="Femenino 2" style="width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onclick="BuscapetFirebase.selectRegAvatar('img/posts/demo/avatar_sofia.jpg')">
+              <img class="reg-avatar-option" data-src="img/posts/demo/milo_1.jpg" src="img/posts/demo/milo_1.jpg" alt="Perrito" title="Perrito Milo" style="width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onclick="BuscapetFirebase.selectRegAvatar('img/posts/demo/milo_1.jpg')">
+              <img class="reg-avatar-option" data-src="img/posts/demo/gatita_1.jpg" src="img/posts/demo/gatita_1.jpg" alt="Gatita" title="Gatita" style="width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:transform .15s;" onclick="BuscapetFirebase.selectRegAvatar('img/posts/demo/gatita_1.jpg')">
+            </div>
           </div>
 
           <button type="button" class="btn-login" style="margin-top:6px;padding:11px;font-size:13px;" onclick="BuscapetFirebase.registerUser(document.getElementById('reg-name-input').value, document.getElementById('reg-email-input').value, document.getElementById('reg-pass-input').value, document.getElementById('reg-phone-input').value)">

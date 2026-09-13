@@ -16,6 +16,7 @@ var BuscapetAds = window.BuscapetAds = {
       whatsapp: '5491155550024',
       website: 'https://instagram.com/veterinaria_sanroque',
       badge: 'VETERINARIA 24H',
+      isDemo: true,
       active: true
     },
     {
@@ -29,6 +30,7 @@ var BuscapetAds = window.BuscapetAds = {
       whatsapp: '5492944550055',
       website: 'https://instagram.com/huellitas_felices_pet',
       badge: 'PET SHOP DESTACADO',
+      isDemo: true,
       active: true
     }
   ],
@@ -173,6 +175,7 @@ var BuscapetAds = window.BuscapetAds = {
     if (paymentView) paymentView.style.display = 'none';
 
     this.updatePriceDisplays();
+    this.updateLivePreview();
 
     modal.classList.add('show');
     modal.style.display = 'block';
@@ -200,8 +203,56 @@ var BuscapetAds = window.BuscapetAds = {
         preview.src = this.uploadedBanner;
         preview.style.display = 'block';
       }
+      this.updateLivePreview();
     };
     reader.readAsDataURL(file);
+  },
+
+  updateLivePreview() {
+    const container = document.getElementById('ad-live-preview-box');
+    if (!container) return;
+
+    const name = document.getElementById('ad-req-name')?.value.trim() || 'Veterinaria / Negocio Ejemplo';
+    const category = document.getElementById('ad-req-category')?.value.trim() || 'Rubro · Especialidad';
+    const city = document.getElementById('ad-req-city')?.value.trim() || 'Tu Ciudad / Zona';
+    const promo = document.getElementById('ad-req-promo')?.value.trim() || 'Escribe aquí el texto promocional o beneficio de tu comercio (ej: 15% de descuento mencionando a Buscapet).';
+    const phone = document.getElementById('ad-req-phone')?.value.trim() || '+5491155550000';
+    const website = document.getElementById('ad-req-web')?.value.trim() || '#';
+    const banner = this.uploadedBanner || 'img/posts/demo/ad_vet.jpg';
+
+    const icon = (category && category.toLowerCase().includes('pet')) ? '🐾' : '🏥';
+
+    container.innerHTML = `
+      <article class="pet-card border-ad" style="border-color:rgba(245,158,11,.6);background:linear-gradient(135deg,#1c160e 0%,#151820 100%);margin:0;">
+        <div style="background:linear-gradient(90deg,#F59E0B,#D97706);color:#000;padding:4px 10px;font-size:10px;font-weight:900;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;">
+          <span>📢 PUBLICIDAD PATROCINADA</span>
+          <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">DESTACADO</span>
+        </div>
+        <div class="card-header-row" style="padding:10px 12px 6px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,.2);border:1.5px solid var(--warning);display:flex;align-items:center;justify-content:center;font-size:18px;">
+            ${icon}
+          </div>
+          <div class="card-user-info">
+            <div class="card-username" style="color:var(--warning);font-size:13.5px;">${name}</div>
+            <div class="card-meta" style="color:var(--text-sub);">${category} &bull; ${city}</div>
+          </div>
+        </div>
+        <div class="card-photo-wrap" style="cursor:default;">
+          <img src="${banner}" alt="${name}">
+        </div>
+        <div class="card-details" style="padding:10px 12px;">
+          <div style="font-size:13px;color:var(--text-main);line-height:1.45;margin-bottom:8px;">${promo}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
+            <div class="contact-btn" style="background:#22C55E;color:#fff;cursor:default;">
+              <i class="bi bi-whatsapp"></i> WhatsApp
+            </div>
+            <div class="contact-btn" style="background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;cursor:default;">
+              <i class="bi bi-globe2"></i> Sitio Web
+            </div>
+          </div>
+        </div>
+      </article>
+    `;
   },
 
   submitAdRequest(e) {
@@ -229,6 +280,8 @@ var BuscapetAds = window.BuscapetAds = {
       phone: phone,
       whatsapp: phone.replace(/[^0-9]/g, ''),
       website: website || '',
+      badge: 'DESTACADO',
+      isDemo: false,
       date: new Date().toLocaleDateString(),
       active: false
     };

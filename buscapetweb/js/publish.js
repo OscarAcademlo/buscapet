@@ -208,6 +208,9 @@ var BuscapetPublish = window.BuscapetPublish = {
 
     const coords = (window.BuscapetMap && window.BuscapetMap.currentPickedCoords) || { lat: -34.5889, lng: -58.4305 };
 
+    const authorUid = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.uid) || ('usr-anon-' + Date.now());
+    const authorEmail = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.email) || '';
+
     const newPost = {
       id: 'post-' + Date.now(),
       type: this.currentType,
@@ -229,11 +232,14 @@ var BuscapetPublish = window.BuscapetPublish = {
         lng: coords.lng
       },
       date: 'Hace un momento',
+      authorUid: authorUid,
+      authorEmail: authorEmail,
       user: {
-        id: (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.uid) || 'usr-current',
+        id: authorUid,
         name: (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.displayName) || 'Tú (Usuario)',
         avatar: (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.photoURL) || 'img/posts/demo/avatar_nicolas.jpg',
-        phone: (phoneInput && phoneInput.value.trim()) || (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.phone) || '+5491155551234'
+        phone: (phoneInput && phoneInput.value.trim()) || (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.phone) || '+5491155551234',
+        email: authorEmail
       },
       likes: 1,
       liked: true,
@@ -241,6 +247,20 @@ var BuscapetPublish = window.BuscapetPublish = {
       isResolved: false,
       comments: []
     };
+
+    // Registrar autoría localmente en este navegador/dispositivo
+    try {
+      const storage = window.SafeStorage || window.localStorage;
+      if (storage) {
+        const myPosts = JSON.parse(storage.getItem('buscapet_my_posts') || '[]');
+        if (!myPosts.includes(newPost.id)) {
+          myPosts.push(newPost.id);
+          storage.setItem('buscapet_my_posts', JSON.stringify(myPosts));
+        }
+      }
+    } catch (err) {
+      console.warn('Error guardando autoría del post:', err);
+    }
 
     if (window.BuscapetFeed && window.BuscapetFeed.posts) {
       window.BuscapetFeed.posts.unshift(newPost);
