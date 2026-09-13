@@ -136,8 +136,8 @@
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/buscapet.css?v=8">
-  <link rel="stylesheet" href="css/style.css?v=8">
+  <link rel="stylesheet" href="css/buscapet.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
 
@@ -319,7 +319,7 @@
 
         <!-- ══════════ POST 1 — Milo (Perdido) ══════════ -->
         <article class="pet-card border-lost" id="card-post-1" data-type="lost">
-          <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN ACTIVA EN BUSCAPET ]</div>
+          <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN DE DEMOSTRACIÓN ]</div>
           <div class="card-header-row">
             <img class="card-avatar" src="img/posts/demo/avatar_nicolas.jpg" alt="Nicolás Rossi">
             <div class="card-user-info">
@@ -438,7 +438,7 @@
 
         <!-- ══════════ POST 2 — Gatita (Encontrada) ══════════ -->
         <article class="pet-card border-found" id="card-post-2" data-type="found">
-          <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN ACTIVA EN BUSCAPET ]</div>
+          <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN DE DEMOSTRACIÓN ]</div>
           <div class="card-header-row">
             <img class="card-avatar" src="img/posts/demo/avatar_martin.jpg" alt="Martín Gómez">
             <div class="card-user-info">
@@ -488,18 +488,42 @@
               <i class="bi bi-geo-alt-fill" style="color:var(--primary)"></i>
               <span>Av. Santa Fe &amp; Thames, Palermo, CABA</span>
             </div>
-            <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-              <button class="hero-btn" style="font-size:11px;padding:6px 12px;background:rgba(34,197,94,.12);border:1px solid var(--success);color:var(--success);" onclick="BuscapetFeed.toggleResolved('post-2')">
-                <i class="bi bi-check-circle-fill"></i> ✅ ¡Ya fue encontrado!
-              </button>
+            <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+              <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+                <i class="bi bi-shield-check" style="color:var(--primary);"></i> Aviso verificado
+              </div>
               <span style="font-size:10.5px;color:var(--text-muted);">Hace 5 h</span>
+            </div>
+            <!-- Botón Destacado: Ver o agregar comentarios -->
+            <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+              <button type="button" class="btn btn-sm" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,107,0,.08);color:var(--primary);border:1px solid rgba(255,107,0,.3);border-radius:8px;font-weight:700;font-size:12px;padding:8px;" onclick="BuscapetFeed.toggleComments('post-2')">
+                <i class="bi bi-chat-dots-fill"></i>
+                <span>Ver o agregar comentarios (1)</span>
+                <i class="bi bi-chevron-down" id="comments-chevron-post-2"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="comments-section" id="comments-box-post-2" style="display:none;background:var(--bg-input);padding:10px 12px;border-top:1px solid var(--border);">
+            <div style="display:flex;gap:8px;font-size:12px;margin-bottom:8px;">
+              <img src="img/posts/demo/avatar_gonzalo.jpg" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">
+              <div style="background:var(--bg-card);padding:6px 10px;border-radius:8px;flex:1;">
+                <strong style="color:var(--text-main);font-size:11.5px;">Gonzalo Paz</strong>
+                <div style="color:var(--text-sub);margin-top:2px;">¡Qué hermosa gatita! Ojalá aparezcan sus dueños pronto ❤️</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <input type="text" class="filter-select" style="margin:0;flex:1;" id="comment-input-post-2" placeholder="Escribe un mensaje de apoyo...">
+              <button class="btn-filter-apply" style="width:auto;padding:6px 14px;" onclick="BuscapetFeed.submitComment('post-2')">
+                <i class="bi bi-send-fill"></i>
+              </button>
             </div>
           </div>
         </article>
 
         <!-- ══════════ POST 3 — Luna (Adopción) ══════════ -->
         <article class="pet-card border-adopt" id="card-post-3" data-type="adopt">
-          <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN ACTIVA EN BUSCAPET ]</div>
+          <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN DE DEMOSTRACIÓN ]</div>
           <div class="card-header-row">
             <img class="card-avatar" src="img/posts/demo/avatar_valentina.jpg" alt="Valentina Díaz">
             <div class="card-user-info">
@@ -548,18 +572,42 @@
               <i class="bi bi-geo-alt-fill" style="color:var(--primary)"></i>
               <span>Zona Nueva Córdoba, Córdoba Capital</span>
             </div>
-            <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-              <button class="hero-btn" style="font-size:11px;padding:6px 12px;background:rgba(168,85,247,.15);border:1px solid var(--adopt);color:var(--adopt);" onclick="BuscapetFeed.toggleResolved('post-3')">
-                <i class="bi bi-house-heart-fill"></i> 🏠 ¡Ya fue adoptado!
-              </button>
+            <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+              <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+                <i class="bi bi-shield-check" style="color:var(--primary);"></i> Aviso verificado
+              </div>
               <span style="font-size:10.5px;color:var(--text-muted);">Hace 12 h</span>
+            </div>
+            <!-- Botón Destacado: Ver o agregar comentarios -->
+            <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+              <button type="button" class="btn btn-sm" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,107,0,.08);color:var(--primary);border:1px solid rgba(255,107,0,.3);border-radius:8px;font-weight:700;font-size:12px;padding:8px;" onclick="BuscapetFeed.toggleComments('post-3')">
+                <i class="bi bi-chat-dots-fill"></i>
+                <span>Ver o agregar comentarios (1)</span>
+                <i class="bi bi-chevron-down" id="comments-chevron-post-3"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="comments-section" id="comments-box-post-3" style="display:none;background:var(--bg-input);padding:10px 12px;border-top:1px solid var(--border);">
+            <div style="display:flex;gap:8px;font-size:12px;margin-bottom:8px;">
+              <img src="img/posts/demo/avatar_carla.jpg" style="width:26px;height:26px;border-radius:50%;object-fit:cover;">
+              <div style="background:var(--bg-card);padding:6px 10px;border-radius:8px;flex:1;">
+                <strong style="color:var(--text-main);font-size:11.5px;">Carla Méndez</strong>
+                <div style="color:var(--text-sub);margin-top:2px;">Es un amor Luna, ojalá encuentre una familia que la cuide mucho 🙏</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <input type="text" class="filter-select" style="margin:0;flex:1;" id="comment-input-post-3" placeholder="Escribe un mensaje de apoyo...">
+              <button class="btn-filter-apply" style="width:auto;padding:6px 14px;" onclick="BuscapetFeed.submitComment('post-3')">
+                <i class="bi bi-send-fill"></i>
+              </button>
             </div>
           </div>
         </article>
 
         <!-- ══════════ POST 4 — Pastor Alemán (Visto) ══════════ -->
         <article class="pet-card border-spotted" id="card-post-4" data-type="spotted">
-          <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN ACTIVA EN BUSCAPET ]</div>
+          <div class="demo-banner">⚠️ ✦ [ PUBLICACIÓN DE DEMOSTRACIÓN ]</div>
           <div class="card-header-row">
             <img class="card-avatar" src="img/posts/demo/avatar_federico.jpg" alt="Federico Álvarez">
             <div class="card-user-info">
@@ -604,6 +652,29 @@
             <div class="card-location-row" style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-muted);margin-top:6px;">
               <i class="bi bi-geo-alt-fill" style="color:var(--primary)"></i>
               <span>Av. 12 de Octubre y Costanera, Bariloche</span>
+            </div>
+            <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+              <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
+                <i class="bi bi-shield-check" style="color:var(--primary);"></i> Aviso verificado
+              </div>
+              <span style="font-size:10.5px;color:var(--text-muted);">Ayer</span>
+            </div>
+            <!-- Botón Destacado: Ver o agregar comentarios -->
+            <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+              <button type="button" class="btn btn-sm" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,107,0,.08);color:var(--primary);border:1px solid rgba(255,107,0,.3);border-radius:8px;font-weight:700;font-size:12px;padding:8px;" onclick="BuscapetFeed.toggleComments('post-4')">
+                <i class="bi bi-chat-dots-fill"></i>
+                <span>Ver o agregar comentarios (0)</span>
+                <i class="bi bi-chevron-down" id="comments-chevron-post-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="comments-section" id="comments-box-post-4" style="display:none;background:var(--bg-input);padding:10px 12px;border-top:1px solid var(--border);">
+            <div style="display:flex;gap:6px;">
+              <input type="text" class="filter-select" style="margin:0;flex:1;" id="comment-input-post-4" placeholder="Escribe un mensaje de apoyo...">
+              <button class="btn-filter-apply" style="width:auto;padding:6px 14px;" onclick="BuscapetFeed.submitComment('post-4')">
+                <i class="bi bi-send-fill"></i>
+              </button>
             </div>
           </div>
         </article>
@@ -1595,18 +1666,18 @@
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
 <!-- Buscapet Modular Architecture -->
-<script src="js/firebase-config.js?v=8"></script>
-<script src="js/mercadopago.js?v=8"></script>
-<script src="js/location-autocomplete.js?v=8"></script>
-<script src="js/i18n.js?v=8"></script>
-<script src="js/locations-data.js?v=8"></script>
-<script src="js/map.js?v=8"></script>
-<script src="js/chat.js?v=8"></script>
-<script src="js/ads.js?v=8"></script>
-<script src="js/admin.js?v=8"></script>
-<script src="js/publish.js?v=8"></script>
-<script src="js/feed.js?v=8"></script>
-<script src="js/app.js?v=8"></script>
+<script src="js/firebase-config.js?v=9"></script>
+<script src="js/mercadopago.js?v=9"></script>
+<script src="js/location-autocomplete.js?v=9"></script>
+<script src="js/i18n.js?v=9"></script>
+<script src="js/locations-data.js?v=9"></script>
+<script src="js/map.js?v=9"></script>
+<script src="js/chat.js?v=9"></script>
+<script src="js/ads.js?v=9"></script>
+<script src="js/admin.js?v=9"></script>
+<script src="js/publish.js?v=9"></script>
+<script src="js/feed.js?v=9"></script>
+<script src="js/app.js?v=9"></script>
 
 </body>
 </html>

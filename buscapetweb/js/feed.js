@@ -371,8 +371,10 @@ var BuscapetFeed = window.BuscapetFeed = {
       borderClass = 'border-spotted';
     }
 
-    const badgeText = (window.BuscapetI18n && window.BuscapetI18n.t(badgeKey)) || (post.type === 'found' ? '🟢 Encontrada' : post.type === 'adopt' ? '🟣 En Adopción' : post.type === 'spotted' ? '🟡 Avistamiento' : '🔴 Perdida');
-    const bannerText = (window.BuscapetI18n && window.BuscapetI18n.t('active_post_banner')) || '⚠️ ✦ [ PUBLICACIÓN ACTIVA EN BUSCAPET ]';
+    const isDemo = post.isDemo === true || (post.id && String(post.id).startsWith('post-'));
+    const bannerText = isDemo
+      ? ((window.BuscapetI18n && window.BuscapetI18n.t('demo_post_banner')) || '⚠️ ✦ [ PUBLICACIÓN DE DEMOSTRACIÓN ]')
+      : ((window.BuscapetI18n && window.BuscapetI18n.t('active_post_banner')) || '✦ [ PUBLICACIÓN ACTIVA EN BUSCAPET ]');
     const collarText = post.hasCollar ? ((window.BuscapetI18n && window.BuscapetI18n.t('collar_yes')) || 'Lleva collar/chapita') : ((window.BuscapetI18n && window.BuscapetI18n.t('collar_no')) || 'Sin collar visible');
     const mapText = (window.BuscapetI18n && window.BuscapetI18n.t('view_map')) || 'Ver en Mapa';
     const chatText = (window.BuscapetI18n && window.BuscapetI18n.t('contact_chat')) || 'Chat Interno';
