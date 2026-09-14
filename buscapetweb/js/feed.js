@@ -263,9 +263,12 @@ var BuscapetFeed = window.BuscapetFeed = {
 
     const locText = document.querySelector('.hero-location-text');
     if (locText) {
-      if (city) locText.textContent = `📍 ${city}, ${state || country}`;
-      else if (state) locText.textContent = `📍 ${state}, ${country}`;
-      else if (country) locText.textContent = `📍 ${country}`;
+      const countryName = (window.BuscapetLocations && country)
+        ? (window.BuscapetLocations.getCountryByCodeOrName(country)?.name || country)
+        : (country === 'AR' ? 'Argentina' : country);
+      if (city) locText.textContent = `📍 ${city}, ${state || countryName}`;
+      else if (state) locText.textContent = `📍 ${state}, ${countryName}`;
+      else if (countryName) locText.textContent = `📍 ${countryName}`;
       else locText.textContent = '📍 Toda Latinoamérica';
     }
   },
@@ -276,6 +279,13 @@ var BuscapetFeed = window.BuscapetFeed = {
   },
 
   getFilteredPosts() {
+    if (!Array.isArray(this.posts) || this.posts.length === 0) {
+      this.posts = [...this.initialPosts];
+      this.save();
+    }
+
+    const normalize = (str) => (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
     return this.posts.filter(post => {
       if (!post) return false;
 
@@ -287,19 +297,26 @@ var BuscapetFeed = window.BuscapetFeed = {
       // Filtro de Ubicación
       if (this.selectedCountry && post.location) {
         const pCode = (post.location.countryCode || '').toLowerCase();
-        const pName = (post.location.countryName || '').toLowerCase();
+        const pName = normalize(post.location.countryName);
         const sCode = this.selectedCountry.toLowerCase();
-        if (pCode && pCode !== sCode && !pName.includes(sCode)) {
+        const sName = normalize(this.selectedCountry);
+        if (pCode && pCode !== sCode && !pName.includes(sName) && !sName.includes(pName)) {
           return false;
         }
       }
       if (this.selectedState && post.location && post.location.stateName) {
-        if (!post.location.stateName.toLowerCase().includes(this.selectedState.toLowerCase())) {
+        const pState = normalize(post.location.stateName);
+        const sState = normalize(this.selectedState);
+        const isCabaMatch = (pState.includes('caba') || pState.includes('buenos aires')) && (sState.includes('caba') || sState.includes('buenos aires'));
+        const isDirectMatch = pState.includes(sState) || sState.includes(pState);
+        if (!isCabaMatch && !isDirectMatch) {
           return false;
         }
       }
       if (this.selectedCity && post.location && post.location.cityName) {
-        if (!post.location.cityName.toLowerCase().includes(this.selectedCity.toLowerCase())) {
+        const pCity = normalize(post.location.cityName);
+        const sCity = normalize(this.selectedCity);
+        if (!pCity.includes(sCity) && !sCity.includes(pCity)) {
           return false;
         }
       }
@@ -325,8 +342,10 @@ var BuscapetFeed = window.BuscapetFeed = {
         <div class="empty-state">
           <div class="empty-state-icon">🐾</div>
           <div class="empty-state-title">No hay publicaciones con estos filtros</div>
-          <div class="empty-state-sub">Probá cambiando la categoría o la ciudad seleccionada.</div>
-          <button class="hero-btn hero-btn-lost" style="max-width:200px;margin:0 auto;" onclick="BuscapetFeed.setFilter('all');">Ver Todas</button>
+          <div class="empty-state-sub">Probá cambiando la categoría o la ubicación seleccionada.</div>
+          <button class="hero-btn hero-btn-lost" style="max-width:280px;margin:0 auto;padding:10px 18px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;" onclick="if(window.BuscapetLocationsUI){window.BuscapetLocationsUI.clearFilter();}else{BuscapetFeed.setLocationFilter('','','');}BuscapetFeed.setFilter('all');">
+            <i class="bi bi-arrow-clockwise"></i> Ver Todas las Mascotas
+          </button>
         </div>
       `;
       return;
@@ -371,6 +390,7 @@ var BuscapetFeed = window.BuscapetFeed = {
       borderClass = 'border-spotted';
     }
 
+    const badgeText = (window.BuscapetI18n && window.BuscapetI18n.t(badgeKey)) || (post.type === 'found' ? '🟢 Encontrada' : post.type === 'adopt' ? '🟣 En Adopción' : post.type === 'spotted' ? '🟡 Avistamiento' : '🔴 Perdida');
     const isDemo = post.isDemo === true || (post.id && String(post.id).startsWith('post-'));
     const bannerText = isDemo
       ? ((window.BuscapetI18n && window.BuscapetI18n.t('demo_post_banner')) || '⚠️ ✦ [ PUBLICACIÓN DE DEMOSTRACIÓN ]')
