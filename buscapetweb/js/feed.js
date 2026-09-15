@@ -1,7 +1,58 @@
 // =============================================================================
-// BUSCAPET - FEED CONTROLLER (POSTS, CAROUSELS, FILTERS & INTERACTIONS)
-// Basado en HomeScreen, PetCard y PetPost de Flutter
+// BUSCAPET DB - ALMACENAMIENTO PERMANENTE INDEXEDDB (SIN LÍMITE DE QUOTA)
 // =============================================================================
+var BuscapetDB = window.BuscapetDB = {
+  dbName: 'buscapet_data_db',
+  dbVersion: 1,
+  db: null,
+
+  open() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((resolve) => {
+      if (typeof window === 'undefined' || !window.indexedDB) return resolve(null);
+      const req = indexedDB.open(this.dbName, this.dbVersion);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('posts')) {
+          db.createObjectStore('posts', { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = (e) => {
+        this.db = e.target.result;
+        resolve(this.db);
+      };
+      req.onerror = () => resolve(null);
+    });
+  },
+
+  async savePosts(posts) {
+    try {
+      const db = await this.open();
+      if (!db) return;
+      const tx = db.transaction('posts', 'readwrite');
+      const store = tx.objectStore('posts');
+      posts.forEach(p => {
+        if (p && p.id) store.put(p);
+      });
+    } catch(e) {}
+  },
+
+  async getAllPosts() {
+    try {
+      const db = await this.open();
+      if (!db) return [];
+      return new Promise((resolve) => {
+        const tx = db.transaction('posts', 'readonly');
+        const store = tx.objectStore('posts');
+        const req = store.getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+    } catch(e) {
+      return [];
+    }
+  }
+};
 
 var BuscapetFeed = window.BuscapetFeed = {
   posts: [],
@@ -186,9 +237,18 @@ var BuscapetFeed = window.BuscapetFeed = {
 
   init() {
     let saved = null;
+    let userCreated = [];
     try {
-      if (window.SafeStorage) saved = window.SafeStorage.getItem('buscapet_posts');
+      const storage = window.SafeStorage || window.localStorage;
+      if (storage) {
+        saved = storage.getItem('buscapet_posts');
+        const userSaved = storage.getItem('buscapet_user_created_posts');
+        if (userSaved) {
+          try { userCreated = JSON.parse(userSaved); } catch(e) {}
+        }
+      }
     } catch(e) {}
+
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -202,15 +262,60 @@ var BuscapetFeed = window.BuscapetFeed = {
       }
     } else {
       this.posts = [...this.initialPosts];
-      this.save();
     }
+
+    // Asegurar que cualquier post creado por el usuario esté presente
+    if (Array.isArray(userCreated) && userCreated.length > 0) {
+      userCreated.forEach(up => {
+        if (up && up.id && !this.posts.some(p => p.id === up.id)) {
+          this.posts.unshift(up);
+        }
+      });
+    }
+
+    this.save();
     this.renderFeed();
+
+    // Consultar IndexedDB en segundo plano para recuperar publicaciones si localStorage fue limpiado
+    if (window.BuscapetDB) {
+      window.BuscapetDB.getAllPosts().then((dbPosts) => {
+        if (Array.isArray(dbPosts) && dbPosts.length > 0) {
+          let updated = false;
+          dbPosts.forEach(dp => {
+            if (dp && dp.id && !this.posts.some(p => p.id === dp.id)) {
+              this.posts.unshift(dp);
+              updated = true;
+            }
+          });
+          if (updated) {
+            this.save();
+            this.renderFeed();
+          }
+        }
+      });
+    }
   },
 
   save() {
-    try {
-      if (window.SafeStorage) window.SafeStorage.setItem('buscapet_posts', JSON.stringify(this.posts));
-    } catch(e) {}
+    const storage = window.SafeStorage || window.localStorage;
+    if (storage) {
+      try {
+        storage.setItem('buscapet_posts', JSON.stringify(this.posts));
+      } catch(e) {
+        console.warn('LocalStorage full, guardando en memoria e IndexedDB:', e);
+      }
+
+      // Guardar respaldo específico de posts creados por usuarios
+      try {
+        const userPosts = this.posts.filter(p => p && p.id && !['post-1','post-2','post-3','post-4'].includes(p.id) && !p.isDemo);
+        storage.setItem('buscapet_user_created_posts', JSON.stringify(userPosts));
+      } catch(e) {}
+    }
+
+    // Guardar siempre en IndexedDB permanente
+    if (window.BuscapetDB) {
+      window.BuscapetDB.savePosts(this.posts);
+    }
   },
 
   getMyPostIds() {
@@ -288,6 +393,14 @@ var BuscapetFeed = window.BuscapetFeed = {
 
     return this.posts.filter(post => {
       if (!post) return false;
+
+      // Las publicaciones del usuario propio NUNCA se ocultan por filtro de ubicación
+      if (this.isAuthor(post)) {
+        if (this.activeFilter !== 'all' && post.type !== this.activeFilter) {
+          return false;
+        }
+        return true;
+      }
 
       // Filtro de Categoría
       if (this.activeFilter !== 'all' && post.type !== this.activeFilter) {

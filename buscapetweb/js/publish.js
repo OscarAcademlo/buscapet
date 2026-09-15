@@ -129,18 +129,59 @@ var BuscapetPublish = window.BuscapetPublish = {
     updateStates();
   },
 
-  handlePhotoUpload(e) {
+  compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.75) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressed);
+        };
+        img.onerror = () => resolve(event.target.result);
+        img.src = event.target.result;
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  },
+
+  async handlePhotoUpload(e) {
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
 
-    files.slice(0, 5 - this.uploadedPhotos.length).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        this.uploadedPhotos.push(event.target.result);
-        this.renderPhotoPreviews();
-      };
-      reader.readAsDataURL(file);
-    });
+    const availableSlots = 5 - this.uploadedPhotos.length;
+    const selectedFiles = files.slice(0, availableSlots);
+
+    for (const file of selectedFiles) {
+      try {
+        const compressed = await this.compressImage(file, 800, 800, 0.75);
+        if (compressed) {
+          this.uploadedPhotos.push(compressed);
+          this.renderPhotoPreviews();
+        }
+      } catch (err) {
+        console.warn('Error procesando foto:', err);
+      }
+    }
   },
 
   renderPhotoPreviews() {
@@ -269,7 +310,7 @@ var BuscapetPublish = window.BuscapetPublish = {
       comments: []
     };
 
-    // Registrar autoría localmente en este navegador/dispositivo
+    // Registrar autoría y respaldo persistente de la publicación
     try {
       const storage = window.SafeStorage || window.localStorage;
       if (storage) {
@@ -277,6 +318,11 @@ var BuscapetPublish = window.BuscapetPublish = {
         if (!myPosts.includes(newPost.id)) {
           myPosts.push(newPost.id);
           storage.setItem('buscapet_my_posts', JSON.stringify(myPosts));
+        }
+        const createdList = JSON.parse(storage.getItem('buscapet_user_created_posts') || '[]');
+        if (!createdList.some(p => p.id === newPost.id)) {
+          createdList.unshift(newPost);
+          storage.setItem('buscapet_user_created_posts', JSON.stringify(createdList));
         }
       }
     } catch (err) {
