@@ -18,7 +18,12 @@ var BuscapetMap = window.BuscapetMap = {
     if (window.BuscapetFeed && window.BuscapetFeed.posts) {
       post = window.BuscapetFeed.posts.find(p => p.id === postId);
     }
-    if (!post || !post.location) return;
+    if (!post) return;
+
+    const loc = post.location || {};
+    const lat = parseFloat(loc.lat) || -34.6037;
+    const lng = parseFloat(loc.lng) || -58.3816;
+    const address = loc.address || `${loc.cityName || ''}, ${loc.stateName || ''}`.trim() || 'Ubicación registrada';
 
     const modal = document.getElementById('map-modal');
     const title = document.getElementById('map-modal-title');
@@ -29,7 +34,23 @@ var BuscapetMap = window.BuscapetMap = {
       title.innerHTML = `🐾 ${post.petName || 'Mascota'} &bull; <span style="font-size:13px;font-weight:700;">${typeLabel}</span>`;
     }
     if (desc) {
-      desc.textContent = post.location.address || `${post.location.cityName || ''}, ${post.location.stateName || ''}, ${post.location.countryName || ''}`;
+      desc.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;font-weight:700;margin-bottom:4px;">
+          <i class="bi bi-geo-alt-fill" style="color:var(--primary);font-size:15px;"></i>
+          <span>${address}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);font-family:monospace;margin-bottom:8px;">
+          Coordenadas GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" rel="noopener noreferrer" style="background:var(--primary);color:#fff;font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:8px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-family:'Outfit',sans-serif;">
+            <i class="bi bi-compass"></i> Abrir en Google Maps / GPS
+          </a>
+          <button type="button" onclick="navigator.clipboard && navigator.clipboard.writeText('${lat}, ${lng}').then(() => { if(window.buscapetToast) window.buscapetToast('📋 Coordenadas copiadas al portapapeles'); })" style="background:var(--bg-card);border:1px solid var(--border);color:var(--text-main);font-size:11.5px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:'Outfit',sans-serif;">
+            <i class="bi bi-clipboard"></i> Copiar Coordenadas
+          </button>
+        </div>
+      `;
     }
 
     if (modal) {
@@ -38,10 +59,13 @@ var BuscapetMap = window.BuscapetMap = {
       document.body.classList.add('modal-open');
     }
 
-    // Setup Leaflet map
+    // Setup Leaflet map con reintentos para asegurar renderizado correcto
     setTimeout(() => {
-      this.renderViewMap(post.location.lat, post.location.lng, post.petName, post.type);
-    }, 200);
+      this.renderViewMap(lat, lng, post.petName, post.type);
+    }, 150);
+    setTimeout(() => {
+      if (this.viewMap) this.viewMap.invalidateSize();
+    }, 350);
   },
 
   renderViewMap(lat, lng, petName, type) {

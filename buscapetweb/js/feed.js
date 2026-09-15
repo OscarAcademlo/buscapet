@@ -432,6 +432,12 @@ var BuscapetFeed = window.BuscapetFeed = {
 
     return `
       <article class="pet-card ${borderClass}" id="card-${post.id}" data-type="${post.type}">
+        ${post.isNew ? `
+          <div class="new-post-success-banner">
+            <i class="bi bi-check-circle-fill" style="font-size:15px;"></i>
+            <span>¡Publicada con éxito en Buscapet!</span>
+          </div>
+        ` : ''}
         ${isResolved ? `
           <div style="background:linear-gradient(90deg,#22C55E,#16A34A);color:#fff;padding:7px 10px;font-size:12px;font-weight:900;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;">
             <span>🎉</span> <span>${resolvedLabel}</span>
@@ -479,11 +485,9 @@ var BuscapetFeed = window.BuscapetFeed = {
             <i class="bi bi-share"></i>
             <span>${post.shares || 0}</span>
           </button>
-          ${loc && loc.lat ? `
-            <button class="action-btn" style="margin-left:auto;color:var(--primary);" onclick="BuscapetMap.openMapForPost('${post.id}')">
-              <i class="bi bi-geo-alt-fill"></i> ${mapText}
-            </button>
-          ` : ''}
+          <button class="action-btn" style="margin-left:auto;color:var(--primary);" onclick="BuscapetMap.openMapForPost('${post.id}')" title="Ver en mapa">
+            <i class="bi bi-geo-alt-fill"></i> ${mapText}
+          </button>
         </div>
 
         <div class="card-contact-btns">
@@ -504,12 +508,33 @@ var BuscapetFeed = window.BuscapetFeed = {
             ${post.hasCollar ? `<span class="species-tag" style="border-color:var(--warning);color:var(--warning);">🏷️ ${collarText}</span>` : ''}
           </div>
           <div class="card-description">${desc}</div>
-          ${loc ? `
-            <div class="card-location-row" style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-muted);margin-top:6px;">
-              <i class="bi bi-geo-alt-fill" style="color:var(--primary)"></i>
-              <span>${loc.address || `${loc.cityName}, ${loc.stateName}`}</span>
+          
+          <!-- SECCIÓN DE UBICACIÓN Y BOTÓN DE MAPA (SIEMPRE VISIBLE EN PERDIDA Y ENCONTRADA) -->
+          <div class="card-location-box ${post.type || 'lost'}">
+            <div class="card-location-row-inner">
+              <div class="card-location-pin">
+                <i class="bi bi-geo-alt-fill"></i>
+              </div>
+              <div class="card-location-info">
+                <div class="card-location-type-label">
+                  ${post.type === 'lost' ? '📍 Lugar donde se perdió:' : (post.type === 'found' ? '📍 Lugar donde fue encontrada:' : '📍 Ubicación:')}
+                </div>
+                <div class="card-location-text">
+                  ${(loc && loc.address) || (loc && `${loc.cityName || ''}, ${loc.stateName || ''}`.trim()) || 'Ubicación reportada'}
+                </div>
+                ${(loc && loc.lat && loc.lng) ? `
+                  <div class="card-location-coords">
+                    Coordenadas GPS: ${Number(loc.lat).toFixed(4)}, ${Number(loc.lng).toFixed(4)}
+                  </div>
+                ` : ''}
+              </div>
             </div>
-          ` : ''}
+            <button type="button" class="btn-card-view-map ${post.type || 'lost'}" onclick="BuscapetMap.openMapForPost('${post.id}')">
+              <i class="bi bi-map-fill"></i>
+              <span>Ver ubicación en el mapa</span>
+              <i class="bi bi-chevron-right" style="font-size:11px;opacity:0.8;margin-left:auto;"></i>
+            </button>
+          </div>
 
           <!-- Botón de Resolución y Modificación Exclusivo para el Autor -->
           <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">

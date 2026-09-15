@@ -66,8 +66,13 @@ var BuscapetPublish = window.BuscapetPublish = {
     if (modal) {
       modal.classList.remove('show');
       modal.style.display = 'none';
-      document.body.classList.remove('modal-open');
     }
+    const authModal = document.getElementById('auth-modal');
+    if (authModal) {
+      authModal.classList.remove('show');
+      authModal.style.display = 'none';
+    }
+    document.body.classList.remove('modal-open');
   },
 
   selectTab(type) {
@@ -185,6 +190,13 @@ var BuscapetPublish = window.BuscapetPublish = {
   submitPost(e) {
     if (e) e.preventDefault();
 
+    const submitBtn = document.getElementById('btn-publish-submit') || (e && e.target);
+    const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Publicando...';
+    }
+
     const nameInput = document.getElementById('publish-name');
     const speciesSelect = document.getElementById('publish-species');
     const breedInput = document.getElementById('publish-breed');
@@ -198,22 +210,30 @@ var BuscapetPublish = window.BuscapetPublish = {
     const hasCollarCheck = document.getElementById('publish-collar');
     const collarDetailsInput = document.getElementById('publish-collar-details');
 
-    const petName = (nameInput ? nameInput.value.trim() : '') || (this.currentType === 'found' ? 'Mascota Encontrada' : 'Mascota');
-    const description = (descInput ? descInput.value.trim() : '');
+    const petName = (nameInput ? nameInput.value.trim() : '') || (this.currentType === 'found' ? 'Mascota Encontrada' : (this.currentType === 'lost' ? 'Mascota Perdida' : 'Mascota'));
+    let description = (descInput ? descInput.value.trim() : '');
 
+    // Fallback inteligente si la descripción está vacía para evitar bloqueos
     if (!description) {
-      alert('Por favor agrega una descripción con datos de la mascota.');
-      return;
+      description = (this.currentType === 'lost')
+        ? 'Mascota perdida. Por favor si alguien la vio o tiene información comunicarse urgente.'
+        : (this.currentType === 'found')
+        ? 'Mascota encontrada en la zona. Contactar para coordinar reencuentro con su familia.'
+        : 'Publicación de mascota registrada en la comunidad Buscapet.';
     }
 
-    const coords = (window.BuscapetMap && window.BuscapetMap.currentPickedCoords) || { lat: -34.5889, lng: -58.4305 };
+    const picked = window.BuscapetMap && window.BuscapetMap.currentPickedCoords;
+    const lat = (picked && parseFloat(picked.lat)) || -34.5889;
+    const lng = (picked && parseFloat(picked.lng)) || -58.4305;
 
     const authorUid = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.uid) || ('usr-anon-' + Date.now());
     const authorEmail = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.email) || '';
+    const authorName = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.displayName) || 'Tú (Usuario)';
+    const authorAvatar = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.photoURL) || 'img/posts/demo/avatar_nicolas.jpg';
 
     const newPost = {
       id: 'post-' + Date.now(),
-      type: this.currentType,
+      type: this.currentType || 'lost',
       petName: petName,
       species: speciesSelect ? speciesSelect.value : 'Perro',
       breed: (breedInput && breedInput.value.trim()) || 'Mestizo',
@@ -228,16 +248,16 @@ var BuscapetPublish = window.BuscapetPublish = {
         stateName: (stateSelect && stateSelect.value) || 'CABA',
         cityName: (citySelect && citySelect.value) || 'Palermo',
         address: (addressInput && addressInput.value.trim()) || 'Ubicación reportada',
-        lat: coords.lat,
-        lng: coords.lng
+        lat: lat,
+        lng: lng
       },
       date: 'Hace un momento',
       authorUid: authorUid,
       authorEmail: authorEmail,
       user: {
         id: authorUid,
-        name: (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.displayName) || 'Tú (Usuario)',
-        avatar: (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.photoURL) || 'img/posts/demo/avatar_nicolas.jpg',
+        name: authorName,
+        avatar: authorAvatar,
         phone: (phoneInput && phoneInput.value.trim()) || (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.phone) || '+5491155551234',
         email: authorEmail
       },
@@ -245,6 +265,7 @@ var BuscapetPublish = window.BuscapetPublish = {
       liked: true,
       shares: 0,
       isResolved: false,
+      isNew: true,
       comments: []
     };
 
@@ -262,17 +283,62 @@ var BuscapetPublish = window.BuscapetPublish = {
       console.warn('Error guardando autoría del post:', err);
     }
 
-    if (window.BuscapetFeed && window.BuscapetFeed.posts) {
+    // Insertar en el feed y asegurar visibilidad
+    if (window.BuscapetFeed) {
+      if (!Array.isArray(window.BuscapetFeed.posts)) {
+        window.BuscapetFeed.posts = [];
+      }
       window.BuscapetFeed.posts.unshift(newPost);
       window.BuscapetFeed.save();
+
+      // Ajustar filtro para que la publicación aparezca de inmediato en pantalla
+      if (window.BuscapetFeed.activeFilter !== 'all' && window.BuscapetFeed.activeFilter !== newPost.type) {
+        window.BuscapetFeed.activeFilter = 'all';
+        document.querySelectorAll('.chip').forEach(c => {
+          c.className = (c.getAttribute('data-type') === 'all') ? 'chip active-all' : 'chip';
+        });
+      }
+      window.BuscapetFeed.selectedCountry = '';
+      window.BuscapetFeed.selectedState = '';
+      window.BuscapetFeed.selectedCity = '';
+      window.BuscapetFeed.searchQuery = '';
+
       window.BuscapetFeed.renderFeed();
     }
 
+    // Cerrar modal de inmediato
     this.closeModal();
-    if (window.buscapetToast) {
-      window.buscapetToast('🎉 ¡Reporte publicado con éxito en Buscapet!', 'success');
-    } else {
-      alert('🎉 ¡Reporte publicado con éxito!');
+
+    // Resetear formulario para futuros reportes
+    if (nameInput) nameInput.value = '';
+    if (descInput) descInput.value = '';
+    if (breedInput) breedInput.value = '';
+    if (addressInput) addressInput.value = '';
+    if (collarDetailsInput) collarDetailsInput.value = '';
+    if (hasCollarCheck) hasCollarCheck.checked = false;
+    this.uploadedPhotos = [];
+    this.renderPhotoPreviews();
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origBtnHtml || '🐾 Publicar Mascota Ahora';
     }
+
+    // Desplazar la pantalla suavemente hasta la nueva publicación y mostrar mensaje de éxito
+    setTimeout(() => {
+      const targetCard = document.getElementById('card-' + newPost.id);
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetCard.classList.add('new-post-highlight');
+        setTimeout(() => {
+          targetCard.classList.remove('new-post-highlight');
+        }, 3500);
+      }
+      if (window.buscapetToast) {
+        window.buscapetToast('🎉 ¡Publicada con éxito! Ya podés ver tu reporte.', 'success');
+      } else {
+        alert('🎉 ¡Publicada con éxito!');
+      }
+    }, 200);
   }
 };

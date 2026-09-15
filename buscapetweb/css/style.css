@@ -786,3 +786,173 @@ a{color:inherit;text-decoration:none}
   }
 }
 
+/* ============================================================
+   SECCIÓN DE UBICACIÓN Y BOTÓN DE MAPA EN PUBLICACIONES
+   ============================================================ */
+.card-location-box {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.card-location-box.lost {
+  border-left: 4px solid var(--primary);
+  background: linear-gradient(90deg, rgba(255, 107, 0, 0.05) 0%, var(--bg-input) 100%);
+}
+
+.card-location-box.found {
+  border-left: 4px solid var(--found);
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.05) 0%, var(--bg-input) 100%);
+}
+
+.card-location-box.adopt {
+  border-left: 4px solid var(--adopt);
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.05) 0%, var(--bg-input) 100%);
+}
+
+.card-location-row-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.card-location-pin {
+  font-size: 18px;
+  line-height: 1;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.card-location-box.lost .card-location-pin { color: var(--primary); }
+.card-location-box.found .card-location-pin { color: var(--found); }
+.card-location-box.adopt .card-location-pin { color: var(--adopt); }
+
+.card-location-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-location-type-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 2px;
+}
+.card-location-box.lost .card-location-type-label { color: var(--primary); }
+.card-location-box.found .card-location-type-label { color: var(--found); }
+.card-location-box.adopt .card-location-type-label { color: var(--adopt); }
+
+.card-location-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.card-location-coords {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-family: monospace;
+}
+
+/* BOTÓN DESTACADO VER UBICACIÓN EN EL MAPA */
+.btn-card-view-map {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  border: 1.5px solid;
+  background: var(--bg-card);
+}
+
+.btn-card-view-map.lost {
+  color: var(--primary);
+  border-color: rgba(255, 107, 0, 0.4);
+  background: rgba(255, 107, 0, 0.08);
+}
+.btn-card-view-map.lost:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(255, 107, 0, 0.35);
+}
+
+.btn-card-view-map.found {
+  color: var(--found);
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.08);
+}
+.btn-card-view-map.found:hover {
+  background: var(--found);
+  color: #fff;
+  border-color: var(--found);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+}
+
+.btn-card-view-map.adopt {
+  color: var(--adopt);
+  border-color: rgba(168, 85, 247, 0.4);
+  background: rgba(168, 85, 247, 0.08);
+}
+.btn-card-view-map.adopt:hover {
+  background: var(--adopt);
+  color: #fff;
+  border-color: var(--adopt);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+}
+
+/* ANIMACIÓN Y RESALTADO DE PUBLICACIÓN RECIENTE */
+@keyframes newPostGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8);
+    transform: scale(0.98);
+  }
+  40% {
+    box-shadow: 0 0 30px 8px rgba(34, 197, 94, 0.5);
+    transform: scale(1.015);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    transform: scale(1);
+  }
+}
+
+.new-post-highlight {
+  animation: newPostGlow 2.5s ease-out;
+  border-color: var(--success) !important;
+}
+
+.new-post-success-banner {
+  background: linear-gradient(90deg, #10B981, #059669);
+  color: #fff;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+}
+
+
