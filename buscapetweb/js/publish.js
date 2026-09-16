@@ -228,14 +228,55 @@ var BuscapetPublish = window.BuscapetPublish = {
     }
   },
 
-  submitPost(e) {
+  async uploadPhotoToServer(photoData) {
+    if (!photoData || typeof photoData !== 'string' || !photoData.startsWith('data:image')) {
+      return photoData; // Si ya es una ruta relativa (ej: img/posts/...), devolverla
+    }
+    try {
+      const res = await fetch('upload.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_base64: photoData })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.url) {
+          return data.url; // Retorna ej: 'img/posts/uploads/pet_1726...jpg'
+        }
+      }
+    } catch (err) {
+      console.warn('Servidor upload.php offline o no disponible, usando base64:', err);
+    }
+    return photoData;
+  },
+
+  async submitPost(e) {
     if (e) e.preventDefault();
 
     const submitBtn = document.getElementById('btn-publish-submit') || (e && e.target);
     const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Publicando...';
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Guardando imagen en img/...';
+    }
+
+    // 1. Subir cada foto al servidor (carpeta img/posts/uploads/)
+    const finalPhotos = [];
+    if (this.uploadedPhotos.length > 0) {
+      for (let i = 0; i < this.uploadedPhotos.length; i++) {
+        const photo = this.uploadedPhotos[i];
+        if (submitBtn && this.uploadedPhotos.length > 1) {
+          submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Guardando imagen en img/ (${i + 1}/${this.uploadedPhotos.length})...`;
+        }
+        const serverUrl = await this.uploadPhotoToServer(photo);
+        finalPhotos.push(serverUrl);
+      }
+    } else {
+      finalPhotos.push('img/posts/demo/milo_1.jpg');
+    }
+
+    if (submitBtn) {
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Publicando mascota...';
     }
 
     const nameInput = document.getElementById('publish-name');
@@ -279,7 +320,7 @@ var BuscapetPublish = window.BuscapetPublish = {
       species: speciesSelect ? speciesSelect.value : 'Perro',
       breed: (breedInput && breedInput.value.trim()) || 'Mestizo',
       gender: genderSelect ? genderSelect.value : 'Desconocido',
-      photos: this.uploadedPhotos.length > 0 ? [...this.uploadedPhotos] : ['img/posts/demo/milo_1.jpg'],
+      photos: finalPhotos,
       description: description,
       hasCollar: hasCollarCheck ? hasCollarCheck.checked : false,
       collarDetails: collarDetailsInput ? collarDetailsInput.value.trim() : '',
@@ -309,6 +350,15 @@ var BuscapetPublish = window.BuscapetPublish = {
       isNew: true,
       comments: []
     };
+
+    // Sincronizar con el servidor (api_posts.php) para persistencia total y multiusuario
+    try {
+      fetch('api_posts.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPost)
+      }).catch(err => console.warn('Error guardando en api_posts.php:', err));
+    } catch(err) {}
 
     // Registrar autoría y respaldo persistente de la publicación
     try {

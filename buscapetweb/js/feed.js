@@ -294,6 +294,37 @@ var BuscapetFeed = window.BuscapetFeed = {
         }
       });
     }
+
+    // Sincronizar con publicaciones persistidas en el servidor (api_posts.php)
+    this.fetchServerPosts();
+  },
+
+  fetchServerPosts() {
+    fetch('api_posts.php')
+      .then(res => res.ok ? res.json() : [])
+      .then(serverPosts => {
+        if (Array.isArray(serverPosts) && serverPosts.length > 0) {
+          let updated = false;
+          serverPosts.forEach(sp => {
+            if (sp && sp.id) {
+              const existingIdx = this.posts.findIndex(p => p.id === sp.id);
+              if (existingIdx === -1) {
+                this.posts.unshift(sp);
+                updated = true;
+              } else {
+                this.posts[existingIdx] = { ...this.posts[existingIdx], ...sp };
+              }
+            }
+          });
+          if (updated) {
+            this.save();
+            this.renderFeed();
+          }
+        }
+      })
+      .catch(err => {
+        console.log('Modo offline / api_posts no disponible:', err);
+      });
   },
 
   save() {
