@@ -64,14 +64,17 @@ if ($imageBase64) {
     $ext = 'jpg';
     if (preg_match('/^data:image\/(\w+);base64,/', $imageBase64, $match)) {
         $ext = strtolower($match[1]);
-        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
+        if ($ext === 'jpeg') {
+            $ext = 'jpg';
+        }
+        if (!in_array($ext, ['jpg', 'png', 'webp', 'gif'])) {
             $ext = 'jpg';
         }
         $imageBase64 = substr($imageBase64, strpos($imageBase64, ',') + 1);
     }
 
     $decoded = base64_decode($imageBase64);
-    if ($decoded !== false) {
+    if ($decoded !== false && strlen($decoded) > 0) {
         $uniqueId = time() . '_' . substr(md5(uniqid(mt_rand(), true)), 0, 8);
         $fileName = 'pet_' . $uniqueId . '.' . $ext;
         $targetFile = $uploadDir . $fileName;

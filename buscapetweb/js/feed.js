@@ -510,8 +510,30 @@ var BuscapetFeed = window.BuscapetFeed = {
     container.innerHTML = html;
   },
 
+  formatPhotoUrl(url) {
+    if (!url || typeof url !== 'string') return 'img/posts/demo/milo_1.jpg';
+    url = url.trim();
+    if (url.includes('image/heic') || url.includes('image/heif')) {
+      return 'img/posts/demo/milo_1.jpg';
+    }
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:image')) {
+      return url;
+    }
+    if (url.startsWith('img/') || url.startsWith('/img/')) {
+      return url.startsWith('/') ? url.slice(1) : url;
+    }
+    // Si es Base64 que vino sin cabecera (como en la publicación 'Pipi')
+    if (url.length > 80 && !url.includes('.jpg') && !url.includes('.png') && !url.includes('.webp') && !url.includes('.gif')) {
+      if (!url.startsWith('data:')) {
+        return 'data:image/jpeg;base64,' + url;
+      }
+    }
+    return url;
+  },
+
   buildPostCardHtml(post) {
-    const photos = (post.photos && post.photos.length > 0) ? post.photos : ['img/posts/demo/milo_1.jpg'];
+    const rawPhotos = (post.photos && post.photos.length > 0) ? post.photos : ['img/posts/demo/milo_1.jpg'];
+    const photos = rawPhotos.map(p => this.formatPhotoUrl(p));
     const currentIdx = this.photoIndices[post.id] || 0;
     const currentPhoto = photos[currentIdx] || photos[0];
     const user = post.user || { name: 'Comunidad Buscapet', avatar: 'img/posts/demo/avatar_nicolas.jpg', phone: '+5491155554321' };
@@ -535,10 +557,10 @@ var BuscapetFeed = window.BuscapetFeed = {
     }
 
     const badgeText = (window.BuscapetI18n && window.BuscapetI18n.t(badgeKey)) || (post.type === 'found' ? '🟢 Encontrada' : post.type === 'adopt' ? '🟣 En Adopción' : post.type === 'spotted' ? '🟡 Avistamiento' : '🔴 Perdida');
-    const isDemo = post.isDemo === true || (post.id && String(post.id).startsWith('post-'));
+    const isDemo = post.isDemo === true || ['post-1', 'post-2', 'post-3', 'post-4'].includes(post.id);
     const bannerText = isDemo
       ? ((window.BuscapetI18n && window.BuscapetI18n.t('demo_post_banner')) || '⚠️ ✦ [ PUBLICACIÓN DE DEMOSTRACIÓN ]')
-      : ((window.BuscapetI18n && window.BuscapetI18n.t('active_post_banner')) || '✦ [ PUBLICACIÓN ACTIVA EN BUSCAPET ]');
+      : '';
     const collarText = post.hasCollar ? ((window.BuscapetI18n && window.BuscapetI18n.t('collar_yes')) || 'Lleva collar/chapita') : ((window.BuscapetI18n && window.BuscapetI18n.t('collar_no')) || 'Sin collar visible');
     const mapText = (window.BuscapetI18n && window.BuscapetI18n.t('view_map')) || 'Ver en Mapa';
     const chatText = (window.BuscapetI18n && window.BuscapetI18n.t('contact_chat')) || 'Chat Interno';
@@ -586,9 +608,9 @@ var BuscapetFeed = window.BuscapetFeed = {
           <div style="background:linear-gradient(90deg,#22C55E,#16A34A);color:#fff;padding:7px 10px;font-size:12px;font-weight:900;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;">
             <span>🎉</span> <span>${resolvedLabel}</span>
           </div>
-        ` : `
+        ` : (isDemo && bannerText ? `
           <div class="demo-banner">${bannerText}</div>
-        `}
+        ` : '')}
 
         <div class="card-header-row">
           <img class="card-avatar" src="${user.avatar || 'img/posts/demo/avatar_nicolas.jpg'}" alt="${user.name}">
@@ -603,7 +625,7 @@ var BuscapetFeed = window.BuscapetFeed = {
         </div>
 
         <div class="card-photo-wrap">
-          <img src="${currentPhoto}" alt="${post.petName}">
+          <img src="${currentPhoto}" alt="${post.petName}" onerror="this.onerror=null;this.src='img/posts/demo/milo_1.jpg';">
           <div class="demo-badge-overlay">🐾 ${post.petName}</div>
           <span class="photo-counter">${currentIdx + 1}/${photos.length}</span>
           ${photos.length > 1 ? `

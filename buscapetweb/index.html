@@ -137,7 +137,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <!-- Custom Styles -->
   <link rel="stylesheet" href="css/buscapet.css?v=11">
-  <link rel="stylesheet" href="css/style.css?v=13">
+  <link rel="stylesheet" href="css/style.css?v=14">
 </head>
 <body>
 
@@ -1074,7 +1074,7 @@
       <!-- Fotos -->
       <div class="form-group-custom">
         <label class="form-label-custom">📸 Fotos de la mascota (hasta 5 fotos) <span class="badge bg-danger" style="font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;">Obligatorio</span></label>
-        <input type="file" id="publish-photo-input" accept="image/*" multiple style="display:none;">
+        <input type="file" id="publish-photo-input" accept="image/jpeg,image/png,image/webp,image/jpg" multiple style="display:none;">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button type="button" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;font-size:12px;padding:8px 14px;" onclick="document.getElementById('publish-photo-input').click()">
             <i class="bi bi-camera-fill"></i> Subir Fotos
@@ -1715,13 +1715,15 @@
 <script src="js/location-autocomplete.js?v=9"></script>
 <script src="js/i18n.js?v=9"></script>
 <script src="js/locations-data.js?v=9"></script>
-<script src="js/map.js?v=13"></script>
+<script src="js/map.js?v=14"></script>
 <script src="js/chat.js?v=9"></script>
 <script src="js/ads.js?v=9"></script>
 <script src="js/admin.js?v=9"></script>
-<script src="js/publish.js?v=13"></script>
-<script src="js/feed.js?v=13"></script>
-<script src="js/app.js?v=13"></script>
+<!-- HEIC/HEIF client-side converter for Apple camera photos -->
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+<script src="js/publish.js?v=14"></script>
+<script src="js/feed.js?v=14"></script>
+<script src="js/app.js?v=14"></script>
 
 </body>
 </html>

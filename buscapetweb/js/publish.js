@@ -146,7 +146,23 @@ var BuscapetPublish = window.BuscapetPublish = {
     updateStates();
   },
 
-  compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.75) {
+  async compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.75) {
+    let processFile = file;
+    const isHeic = file.type === 'image/heic' || file.type === 'image/heif' ||
+      (file.name && (file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')));
+    if (isHeic && window.heic2any) {
+      try {
+        const convertedBlob = await window.heic2any({
+          blob: file,
+          toType: 'image/jpeg',
+          quality: quality
+        });
+        processFile = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+      } catch (heicErr) {
+        console.warn('Error convirtiendo HEIC a JPEG:', heicErr);
+      }
+    }
+
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -173,11 +189,14 @@ var BuscapetPublish = window.BuscapetPublish = {
           const compressed = canvas.toDataURL('image/jpeg', quality);
           resolve(compressed);
         };
-        img.onerror = () => resolve(event.target.result);
+        img.onerror = () => {
+          console.warn('No se pudo decodificar la imagen en canvas');
+          resolve(event.target.result);
+        };
         img.src = event.target.result;
       };
       reader.onerror = () => resolve(null);
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(processFile);
     });
   },
 
@@ -192,8 +211,18 @@ var BuscapetPublish = window.BuscapetPublish = {
       try {
         const compressed = await this.compressImage(file, 800, 800, 0.75);
         if (compressed) {
+          const photoIndex = this.uploadedPhotos.length;
           this.uploadedPhotos.push(compressed);
           this.renderPhotoPreviews();
+
+          // Subir en segundo plano a la carpeta img/posts/uploads/
+          this.uploadPhotoToServer(compressed).then((serverUrl) => {
+            if (serverUrl && serverUrl.startsWith('img/')) {
+              if (this.uploadedPhotos[photoIndex] === compressed) {
+                this.uploadedPhotos[photoIndex] = serverUrl;
+              }
+            }
+          }).catch(() => {});
         }
       } catch (err) {
         console.warn('Error procesando foto:', err);
@@ -327,19 +356,24 @@ var BuscapetPublish = window.BuscapetPublish = {
   },
 
   async uploadPhotoToServer(photoData) {
-    if (!photoData || typeof photoData !== 'string' || !photoData.startsWith('data:image')) {
-      return photoData; // Si ya es una ruta relativa (ej: img/posts/...), devolverla
+    if (!photoData || typeof photoData !== 'string') return 'img/posts/demo/milo_1.jpg';
+    if (photoData.startsWith('img/') || photoData.startsWith('http://') || photoData.startsWith('https://')) {
+      return photoData; // Ya es una ruta de servidor
     }
 
-    // Usar timeout estricto de 3.5 segundos con AbortController para NUNCA bloquear la interfaz
+    let payload = photoData.trim();
+    if (!payload.startsWith('data:image')) {
+      payload = 'data:image/jpeg;base64,' + payload;
+    }
+
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 3500);
+      const timer = setTimeout(() => controller.abort(), 5000);
 
       const res = await fetch('upload.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image_base64: photoData }),
+        body: JSON.stringify({ image_base64: payload }),
         signal: controller.signal
       });
       clearTimeout(timer);
@@ -353,7 +387,7 @@ var BuscapetPublish = window.BuscapetPublish = {
     } catch (err) {
       console.warn('Subida a upload.php omitida o timeout, usando foto local:', err);
     }
-    return photoData;
+    return payload;
   },
 
   async submitPost(e) {
