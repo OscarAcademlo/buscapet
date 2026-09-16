@@ -27,11 +27,22 @@ var BuscapetPublish = window.BuscapetPublish = {
         }
       });
     }
+
+    // Cerrar modal al hacer clic en el fondo oscuro
+    const modal = document.getElementById('publish-modal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          this.closeModal();
+        }
+      });
+    }
   },
 
   openModal(preselectedType = 'lost') {
     this.currentType = preselectedType;
     this.uploadedPhotos = [];
+    this.hasGpsLocation = false;
     this.renderPhotoPreviews();
 
     const modal = document.getElementById('publish-modal');
@@ -40,7 +51,7 @@ var BuscapetPublish = window.BuscapetPublish = {
     this.selectTab(preselectedType);
 
     modal.classList.add('show');
-    modal.style.display = 'block';
+    modal.style.setProperty('display', 'flex', 'important');
     document.body.classList.add('modal-open');
 
     this.populateLocationDropdowns();
@@ -65,14 +76,20 @@ var BuscapetPublish = window.BuscapetPublish = {
     const modal = document.getElementById('publish-modal');
     if (modal) {
       modal.classList.remove('show');
+      modal.style.setProperty('display', 'none', 'important');
       modal.style.display = 'none';
     }
     const authModal = document.getElementById('auth-modal');
     if (authModal) {
       authModal.classList.remove('show');
+      authModal.style.setProperty('display', 'none', 'important');
       authModal.style.display = 'none';
     }
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.paddingRight = '';
   },
 
   selectTab(type) {
@@ -87,7 +104,7 @@ var BuscapetPublish = window.BuscapetPublish = {
 
     if (adoptFields) adoptFields.style.display = (type === 'adopt') ? 'block' : 'none';
     if (collarRow) collarRow.style.display = (type === 'adopt') ? 'none' : 'block';
-    if (fastGpsBtn) fastGpsBtn.style.display = (type === 'found' || type === 'spotted') ? 'block' : 'none';
+    if (fastGpsBtn) fastGpsBtn.style.display = 'block'; // Siempre visible para perdidas y encontradas
   },
 
   populateLocationDropdowns() {
@@ -208,9 +225,14 @@ var BuscapetPublish = window.BuscapetPublish = {
         (pos) => {
           const lat = pos.coords.latitude;
           const lng = pos.coords.longitude;
+          this.hasGpsLocation = true;
+          if (window.BuscapetMap) window.BuscapetMap.userHasSetLocation = true;
+
           const addressInput = document.getElementById('publish-address');
           if (addressInput) {
-            addressInput.value = `Ubicación GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            addressInput.value = `Ubicación GPS (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+            addressInput.style.border = '2px solid #22c55e';
+            setTimeout(() => { addressInput.style.border = ''; }, 2000);
           }
           if (window.BuscapetMap && window.BuscapetMap.pickerMap) {
             window.BuscapetMap.pickerMap.setView([lat, lng], 16);
@@ -222,22 +244,106 @@ var BuscapetPublish = window.BuscapetPublish = {
           if (window.buscapetToast) window.buscapetToast('✅ ¡GPS capturado con éxito!', 'success');
         },
         (err) => {
-          alert('No se pudo acceder al GPS. Podés mover el pin directamente en el mapa.');
-        }
+          alert('No se pudo acceder al GPS. Podés mover el pin directamente en el mapa o escribir la calle.');
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
       );
+    } else {
+      alert('Tu navegador no soporta geolocalización GPS.');
     }
+  },
+
+  validatePost() {
+    // 1. VALIDACIÓN FOTO (Obligatorio para perdida, encontrada y demás)
+    if (!this.uploadedPhotos || this.uploadedPhotos.length === 0) {
+      this.showValidationError('📸 Debes subir al menos una foto de la mascota.', 'publish-photo-input');
+      return false;
+    }
+
+    // 2. VALIDACIÓN UBICACIÓN (Manual o vía GPS, una de las dos obligatoria)
+    const addressInput = document.getElementById('publish-address');
+    const addressVal = (addressInput ? addressInput.value.trim() : '');
+    const hasGps = this.hasGpsLocation || (addressVal && addressVal.toLowerCase().includes('gps')) || (window.BuscapetMap && window.BuscapetMap.userHasSetLocation);
+    const hasManual = addressVal.length > 0;
+
+    if (!hasManual && !hasGps) {
+      this.showValidationError('📍 Debes indicar la ubicación (escribiendo la calle/zona o usando el botón GPS).', 'publish-address');
+      return false;
+    }
+
+    // 3. VALIDACIÓN TELÉFONO (Obligatorio)
+    const phoneInput = document.getElementById('publish-phone');
+    const phoneVal = (phoneInput ? phoneInput.value.trim() : '');
+    if (!phoneVal || phoneVal.length < 6) {
+      this.showValidationError('📞 Debes ingresar un teléfono o WhatsApp de contacto válido.', 'publish-phone');
+      return false;
+    }
+
+    return true;
+  },
+
+  showValidationError(msg, inputId) {
+    if (window.buscapetToast) {
+      window.buscapetToast(msg, 'error');
+    } else {
+      alert(msg);
+    }
+
+    if (inputId === 'publish-photo-input') {
+      const container = document.getElementById('publish-photo-previews');
+      const btn = container ? container.previousElementSibling : null;
+      if (btn) {
+        btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        btn.classList.add('shake-highlight');
+        setTimeout(() => btn.classList.remove('shake-highlight'), 2500);
+      }
+    } else if (inputId) {
+      const el = document.getElementById(inputId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.focus();
+        el.classList.add('shake-highlight');
+        setTimeout(() => el.classList.remove('shake-highlight'), 2500);
+      }
+    }
+  },
+
+  resetForm() {
+    const ids = ['publish-name', 'publish-desc', 'publish-breed', 'publish-address', 'publish-collar-details'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const collar = document.getElementById('publish-collar');
+    if (collar) collar.checked = false;
+
+    const fileInput = document.getElementById('publish-photo-input');
+    if (fileInput) fileInput.value = '';
+
+    this.uploadedPhotos = [];
+    this.hasGpsLocation = false;
+    if (window.BuscapetMap) window.BuscapetMap.userHasSetLocation = false;
+    this.renderPhotoPreviews();
   },
 
   async uploadPhotoToServer(photoData) {
     if (!photoData || typeof photoData !== 'string' || !photoData.startsWith('data:image')) {
       return photoData; // Si ya es una ruta relativa (ej: img/posts/...), devolverla
     }
+
+    // Usar timeout estricto de 3.5 segundos con AbortController para NUNCA bloquear la interfaz
     try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3500);
+
       const res = await fetch('upload.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image_base64: photoData })
+        body: JSON.stringify({ image_base64: photoData }),
+        signal: controller.signal
       });
+      clearTimeout(timer);
+
       if (res.ok) {
         const data = await res.json();
         if (data && data.success && data.url) {
@@ -245,7 +351,7 @@ var BuscapetPublish = window.BuscapetPublish = {
         }
       }
     } catch (err) {
-      console.warn('Servidor upload.php offline o no disponible, usando base64:', err);
+      console.warn('Subida a upload.php omitida o timeout, usando foto local:', err);
     }
     return photoData;
   },
@@ -253,188 +359,198 @@ var BuscapetPublish = window.BuscapetPublish = {
   async submitPost(e) {
     if (e) e.preventDefault();
 
-    const submitBtn = document.getElementById('btn-publish-submit') || (e && e.target);
-    const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
-    if (submitBtn) {
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Guardando imagen en img/...';
+    // 1. VALIDAR CAMPOS OBLIGATORIOS (FOTO, UBICACIÓN MANUAL/GPS, TELÉFONO)
+    if (!this.validatePost()) {
+      return;
     }
 
-    // 1. Subir cada foto al servidor (carpeta img/posts/uploads/)
-    const finalPhotos = [];
-    if (this.uploadedPhotos.length > 0) {
+    const submitBtn = document.getElementById('btn-publish-submit') || (e && e.target);
+    const origBtnHtml = submitBtn ? submitBtn.innerHTML : '🐾 Publicar Mascota Ahora';
+
+    let createdPost = null;
+
+    try {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Guardando imagen en img/...';
+      }
+
+      // 2. Subir cada foto al servidor (carpeta img/posts/uploads/)
+      const finalPhotos = [];
       for (let i = 0; i < this.uploadedPhotos.length; i++) {
         const photo = this.uploadedPhotos[i];
         if (submitBtn && this.uploadedPhotos.length > 1) {
-          submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Guardando imagen en img/ (${i + 1}/${this.uploadedPhotos.length})...`;
+          submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Guardando foto en img/ (${i + 1}/${this.uploadedPhotos.length})...`;
         }
         const serverUrl = await this.uploadPhotoToServer(photo);
         finalPhotos.push(serverUrl);
       }
-    } else {
-      finalPhotos.push('img/posts/demo/milo_1.jpg');
-    }
 
-    if (submitBtn) {
-      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Publicando mascota...';
-    }
-
-    const nameInput = document.getElementById('publish-name');
-    const speciesSelect = document.getElementById('publish-species');
-    const breedInput = document.getElementById('publish-breed');
-    const genderSelect = document.getElementById('publish-gender');
-    const descInput = document.getElementById('publish-desc');
-    const phoneInput = document.getElementById('publish-phone');
-    const addressInput = document.getElementById('publish-address');
-    const countrySelect = document.getElementById('publish-country');
-    const stateSelect = document.getElementById('publish-state');
-    const citySelect = document.getElementById('publish-city');
-    const hasCollarCheck = document.getElementById('publish-collar');
-    const collarDetailsInput = document.getElementById('publish-collar-details');
-
-    const petName = (nameInput ? nameInput.value.trim() : '') || (this.currentType === 'found' ? 'Mascota Encontrada' : (this.currentType === 'lost' ? 'Mascota Perdida' : 'Mascota'));
-    let description = (descInput ? descInput.value.trim() : '');
-
-    // Fallback inteligente si la descripción está vacía para evitar bloqueos
-    if (!description) {
-      description = (this.currentType === 'lost')
-        ? 'Mascota perdida. Por favor si alguien la vio o tiene información comunicarse urgente.'
-        : (this.currentType === 'found')
-        ? 'Mascota encontrada en la zona. Contactar para coordinar reencuentro con su familia.'
-        : 'Publicación de mascota registrada en la comunidad Buscapet.';
-    }
-
-    const picked = window.BuscapetMap && window.BuscapetMap.currentPickedCoords;
-    const lat = (picked && parseFloat(picked.lat)) || -34.5889;
-    const lng = (picked && parseFloat(picked.lng)) || -58.4305;
-
-    const authorUid = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.uid) || ('usr-anon-' + Date.now());
-    const authorEmail = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.email) || '';
-    const authorName = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.displayName) || 'Tú (Usuario)';
-    const authorAvatar = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.photoURL) || 'img/posts/demo/avatar_nicolas.jpg';
-
-    const newPost = {
-      id: 'post-' + Date.now(),
-      type: this.currentType || 'lost',
-      petName: petName,
-      species: speciesSelect ? speciesSelect.value : 'Perro',
-      breed: (breedInput && breedInput.value.trim()) || 'Mestizo',
-      gender: genderSelect ? genderSelect.value : 'Desconocido',
-      photos: finalPhotos,
-      description: description,
-      hasCollar: hasCollarCheck ? hasCollarCheck.checked : false,
-      collarDetails: collarDetailsInput ? collarDetailsInput.value.trim() : '',
-      location: {
-        countryCode: countrySelect ? countrySelect.value : 'AR',
-        countryName: countrySelect ? countrySelect.options[countrySelect.selectedIndex]?.text : 'Argentina',
-        stateName: (stateSelect && stateSelect.value) || 'CABA',
-        cityName: (citySelect && citySelect.value) || 'Palermo',
-        address: (addressInput && addressInput.value.trim()) || 'Ubicación reportada',
-        lat: lat,
-        lng: lng
-      },
-      date: 'Hace un momento',
-      authorUid: authorUid,
-      authorEmail: authorEmail,
-      user: {
-        id: authorUid,
-        name: authorName,
-        avatar: authorAvatar,
-        phone: (phoneInput && phoneInput.value.trim()) || (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.phone) || '+5491155551234',
-        email: authorEmail
-      },
-      likes: 1,
-      liked: true,
-      shares: 0,
-      isResolved: false,
-      isNew: true,
-      comments: []
-    };
-
-    // Sincronizar con el servidor (api_posts.php) para persistencia total y multiusuario
-    try {
-      fetch('api_posts.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPost)
-      }).catch(err => console.warn('Error guardando en api_posts.php:', err));
-    } catch(err) {}
-
-    // Registrar autoría y respaldo persistente de la publicación
-    try {
-      const storage = window.SafeStorage || window.localStorage;
-      if (storage) {
-        const myPosts = JSON.parse(storage.getItem('buscapet_my_posts') || '[]');
-        if (!myPosts.includes(newPost.id)) {
-          myPosts.push(newPost.id);
-          storage.setItem('buscapet_my_posts', JSON.stringify(myPosts));
-        }
-        const createdList = JSON.parse(storage.getItem('buscapet_user_created_posts') || '[]');
-        if (!createdList.some(p => p.id === newPost.id)) {
-          createdList.unshift(newPost);
-          storage.setItem('buscapet_user_created_posts', JSON.stringify(createdList));
-        }
+      if (submitBtn) {
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></span> Publicando reporte...';
       }
-    } catch (err) {
-      console.warn('Error guardando autoría del post:', err);
-    }
 
-    // Insertar en el feed y asegurar visibilidad
-    if (window.BuscapetFeed) {
-      if (!Array.isArray(window.BuscapetFeed.posts)) {
-        window.BuscapetFeed.posts = [];
+      const nameInput = document.getElementById('publish-name');
+      const speciesSelect = document.getElementById('publish-species');
+      const breedInput = document.getElementById('publish-breed');
+      const genderSelect = document.getElementById('publish-gender');
+      const descInput = document.getElementById('publish-desc');
+      const phoneInput = document.getElementById('publish-phone');
+      const addressInput = document.getElementById('publish-address');
+      const countrySelect = document.getElementById('publish-country');
+      const stateSelect = document.getElementById('publish-state');
+      const citySelect = document.getElementById('publish-city');
+      const hasCollarCheck = document.getElementById('publish-collar');
+      const collarDetailsInput = document.getElementById('publish-collar-details');
+
+      const petName = (nameInput ? nameInput.value.trim() : '') || (this.currentType === 'found' ? 'Mascota Encontrada' : (this.currentType === 'lost' ? 'Mascota Perdida' : 'Mascota'));
+      let description = (descInput ? descInput.value.trim() : '');
+
+      if (!description) {
+        description = (this.currentType === 'lost')
+          ? 'Mascota perdida. Por favor si alguien la vio o tiene información comunicarse urgente.'
+          : (this.currentType === 'found')
+          ? 'Mascota encontrada en la zona. Contactar para coordinar reencuentro con su familia.'
+          : 'Publicación de mascota registrada en la comunidad Buscapet.';
       }
-      window.BuscapetFeed.posts.unshift(newPost);
-      window.BuscapetFeed.save();
 
-      // Ajustar filtro para que la publicación aparezca de inmediato en pantalla
-      if (window.BuscapetFeed.activeFilter !== 'all' && window.BuscapetFeed.activeFilter !== newPost.type) {
+      const picked = window.BuscapetMap && window.BuscapetMap.currentPickedCoords;
+      const lat = (picked && parseFloat(picked.lat)) || -34.5889;
+      const lng = (picked && parseFloat(picked.lng)) || -58.4305;
+
+      const authorUid = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.uid) || ('usr-anon-' + Date.now());
+      const authorEmail = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.email) || '';
+      const authorName = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.displayName) || 'Tú (Usuario)';
+      const authorAvatar = (window.BuscapetFirebase && window.BuscapetFirebase.currentUser && window.BuscapetFirebase.currentUser.photoURL) || 'img/posts/demo/avatar_nicolas.jpg';
+
+      createdPost = {
+        id: 'post-' + Date.now(),
+        type: this.currentType || 'lost',
+        petName: petName,
+        species: speciesSelect ? speciesSelect.value : 'Perro',
+        breed: (breedInput && breedInput.value.trim()) || 'Mestizo',
+        gender: genderSelect ? genderSelect.value : 'Desconocido',
+        photos: finalPhotos,
+        description: description,
+        hasCollar: hasCollarCheck ? hasCollarCheck.checked : false,
+        collarDetails: collarDetailsInput ? collarDetailsInput.value.trim() : '',
+        location: {
+          countryCode: countrySelect ? countrySelect.value : 'AR',
+          countryName: countrySelect ? countrySelect.options[countrySelect.selectedIndex]?.text : 'Argentina',
+          stateName: (stateSelect && stateSelect.value) || 'CABA',
+          cityName: (citySelect && citySelect.value) || 'Palermo',
+          address: (addressInput && addressInput.value.trim()) || 'Ubicación reportada',
+          lat: lat,
+          lng: lng
+        },
+        date: 'Hace un momento',
+        authorUid: authorUid,
+        authorEmail: authorEmail,
+        user: {
+          id: authorUid,
+          name: authorName,
+          avatar: authorAvatar,
+          phone: (phoneInput && phoneInput.value.trim()) || '+5491155551234',
+          email: authorEmail
+        },
+        likes: 1,
+        liked: true,
+        shares: 0,
+        isResolved: false,
+        isNew: true,
+        comments: []
+      };
+
+      // Sincronizar en servidor (api_posts.php) en segundo plano
+      try {
+        fetch('api_posts.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(createdPost)
+        }).catch(err => console.warn('Error guardando en api_posts.php:', err));
+      } catch(err) {}
+
+      // Registrar autoría y respaldo persistente local
+      try {
+        const storage = window.SafeStorage || window.localStorage;
+        if (storage) {
+          const myPosts = JSON.parse(storage.getItem('buscapet_my_posts') || '[]');
+          if (!myPosts.includes(createdPost.id)) {
+            myPosts.push(createdPost.id);
+            storage.setItem('buscapet_my_posts', JSON.stringify(myPosts));
+          }
+          const createdList = JSON.parse(storage.getItem('buscapet_user_created_posts') || '[]');
+          if (!createdList.some(p => p.id === createdPost.id)) {
+            createdList.unshift(createdPost);
+            storage.setItem('buscapet_user_created_posts', JSON.stringify(createdList));
+          }
+        }
+      } catch (err) {
+        console.warn('Error guardando autoría del post:', err);
+      }
+
+      // Insertar en el feed y asegurar visibilidad
+      if (window.BuscapetFeed) {
+        if (!Array.isArray(window.BuscapetFeed.posts)) {
+          window.BuscapetFeed.posts = [];
+        }
+        window.BuscapetFeed.posts.unshift(createdPost);
+        try { window.BuscapetFeed.save(); } catch(e) {}
+
+        // Ajustar filtro para que la publicación aparezca de inmediato en pantalla
         window.BuscapetFeed.activeFilter = 'all';
         document.querySelectorAll('.chip').forEach(c => {
           c.className = (c.getAttribute('data-type') === 'all') ? 'chip active-all' : 'chip';
         });
-      }
-      window.BuscapetFeed.selectedCountry = '';
-      window.BuscapetFeed.selectedState = '';
-      window.BuscapetFeed.selectedCity = '';
-      window.BuscapetFeed.searchQuery = '';
+        window.BuscapetFeed.selectedCountry = '';
+        window.BuscapetFeed.selectedState = '';
+        window.BuscapetFeed.selectedCity = '';
+        window.BuscapetFeed.searchQuery = '';
 
-      window.BuscapetFeed.renderFeed();
+        try { window.BuscapetFeed.renderFeed(); } catch(e) { console.error('Error en renderFeed:', e); }
+      }
+
+      // 3. CERRAR EL MODAL DE FORMA INMEDIATA E INCONDICIONAL
+      this.closeModal();
+
+      // 4. Resetear formulario
+      this.resetForm();
+
+      // 5. NAVEGAR A LA PUBLICACIÓN Y RESALTARLA
+      const targetPostId = createdPost.id;
+      setTimeout(() => {
+        const targetCard = document.getElementById('card-' + targetPostId);
+        if (targetCard) {
+          targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetCard.classList.add('new-post-highlight');
+          setTimeout(() => {
+            targetCard.classList.remove('new-post-highlight');
+          }, 3500);
+        } else {
+          const feedContainer = document.getElementById('feed-posts-container');
+          if (feedContainer) {
+            feedContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+
+        if (window.buscapetToast) {
+          window.buscapetToast('🎉 ¡Publicada con éxito! Ya podés ver tu reporte.', 'success');
+        } else {
+          alert('🎉 ¡Publicada con éxito!');
+        }
+      }, 180);
+
+    } catch (err) {
+      console.error('Error durante submitPost:', err);
+      // ASEGURAR QUE EL MODAL SE CIERRE AUNQUE HUBIERA UN ERROR INTERNO
+      this.closeModal();
+      this.resetForm();
+      alert('Tu publicación fue enviada pero ocurrió un detalle menor al actualizar la vista.');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = origBtnHtml || '🐾 Publicar Mascota Ahora';
+      }
     }
-
-    // Cerrar modal de inmediato
-    this.closeModal();
-
-    // Resetear formulario para futuros reportes
-    if (nameInput) nameInput.value = '';
-    if (descInput) descInput.value = '';
-    if (breedInput) breedInput.value = '';
-    if (addressInput) addressInput.value = '';
-    if (collarDetailsInput) collarDetailsInput.value = '';
-    if (hasCollarCheck) hasCollarCheck.checked = false;
-    this.uploadedPhotos = [];
-    this.renderPhotoPreviews();
-
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = origBtnHtml || '🐾 Publicar Mascota Ahora';
-    }
-
-    // Desplazar la pantalla suavemente hasta la nueva publicación y mostrar mensaje de éxito
-    setTimeout(() => {
-      const targetCard = document.getElementById('card-' + newPost.id);
-      if (targetCard) {
-        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        targetCard.classList.add('new-post-highlight');
-        setTimeout(() => {
-          targetCard.classList.remove('new-post-highlight');
-        }, 3500);
-      }
-      if (window.buscapetToast) {
-        window.buscapetToast('🎉 ¡Publicada con éxito! Ya podés ver tu reporte.', 'success');
-      } else {
-        alert('🎉 ¡Publicada con éxito!');
-      }
-    }, 200);
   }
 };

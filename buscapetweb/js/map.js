@@ -182,11 +182,23 @@ var BuscapetMap = window.BuscapetMap = {
     this.pickerMarker.on('dragend', (e) => {
       const position = e.target.getLatLng();
       this.currentPickedCoords = { lat: position.lat, lng: position.lng };
+      this.userHasSetLocation = true;
+      if (window.BuscapetPublish) window.BuscapetPublish.hasGpsLocation = true;
+      const addr = document.getElementById('publish-address');
+      if (addr && !addr.value.trim()) {
+        addr.value = `Punto en mapa (${position.lat.toFixed(4)}, ${position.lng.toFixed(4)})`;
+      }
     });
 
     this.pickerMap.on('click', (e) => {
       this.currentPickedCoords = { lat: e.latlng.lat, lng: e.latlng.lng };
+      this.userHasSetLocation = true;
+      if (window.BuscapetPublish) window.BuscapetPublish.hasGpsLocation = true;
       this.pickerMarker.setLatLng(e.latlng);
+      const addr = document.getElementById('publish-address');
+      if (addr && !addr.value.trim()) {
+        addr.value = `Punto en mapa (${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)})`;
+      }
     });
 
     this.pickerMap.invalidateSize();

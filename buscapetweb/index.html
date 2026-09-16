@@ -137,7 +137,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <!-- Custom Styles -->
   <link rel="stylesheet" href="css/buscapet.css?v=11">
-  <link rel="stylesheet" href="css/style.css?v=11">
+  <link rel="stylesheet" href="css/style.css?v=13">
 </head>
 <body>
 
@@ -1073,7 +1073,7 @@
 
       <!-- Fotos -->
       <div class="form-group-custom">
-        <label class="form-label-custom">📸 Fotos de la mascota (hasta 5 fotos)</label>
+        <label class="form-label-custom">📸 Fotos de la mascota (hasta 5 fotos) <span class="badge bg-danger" style="font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;">Obligatorio</span></label>
         <input type="file" id="publish-photo-input" accept="image/*" multiple style="display:none;">
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button type="button" class="btn btn-sm btn-outline-secondary" style="border-radius:8px;font-size:12px;padding:8px 14px;" onclick="document.getElementById('publish-photo-input').click()">
@@ -1137,19 +1137,29 @@
 
       <!-- Descripcion -->
       <div class="form-group-custom">
-        <label class="form-label-custom">Descripción y características importantes *</label>
+        <label class="form-label-custom">Descripción y características importantes</label>
         <textarea class="form-textarea-custom" id="publish-desc" rows="3" placeholder="Describe cómo ocurrió, señas particulares, comportamiento, medicación requerida..."></textarea>
       </div>
 
       <!-- Telefono / WhatsApp -->
       <div class="form-group-custom">
-        <label class="form-label-custom">Teléfono / WhatsApp de contacto *</label>
+        <label class="form-label-custom">📞 Teléfono / WhatsApp de contacto <span class="badge bg-danger" style="font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;">Obligatorio</span></label>
         <input type="tel" class="form-input-custom" id="publish-phone" placeholder="Ej: +5491155554321">
       </div>
 
       <!-- Ubicacion con Autocompletado Nominatim y mapa Leaflet -->
       <div class="form-group-custom" style="position:relative;">
-        <label class="form-label-custom">📍 Ubicación del hecho (Búsqueda de calles y esquinas)</label>
+        <label class="form-label-custom">📍 Ubicación (Dirección manual o GPS) <span class="badge bg-danger" style="font-size:10px;font-weight:700;margin-left:4px;vertical-align:middle;">Obligatorio</span></label>
+        
+        <!-- Botón GPS 1-clic disponible para Perdida y Encontrada -->
+        <div id="publish-fast-gps-row" style="margin-bottom:10px;">
+          <button type="button" class="btn btn-sm btn-success" style="width:100%;font-weight:800;border-radius:8px;padding:9px 12px;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:6px;box-shadow:0 3px 8px rgba(34,197,94,0.3);" onclick="BuscapetPublish.useGPS()">
+            <i class="bi bi-geo-alt-fill"></i> ⚡ 1-Clic: Capturar mi GPS Actual
+          </button>
+        </div>
+
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">O seleccioná país, provincia y escribí la calle o esquina:</div>
+
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">
           <select class="form-select-custom" id="publish-country"></select>
           <select class="form-select-custom" id="publish-state">
@@ -1166,14 +1176,8 @@
           </div>
         </div>
 
-        <div id="publish-fast-gps-row" style="margin-bottom:8px;display:none;">
-          <button type="button" class="btn btn-sm btn-success" style="width:100%;font-weight:800;border-radius:8px;padding:8px;" onclick="BuscapetPublish.useGPS()">
-            <i class="bi bi-geo-alt-fill"></i> ⚡ 1-Clic: Capturar mi GPS Actual
-          </button>
-        </div>
-
         <!-- Leaflet Map Picker -->
-        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Arrastrá el pin en el mapa para marcar el punto exacto:</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;margin-top:6px;">O arrastrá el pin en el mapa para marcar el punto exacto:</div>
         <div id="form-map-picker" style="height:170px;border-radius:10px;overflow:hidden;border:1px solid var(--border);"></div>
       </div>
 
@@ -1711,13 +1715,13 @@
 <script src="js/location-autocomplete.js?v=9"></script>
 <script src="js/i18n.js?v=9"></script>
 <script src="js/locations-data.js?v=9"></script>
-<script src="js/map.js?v=11"></script>
+<script src="js/map.js?v=13"></script>
 <script src="js/chat.js?v=9"></script>
 <script src="js/ads.js?v=9"></script>
 <script src="js/admin.js?v=9"></script>
-<script src="js/publish.js?v=12"></script>
-<script src="js/feed.js?v=12"></script>
-<script src="js/app.js?v=12"></script>
+<script src="js/publish.js?v=13"></script>
+<script src="js/feed.js?v=13"></script>
+<script src="js/app.js?v=13"></script>
 
 </body>
 </html>
