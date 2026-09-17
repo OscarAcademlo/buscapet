@@ -346,6 +346,11 @@ var BuscapetPublish = window.BuscapetPublish = {
     const collar = document.getElementById('publish-collar');
     if (collar) collar.checked = false;
 
+    const vacCheck = document.getElementById('publish-adopt-vaccinated');
+    if (vacCheck) vacCheck.checked = true;
+    const neutCheck = document.getElementById('publish-adopt-neutered');
+    if (neutCheck) neutCheck.checked = true;
+
     const fileInput = document.getElementById('publish-photo-input');
     if (fileInput) fileInput.value = '';
 
@@ -436,6 +441,8 @@ var BuscapetPublish = window.BuscapetPublish = {
       const citySelect = document.getElementById('publish-city');
       const hasCollarCheck = document.getElementById('publish-collar');
       const collarDetailsInput = document.getElementById('publish-collar-details');
+      const adoptVacCheck = document.getElementById('publish-adopt-vaccinated');
+      const adoptNeutCheck = document.getElementById('publish-adopt-neutered');
 
       const petName = (nameInput ? nameInput.value.trim() : '') || (this.currentType === 'found' ? 'Mascota Encontrada' : (this.currentType === 'lost' ? 'Mascota Perdida' : 'Mascota'));
       let description = (descInput ? descInput.value.trim() : '');
@@ -468,6 +475,8 @@ var BuscapetPublish = window.BuscapetPublish = {
         description: description,
         hasCollar: hasCollarCheck ? hasCollarCheck.checked : false,
         collarDetails: collarDetailsInput ? collarDetailsInput.value.trim() : '',
+        adoptVaccinated: (this.currentType === 'adopt') ? (adoptVacCheck ? adoptVacCheck.checked : true) : null,
+        adoptNeutered: (this.currentType === 'adopt') ? (adoptNeutCheck ? adoptNeutCheck.checked : true) : null,
         location: {
           countryCode: countrySelect ? countrySelect.value : 'AR',
           countryName: countrySelect ? countrySelect.options[countrySelect.selectedIndex]?.text : 'Argentina',

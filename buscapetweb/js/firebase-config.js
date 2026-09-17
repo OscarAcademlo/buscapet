@@ -474,10 +474,14 @@ var BuscapetFirebase = window.BuscapetFirebase = {
     }
   },
 
-  openAuthModal() {
+  openAuthModal(reason = null) {
     this.updateUserUI();
     const modal = document.getElementById('auth-modal');
     if (modal) {
+      const banner = document.getElementById('auth-comment-prompt-banner');
+      if (banner) {
+        banner.style.display = (reason === 'comment') ? 'block' : 'none';
+      }
       modal.classList.add('show');
       modal.style.display = 'block';
       document.body.classList.add('modal-open');
@@ -487,6 +491,8 @@ var BuscapetFirebase = window.BuscapetFirebase = {
   closeAuthModal() {
     const modal = document.getElementById('auth-modal');
     if (modal) {
+      const banner = document.getElementById('auth-comment-prompt-banner');
+      if (banner) banner.style.display = 'none';
       modal.classList.remove('show');
       modal.style.display = 'none';
       document.body.classList.remove('modal-open');

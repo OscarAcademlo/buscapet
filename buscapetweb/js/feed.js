@@ -668,12 +668,47 @@ var BuscapetFeed = window.BuscapetFeed = {
         <div class="card-details">
           <div class="card-pet-name">${post.petName}</div>
           <div class="card-species-tags">
-            <span class="species-tag">🐾 ${speciesLabel}</span>
-            <span class="species-tag">${post.breed}</span>
-            <span class="species-tag">${genderLabel}</span>
-            ${post.hasCollar ? `<span class="species-tag" style="border-color:var(--warning);color:var(--warning);">🏷️ ${collarText}</span>` : ''}
+            <span class="species-tag"><i class="bi bi-tag-fill" style="color:var(--primary);font-size:10px;"></i> <strong>Especie:</strong> ${speciesLabel}</span>
+            <span class="species-tag"><strong>Raza:</strong> ${post.breed || 'Mestizo'}</span>
+            <span class="species-tag"><strong>Sexo:</strong> ${genderLabel || 'Desconocido'}</span>
+            ${post.type !== 'adopt' ? `
+              <span class="species-tag" style="${post.hasCollar ? 'border-color:rgba(245,158,11,.4);color:var(--warning);background:rgba(245,158,11,.08);' : 'color:var(--text-muted);'}">
+                🏷️ ${collarText}
+              </span>
+            ` : ''}
           </div>
-          <div class="card-description">${desc}</div>
+
+          ${(post.type !== 'adopt' && post.collarDetails && post.collarDetails.trim().length > 0) ? `
+            <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11.5px;color:var(--text-sub);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+              <i class="bi bi-info-circle-fill" style="color:var(--warning);font-size:12px;"></i>
+              <span><strong>Detalle collar / chapita:</strong> ${post.collarDetails.trim()}</span>
+            </div>
+          ` : ''}
+
+          ${post.type === 'adopt' ? `
+            <div style="background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:8px;padding:7px 10px;font-size:11.5px;color:var(--text-sub);margin-bottom:8px;">
+              <div style="font-weight:700;color:var(--adopt);margin-bottom:4px;display:flex;align-items:center;gap:5px;">
+                <i class="bi bi-heart-pulse-fill"></i> <span>Requisitos de Adopción Responsable:</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:10px;font-size:11px;">
+                <span style="color:${post.adoptVaccinated !== false ? 'var(--success)' : 'var(--text-muted)'};">
+                  <i class="bi bi-check-circle-fill"></i> Vacunas al día y desparasitado: <strong>${post.adoptVaccinated !== false ? 'Sí' : 'A coordinar'}</strong>
+                </span>
+                <span style="color:${post.adoptNeutered !== false ? 'var(--success)' : 'var(--text-muted)'};">
+                  <i class="bi bi-check-circle-fill"></i> Castrado / Compromiso: <strong>${post.adoptNeutered !== false ? 'Sí' : 'A coordinar'}</strong>
+                </span>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- SECCIÓN: Descripción y características importantes -->
+          <div style="margin-top:6px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:800;color:var(--text-main);margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+              <i class="bi bi-card-text" style="color:var(--primary);"></i>
+              <span>Descripción y características importantes:</span>
+            </div>
+            <div class="card-description" style="margin-bottom:0;">${desc}</div>
+          </div>
           
           <!-- SECCIÓN DE UBICACIÓN Y BOTÓN DE MAPA (SIEMPRE VISIBLE EN PERDIDA Y ENCONTRADA) -->
           <div class="card-location-box ${post.type || 'lost'}">
@@ -772,13 +807,13 @@ var BuscapetFeed = window.BuscapetFeed = {
             <div style="background:rgba(255,107,0,.08);border:1.5px dashed var(--primary);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
               <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-main);font-weight:700;">
                 <i class="bi bi-lock-fill" style="color:var(--primary);font-size:16px;"></i>
-                <span>Tenés que iniciar sesión para comentar</span>
+                <span>Solo personas registradas pueden comentar</span>
               </div>
               <div style="font-size:11.5px;color:var(--text-sub);line-height:1.4;">
-                Para comentar o aportar información sobre esta mascota, iniciá sesión de forma rápida y gratuita usando tu cuenta de <strong>Google</strong> o tu <strong>correo electrónico</strong>.
+                Para comentar o aportar información sobre esta mascota, necesitás identificarte con tu cuenta. Podés ingresar o registrarte gratis en 1 solo clic.
               </div>
-              <button type="button" class="btn btn-sm btn-primary" style="align-self:flex-start;font-size:11.5px;font-weight:800;padding:6px 14px;border-radius:8px;display:flex;align-items:center;gap:6px;margin-top:2px;" onclick="BuscapetFirebase.openAuthModal()">
-                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión con Google o Correo
+              <button type="button" class="btn btn-sm btn-primary" style="align-self:flex-start;font-size:11.5px;font-weight:800;padding:8px 16px;border-radius:8px;display:flex;align-items:center;gap:6px;margin-top:2px;" onclick="BuscapetFirebase.openAuthModal('comment')">
+                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión / Registrarme para comentar
               </button>
             </div>
           `}
@@ -870,13 +905,10 @@ var BuscapetFeed = window.BuscapetFeed = {
   submitComment(postId) {
     const isLoggedIn = !!(window.BuscapetFirebase && (typeof window.BuscapetFirebase.isLoggedIn === 'function' ? window.BuscapetFirebase.isLoggedIn() : window.BuscapetFirebase.currentUser));
     if (!isLoggedIn) {
-      if (window.buscapetToast) {
-        window.buscapetToast('🔒 Tenés que iniciar sesión con Google o Correo para comentar.', 'warning');
-      } else {
-        alert('Tenés que iniciar sesión con Google o Correo para comentar.');
-      }
       if (window.BuscapetFirebase && typeof window.BuscapetFirebase.openAuthModal === 'function') {
-        window.BuscapetFirebase.openAuthModal();
+        window.BuscapetFirebase.openAuthModal('comment');
+      } else {
+        alert('Tenés que iniciar sesión o registrarte para comentar.');
       }
       return;
     }
