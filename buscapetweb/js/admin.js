@@ -307,9 +307,13 @@ var BuscapetAdmin = window.BuscapetAdmin = {
   deletePost(postId) {
     if (!confirm('¿Eliminar esta publicación?')) return;
     if (!window.BuscapetFeed) return;
-    window.BuscapetFeed.posts = window.BuscapetFeed.posts.filter(p => p.id !== postId);
-    window.BuscapetFeed.save();
-    window.BuscapetFeed.renderFeed();
+    if (window.BuscapetFeed.deletePostPermanently) {
+      window.BuscapetFeed.deletePostPermanently(postId);
+    } else {
+      window.BuscapetFeed.posts = window.BuscapetFeed.posts.filter(p => p.id !== postId);
+      window.BuscapetFeed.save();
+      window.BuscapetFeed.renderFeed();
+    }
     this.renderPetsList();
   }
 };

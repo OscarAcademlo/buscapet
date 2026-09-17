@@ -89,11 +89,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit;
 }
 
-// 2. GUARDAR NUEVA PUBLICACIÓN EN EL SERVIDOR (POST)
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// 2. GUARDAR O ELIMINAR PUBLICACIÓN EN EL SERVIDOR (POST / DELETE)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' || $_SERVER['REQUEST_METHOD'] === 'DELETE') {
     $raw = file_get_contents('php://input');
-    $newPost = json_decode($raw, true);
+    $payload = json_decode($raw, true);
 
+    // Acción de eliminación
+    if ($_SERVER['REQUEST_METHOD'] === 'DELETE' || (isset($payload['action']) && $payload['action'] === 'delete')) {
+        $deleteId = isset($payload['id']) ? $payload['id'] : (isset($_GET['id']) ? $_GET['id'] : null);
+        if ($deleteId) {
+            $content = @file_get_contents($dataFile);
+            $posts = json_decode($content, true);
+            if (is_array($posts)) {
+                $posts = array_values(array_filter($posts, function($p) use ($deleteId) {
+                    return !isset($p['id']) || $p['id'] !== $deleteId;
+                }));
+                @file_put_contents($dataFile, json_encode($posts, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX);
+            }
+            echo json_encode(['success' => true, 'deleted' => $deleteId]);
+            exit;
+        }
+    }
+
+    $newPost = $payload;
     if (!$newPost || !isset($newPost['id'])) {
         echo json_encode(['success' => false, 'error' => 'Datos de publicación inválidos']);
         exit;

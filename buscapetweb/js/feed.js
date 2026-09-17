@@ -37,6 +37,15 @@ var BuscapetDB = window.BuscapetDB = {
     } catch(e) {}
   },
 
+  async deletePost(id) {
+    try {
+      const db = await this.open();
+      if (!db) return;
+      const tx = db.transaction('posts', 'readwrite');
+      tx.objectStore('posts').delete(id);
+    } catch(e) {}
+  },
+
   async getAllPosts() {
     try {
       const db = await this.open();
@@ -238,6 +247,7 @@ var BuscapetFeed = window.BuscapetFeed = {
   init() {
     let saved = null;
     let userCreated = [];
+    let deletedIds = [];
     try {
       const storage = window.SafeStorage || window.localStorage;
       if (storage) {
@@ -245,6 +255,10 @@ var BuscapetFeed = window.BuscapetFeed = {
         const userSaved = storage.getItem('buscapet_user_created_posts');
         if (userSaved) {
           try { userCreated = JSON.parse(userSaved); } catch(e) {}
+        }
+        const delSaved = storage.getItem('buscapet_deleted_posts');
+        if (delSaved) {
+          try { deletedIds = JSON.parse(delSaved); } catch(e) {}
         }
       }
     } catch(e) {}
@@ -264,10 +278,16 @@ var BuscapetFeed = window.BuscapetFeed = {
       this.posts = [...this.initialPosts];
     }
 
+    // Filtrar publicaciones que hayan sido eliminadas permanentemente
+    if (Array.isArray(deletedIds) && deletedIds.length > 0) {
+      this.posts = this.posts.filter(p => !deletedIds.includes(p.id));
+      userCreated = userCreated.filter(p => p && !deletedIds.includes(p.id));
+    }
+
     // Asegurar que cualquier post creado por el usuario esté presente
     if (Array.isArray(userCreated) && userCreated.length > 0) {
       userCreated.forEach(up => {
-        if (up && up.id && !this.posts.some(p => p.id === up.id)) {
+        if (up && up.id && !deletedIds.includes(up.id) && !this.posts.some(p => p.id === up.id)) {
           this.posts.unshift(up);
         }
       });
@@ -282,7 +302,7 @@ var BuscapetFeed = window.BuscapetFeed = {
         if (Array.isArray(dbPosts) && dbPosts.length > 0) {
           let updated = false;
           dbPosts.forEach(dp => {
-            if (dp && dp.id && !this.posts.some(p => p.id === dp.id)) {
+            if (dp && dp.id && !deletedIds.includes(dp.id) && !this.posts.some(p => p.id === dp.id)) {
               this.posts.unshift(dp);
               updated = true;
             }
@@ -300,13 +320,22 @@ var BuscapetFeed = window.BuscapetFeed = {
   },
 
   fetchServerPosts() {
+    let deletedIds = [];
+    try {
+      const storage = window.SafeStorage || window.localStorage;
+      if (storage) {
+        const delSaved = storage.getItem('buscapet_deleted_posts');
+        if (delSaved) deletedIds = JSON.parse(delSaved);
+      }
+    } catch(e) {}
+
     fetch('api_posts.php')
       .then(res => res.ok ? res.json() : [])
       .then(serverPosts => {
         if (Array.isArray(serverPosts) && serverPosts.length > 0) {
           let updated = false;
           serverPosts.forEach(sp => {
-            if (sp && sp.id) {
+            if (sp && sp.id && !deletedIds.includes(sp.id)) {
               const existingIdx = this.posts.findIndex(p => p.id === sp.id);
               if (existingIdx === -1) {
                 this.posts.unshift(sp);
@@ -366,8 +395,20 @@ var BuscapetFeed = window.BuscapetFeed = {
     if (window.BuscapetAdmin && window.BuscapetAdmin.authenticated) return true;
 
     // 2. Si el post fue creado en este navegador/dispositivo
-    const myIds = this.getMyPostIds();
-    if (myIds.includes(post.id)) return true;
+    const myIds = this.getMyPostIds().map(String);
+    if (myIds.includes(String(post.id))) return true;
+
+    // 2b. Si el post está en la lista de creados en este navegador
+    try {
+      const storage = window.SafeStorage || window.localStorage;
+      if (storage) {
+        const uList = JSON.parse(storage.getItem('buscapet_user_created_posts') || '[]');
+        if (uList.some(p => p && String(p.id) === String(post.id))) return true;
+      }
+    } catch(e) {}
+
+    // 2c. Flag de sesión
+    if (post.isMine === true) return true;
 
     // 3. Si el usuario actual está logueado en Firebase y coincide UID o Email
     const curUser = window.BuscapetFirebase && window.BuscapetFirebase.currentUser;
@@ -747,6 +788,9 @@ var BuscapetFeed = window.BuscapetFeed = {
                 <button class="hero-btn" style="font-size:11px;padding:6px 12px;background:rgba(59,130,246,.12);border:1px solid #3B82F6;color:#3B82F6;" onclick="BuscapetFeed.openEditModal('${post.id}')">
                   <i class="bi bi-pencil-square"></i> ${window.BuscapetI18n?.t('edit_post') || 'Modificar aviso'}
                 </button>
+                <button class="hero-btn" style="font-size:11px;padding:6px 12px;background:rgba(239,68,68,.12);border:1px solid var(--danger);color:var(--danger);" onclick="BuscapetFeed.deleteMyPost('${post.id}')" title="Eliminar publicación">
+                  <i class="bi bi-trash3-fill"></i> Eliminar
+                </button>
               </div>
             ` : `
               <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px;">
@@ -1108,14 +1152,68 @@ var BuscapetFeed = window.BuscapetFeed = {
 
     if (!confirm('¿Estás seguro de que deseas eliminar este aviso de Buscapet?')) return;
 
-    this.posts = this.posts.filter(p => p.id !== id);
-    this.save();
-    this.renderFeed();
+    this.deletePostPermanently(id);
     this.closeEditModal();
 
     if (window.buscapetToast) {
       window.buscapetToast('🗑️ Aviso eliminado correctamente.', 'info');
     }
+  },
+
+  deletePostPermanently(postId) {
+    if (!postId) return;
+
+    // 1. Quitar de la memoria activa
+    this.posts = this.posts.filter(p => p.id !== postId);
+
+    // 2. Limpiar de SafeStorage / localStorage
+    try {
+      const storage = window.SafeStorage || window.localStorage;
+      if (storage) {
+        storage.setItem('buscapet_posts', JSON.stringify(this.posts));
+
+        // Quitar de posts creados por usuarios
+        const userSaved = storage.getItem('buscapet_user_created_posts');
+        if (userSaved) {
+          const userCreated = JSON.parse(userSaved).filter(p => p && p.id !== postId);
+          storage.setItem('buscapet_user_created_posts', JSON.stringify(userCreated));
+        }
+
+        // Quitar de mis posts
+        const mySaved = storage.getItem('buscapet_my_posts');
+        if (mySaved) {
+          const myPosts = JSON.parse(mySaved).filter(id => id !== postId);
+          storage.setItem('buscapet_my_posts', JSON.stringify(myPosts));
+        }
+
+        // Agregar a la lista negra permanente de eliminados
+        const deletedSaved = storage.getItem('buscapet_deleted_posts');
+        const deletedList = deletedSaved ? JSON.parse(deletedSaved) : [];
+        if (!deletedList.includes(postId)) {
+          deletedList.push(postId);
+          storage.setItem('buscapet_deleted_posts', JSON.stringify(deletedList));
+        }
+      }
+    } catch(e) {
+      console.warn('Error limpiando almacenamiento:', e);
+    }
+
+    // 3. Eliminar de IndexedDB
+    if (window.BuscapetDB && window.BuscapetDB.deletePost) {
+      window.BuscapetDB.deletePost(postId);
+    }
+
+    // 4. Eliminar del servidor (api_posts.php)
+    try {
+      fetch('api_posts.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id: postId })
+      }).catch(err => console.warn('Error eliminando en api_posts.php:', err));
+    } catch(e) {}
+
+    // 5. Re-renderizar feed
+    this.renderFeed();
   },
 
   sharePost(postId) {
