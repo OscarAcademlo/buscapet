@@ -660,7 +660,7 @@ var BuscapetFeed = window.BuscapetFeed = {
           <a class="contact-btn contact-btn-found" href="https://wa.me/${(user.phone || '').replace(/[^0-9]/g, '')}?text=Hola%20${encodeURIComponent(user.name)},%20te%20contacto%20desde%20Buscapet%20por%20${encodeURIComponent(post.petName)}" target="_blank">
             <i class="bi bi-whatsapp"></i> WhatsApp
           </a>
-          <button class="contact-btn contact-btn-msg" onclick="BuscapetChat.openDirectChat('${post.id}', '${user.name}', '${post.petName}', '${user.avatar}')">
+          <button class="contact-btn contact-btn-msg" onclick="BuscapetChat.openDirectChat('${post.id}')">
             <i class="bi bi-chat-dots"></i> ${chatText}
           </button>
         </div>
@@ -825,14 +825,15 @@ var BuscapetFeed = window.BuscapetFeed = {
   buildAdCardHtml(ad) {
     const isDemo = ad.isDemo === true || ad.id === 'ad-1' || ad.id === 'ad-2' || !ad.isPaid;
     const topBannerText = isDemo ? '📢 PUBLICIDAD DE DEMOSTRACIÓN' : '📢 PUBLICIDAD PATROCINADA';
-    const tagText = isDemo ? 'DEMO' : 'DESTACADO';
-    const icon = (ad.category && ad.category.toLowerCase().includes('pet')) ? '🐾' : '🏥';
+    const tagBadge = ad.badge || (isDemo ? 'DEMO' : 'DESTACADO');
+    const icon = (ad.category && ad.category.toLowerCase().includes('pet')) ? '🐾' : (ad.category && ad.category.toLowerCase().includes('vet') ? '🏥' : '🏪');
+    const phoneClean = (ad.whatsapp || ad.phone || '').replace(/[^0-9]/g, '');
 
     return `
       <article class="pet-card border-ad" style="border-color:rgba(245,158,11,.6);background:linear-gradient(135deg,#1c160e 0%,#151820 100%);">
         <div style="background:linear-gradient(90deg,#F59E0B,#D97706);color:#000;padding:4px 10px;font-size:10px;font-weight:900;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;">
           <span>${topBannerText}</span>
-          <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">${tagText}</span>
+          <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">${tagBadge}</span>
         </div>
         <div class="card-header-row" style="padding:10px 12px 6px;">
           <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,.2);border:1.5px solid var(--warning);display:flex;align-items:center;justify-content:center;font-size:18px;">
@@ -843,18 +844,43 @@ var BuscapetFeed = window.BuscapetFeed = {
             <div class="card-meta" style="color:var(--text-sub);">${ad.category} &bull; ${ad.city}</div>
           </div>
         </div>
-        <div class="card-photo-wrap" style="cursor:default;">
-          <img src="${ad.bannerUrl || 'img/posts/demo/ad_vet.jpg'}" alt="${ad.businessName}">
+        <div class="card-photo-wrap" style="cursor:default;position:relative;">
+          <span class="card-type-badge" style="background:rgba(245,158,11,0.95);color:#000;font-weight:900;top:10px;left:10px;position:absolute;z-index:2;">
+            <i class="bi bi-star-fill"></i> ${tagBadge}
+          </span>
+          <img src="${ad.bannerUrl || 'img/posts/demo/ad_vet.jpg'}" alt="${ad.businessName}" onerror="this.onerror=null;this.src='img/posts/demo/ad_vet.jpg';">
         </div>
-        <div class="card-details" style="padding:10px 12px;">
-          <div style="font-size:13px;color:var(--text-main);line-height:1.45;margin-bottom:8px;">${ad.promoText}</div>
+        <div class="card-details" style="padding:12px 14px;">
+          <div class="card-tags" style="margin-bottom:10px;">
+            <span class="card-tag"><i class="bi bi-shop"></i> ${ad.category}</span>
+            <span class="card-tag"><i class="bi bi-geo-alt-fill"></i> ${ad.city}</span>
+            ${ad.phone ? `<span class="card-tag"><i class="bi bi-telephone-fill"></i> Tel: ${ad.phone}</span>` : ''}
+            <span class="card-tag" style="border-color:rgba(245,158,11,.6);color:var(--warning);"><i class="bi bi-award-fill"></i> ${tagBadge}</span>
+          </div>
+
+          <div style="font-size:12px;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+            <i class="bi bi-megaphone-fill" style="color:var(--warning);"></i> Propuesta y Beneficios:
+          </div>
+          <div style="font-size:13px;color:var(--text-main);line-height:1.45;white-space:pre-line;margin-bottom:12px;">
+            ${ad.promoText}
+          </div>
+
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
-            <a class="contact-btn" style="background:#22C55E;color:#fff;" href="https://wa.me/${(ad.whatsapp || '').replace(/[^0-9]/g, '')}?text=Hola,%20los%20contacto%20desde%20el%20anuncio%20de%20Buscapet!" target="_blank">
+            ${phoneClean ? `
+            <a class="contact-btn" style="background:#22C55E;color:#fff;" href="https://wa.me/${phoneClean}?text=Hola,%20los%20contacto%20desde%20el%20anuncio%20de%20Buscapet!" target="_blank">
               <i class="bi bi-whatsapp"></i> WhatsApp
-            </a>
-            <a class="contact-btn" style="background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;" href="${ad.website || '#'}" target="_blank">
+            </a>` : ''}
+            ${ad.phone ? `
+            <a class="contact-btn" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-main);" href="tel:${ad.phone}">
+              <i class="bi bi-telephone-fill"></i> Llamar
+            </a>` : ''}
+            ${ad.website && ad.website !== '#' ? `
+            <a class="contact-btn" style="background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;" href="${ad.website}" target="_blank">
               <i class="bi bi-globe2"></i> Sitio Web
-            </a>
+            </a>` : ''}
+            <button type="button" class="contact-btn contact-btn-msg" onclick="BuscapetChat.openDirectChat('${ad.id}')">
+              <i class="bi bi-chat-dots-fill"></i> Chat Interno
+            </button>
           </div>
         </div>
       </article>

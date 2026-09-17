@@ -787,8 +787,24 @@ a{color:inherit;text-decoration:none}
 }
 
 @media (max-width: 600px) {
-  .chat-inbox-pane {
-    display: none; /* Mobile focuses on active conversation */
+  .chat-dialog {
+    height: 85vh;
+    max-height: 85vh;
+    margin: 10px auto;
+  }
+  .chat-dialog.in-conversation .chat-inbox-pane {
+    display: none !important;
+  }
+  .chat-dialog.in-conversation .chat-active-pane {
+    display: flex !important;
+    width: 100%;
+  }
+  .chat-dialog.in-inbox .chat-inbox-pane {
+    display: block !important;
+    width: 100%;
+  }
+  .chat-dialog.in-inbox .chat-active-pane {
+    display: none !important;
   }
 }
 

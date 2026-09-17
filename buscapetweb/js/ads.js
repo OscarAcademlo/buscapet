@@ -230,7 +230,7 @@ var BuscapetAds = window.BuscapetAds = {
     const website = document.getElementById('ad-req-web')?.value.trim() || '#';
     const banner = this.uploadedBanner || 'img/posts/demo/ad_vet.jpg';
 
-    const icon = (category && category.toLowerCase().includes('pet')) ? '🐾' : '🏥';
+    const icon = (category && category.toLowerCase().includes('pet')) ? '🐾' : (category && category.toLowerCase().includes('vet') ? '🏥' : '🏪');
 
     container.innerHTML = `
       <article class="pet-card border-ad" style="border-color:rgba(245,158,11,.6);background:linear-gradient(135deg,#1c160e 0%,#151820 100%);margin:0;">
@@ -247,17 +247,39 @@ var BuscapetAds = window.BuscapetAds = {
             <div class="card-meta" style="color:var(--text-sub);">${category} &bull; ${city}</div>
           </div>
         </div>
-        <div class="card-photo-wrap" style="cursor:default;">
-          <img src="${banner}" alt="${name}">
+        <div class="card-photo-wrap" style="cursor:default;position:relative;">
+          <span class="card-type-badge" style="background:rgba(245,158,11,0.95);color:#000;font-weight:900;top:10px;left:10px;position:absolute;z-index:2;">
+            <i class="bi bi-star-fill"></i> DESTACADO
+          </span>
+          <img src="${banner}" alt="${name}" onerror="this.onerror=null;this.src='img/posts/demo/ad_vet.jpg';">
         </div>
-        <div class="card-details" style="padding:10px 12px;">
-          <div style="font-size:13px;color:var(--text-main);line-height:1.45;margin-bottom:8px;">${promo}</div>
+        <div class="card-details" style="padding:12px 14px;">
+          <div class="card-tags" style="margin-bottom:10px;">
+            <span class="card-tag"><i class="bi bi-shop"></i> ${category}</span>
+            <span class="card-tag"><i class="bi bi-geo-alt-fill"></i> ${city}</span>
+            <span class="card-tag"><i class="bi bi-telephone-fill"></i> Tel: ${phone}</span>
+            <span class="card-tag" style="border-color:rgba(245,158,11,.6);color:var(--warning);"><i class="bi bi-award-fill"></i> DESTACADO</span>
+          </div>
+
+          <div style="font-size:12px;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+            <i class="bi bi-megaphone-fill" style="color:var(--warning);"></i> Propuesta y Beneficios:
+          </div>
+          <div style="font-size:13px;color:var(--text-main);line-height:1.45;white-space:pre-line;margin-bottom:12px;">
+            ${promo}
+          </div>
+
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
             <div class="contact-btn" style="background:#22C55E;color:#fff;cursor:default;">
               <i class="bi bi-whatsapp"></i> WhatsApp
             </div>
+            <div class="contact-btn" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-main);cursor:default;">
+              <i class="bi bi-telephone-fill"></i> Llamar
+            </div>
             <div class="contact-btn" style="background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;cursor:default;">
               <i class="bi bi-globe2"></i> Sitio Web
+            </div>
+            <div class="contact-btn contact-btn-msg" style="cursor:default;">
+              <i class="bi bi-chat-dots-fill"></i> Chat Interno
             </div>
           </div>
         </div>

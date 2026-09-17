@@ -137,7 +137,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <!-- Custom Styles -->
   <link rel="stylesheet" href="css/buscapet.css?v=11">
-  <link rel="stylesheet" href="css/style.css?v=15">
+  <link rel="stylesheet" href="css/style.css?v=16">
 </head>
 <body>
 
@@ -417,7 +417,7 @@
         <article class="pet-card border-ad" style="border-color:rgba(245,158,11,.6);background:linear-gradient(135deg,#1c160e 0%,#151820 100%);">
           <div style="background:linear-gradient(90deg,#F59E0B,#D97706);color:#000;padding:4px 10px;font-size:10px;font-weight:900;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;">
             <span>📢 PUBLICIDAD DE DEMOSTRACIÓN</span>
-            <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">DEMO</span>
+            <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">VETERINARIA 24H</span>
           </div>
           <div class="card-header-row" style="padding:10px 12px 6px;">
             <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,.2);border:1.5px solid var(--warning);display:flex;align-items:center;justify-content:center;font-size:18px;">
@@ -428,20 +428,38 @@
               <div class="card-meta" style="color:var(--text-sub);">Veterinaria 24h · Guardias y Cirugías &bull; Palermo, CABA</div>
             </div>
           </div>
-          <div class="card-photo-wrap" style="cursor:default;">
-            <img src="img/posts/demo/ad_vet.jpg" alt="Veterinaria San Roque">
+          <div class="card-photo-wrap" style="cursor:default;position:relative;">
+            <span class="card-type-badge" style="background:rgba(245,158,11,0.95);color:#000;font-weight:900;top:10px;left:10px;position:absolute;z-index:2;">
+              <i class="bi bi-star-fill"></i> VETERINARIA 24H
+            </span>
+            <img src="img/posts/demo/ad_vet.jpg" alt="Veterinaria San Roque" onerror="this.onerror=null;this.src='img/posts/demo/ad_vet.jpg';">
           </div>
-          <div class="card-details" style="padding:10px 12px;">
-            <div style="font-size:13px;color:var(--text-main);line-height:1.45;margin-bottom:8px;">
+          <div class="card-details" style="padding:12px 14px;">
+            <div class="card-tags" style="margin-bottom:10px;">
+              <span class="card-tag"><i class="bi bi-shop"></i> Veterinaria 24h</span>
+              <span class="card-tag"><i class="bi bi-geo-alt-fill"></i> Palermo, CABA</span>
+              <span class="card-tag"><i class="bi bi-telephone-fill"></i> Tel: +5491155550024</span>
+              <span class="card-tag" style="border-color:rgba(245,158,11,.6);color:var(--warning);"><i class="bi bi-award-fill"></i> VETERINARIA 24H</span>
+            </div>
+            <div style="font-size:12px;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+              <i class="bi bi-megaphone-fill" style="color:var(--warning);"></i> Propuesta y Beneficios:
+            </div>
+            <div style="font-size:13px;color:var(--text-main);line-height:1.45;margin-bottom:12px;">
               Atención de emergencias veterinarias las 24 hs, cirugías, ecografías y vacunación completa. Mencionando a Buscapet obtenés 15% de descuento en la primera consulta.
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
               <a class="contact-btn" style="background:#22C55E;color:#fff;" href="https://wa.me/5491155550024?text=Hola,%20los%20contacto%20desde%20el%20anuncio%20de%20Buscapet!" target="_blank">
                 <i class="bi bi-whatsapp"></i> WhatsApp
               </a>
+              <a class="contact-btn" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-main);" href="tel:+5491155550024">
+                <i class="bi bi-telephone-fill"></i> Llamar
+              </a>
               <a class="contact-btn" style="background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;" href="https://instagram.com/veterinaria_sanroque" target="_blank">
                 <i class="bi bi-globe2"></i> Sitio Web
               </a>
+              <button type="button" class="contact-btn contact-btn-msg" onclick="BuscapetChat.openDirectChat('ad-1')">
+                <i class="bi bi-chat-dots-fill"></i> Chat Interno
+              </button>
             </div>
           </div>
         </article>
@@ -723,7 +741,7 @@
         <article class="pet-card border-ad" style="border-color:rgba(245,158,11,.6);background:linear-gradient(135deg,#1c160e 0%,#151820 100%);">
           <div style="background:linear-gradient(90deg,#F59E0B,#D97706);color:#000;padding:4px 10px;font-size:10px;font-weight:900;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;">
             <span>📢 PUBLICIDAD DE DEMOSTRACIÓN</span>
-            <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">DEMO</span>
+            <span style="background:#000;color:#F59E0B;padding:1px 6px;border-radius:4px;font-size:9px;">PET SHOP DESTACADO</span>
           </div>
           <div class="card-header-row" style="padding:10px 12px 6px;">
             <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,.2);border:1.5px solid var(--warning);display:flex;align-items:center;justify-content:center;font-size:18px;">
@@ -734,20 +752,38 @@
               <div class="card-meta" style="color:var(--text-sub);">Pet Shop · Alimentos Balanceados &bull; Bariloche, Río Negro</div>
             </div>
           </div>
-          <div class="card-photo-wrap" style="cursor:default;">
-            <img src="img/posts/demo/ad_petshop.jpg" alt="Pet Shop Huellitas Felices">
+          <div class="card-photo-wrap" style="cursor:default;position:relative;">
+            <span class="card-type-badge" style="background:rgba(245,158,11,0.95);color:#000;font-weight:900;top:10px;left:10px;position:absolute;z-index:2;">
+              <i class="bi bi-star-fill"></i> PET SHOP DESTACADO
+            </span>
+            <img src="img/posts/demo/ad_petshop.jpg" alt="Pet Shop Huellitas Felices" onerror="this.onerror=null;this.src='img/posts/demo/ad_petshop.jpg';">
           </div>
-          <div class="card-details" style="padding:10px 12px;">
-            <div style="font-size:13px;color:var(--text-main);line-height:1.45;margin-bottom:8px;">
+          <div class="card-details" style="padding:12px 14px;">
+            <div class="card-tags" style="margin-bottom:10px;">
+              <span class="card-tag"><i class="bi bi-shop"></i> Pet Shop</span>
+              <span class="card-tag"><i class="bi bi-geo-alt-fill"></i> Bariloche, Río Negro</span>
+              <span class="card-tag"><i class="bi bi-telephone-fill"></i> Tel: +5492944550055</span>
+              <span class="card-tag" style="border-color:rgba(245,158,11,.6);color:var(--warning);"><i class="bi bi-award-fill"></i> PET SHOP DESTACADO</span>
+            </div>
+            <div style="font-size:12px;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">
+              <i class="bi bi-megaphone-fill" style="color:var(--warning);"></i> Propuesta y Beneficios:
+            </div>
+            <div style="font-size:13px;color:var(--text-main);line-height:1.45;margin-bottom:12px;">
               Envíos a domicilio en el día sin cargo. Alimentos balanceados premium de todas las marcas, accesorios, correas reforzadas y antiparasitarios.
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;">
               <a class="contact-btn" style="background:#22C55E;color:#fff;" href="https://wa.me/5492944550055?text=Hola,%20los%20contacto%20desde%20el%20anuncio%20de%20Buscapet!" target="_blank">
                 <i class="bi bi-whatsapp"></i> WhatsApp
               </a>
+              <a class="contact-btn" style="background:var(--bg-input);border:1px solid var(--border);color:var(--text-main);" href="tel:+5492944550055">
+                <i class="bi bi-telephone-fill"></i> Llamar
+              </a>
               <a class="contact-btn" style="background:linear-gradient(90deg,var(--warning),#D97706);color:#000;font-weight:900;" href="https://instagram.com/huellitas_felices_pet" target="_blank">
                 <i class="bi bi-globe2"></i> Sitio Web
               </a>
+              <button type="button" class="contact-btn contact-btn-msg" onclick="BuscapetChat.openDirectChat('ad-2')">
+                <i class="bi bi-chat-dots-fill"></i> Chat Interno
+              </button>
             </div>
           </div>
         </article>
@@ -1313,6 +1349,9 @@
   <div class="buscapet-modal-dialog chat-dialog">
     <div class="modal-header-custom" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
       <div class="modal-title-custom" style="display:flex;align-items:center;gap:10px;">
+        <button type="button" id="chat-mobile-back-btn" onclick="BuscapetChat.backToInbox()" class="btn-filter-custom" style="display:none;padding:4px 8px;font-size:11px;border-radius:10px;cursor:pointer;border:1px solid var(--border);font-weight:700;align-items:center;gap:4px;" title="Volver a lista de chats">
+          <i class="bi bi-chevron-left"></i> Chats
+        </button>
         <img id="chat-active-avatar" src="img/posts/demo/avatar_nicolas.jpg" style="width:28px;height:28px;border-radius:50%;object-fit:cover;">
         <div>
           <div id="chat-active-title" style="font-size:13.5px;font-weight:800;">Mensajes Directos</div>
@@ -1727,14 +1766,14 @@
 <script src="js/i18n.js?v=9"></script>
 <script src="js/locations-data.js?v=9"></script>
 <script src="js/map.js?v=15"></script>
-<script src="js/chat.js?v=9"></script>
-<script src="js/ads.js?v=9"></script>
-<script src="js/admin.js?v=9"></script>
+<script src="js/chat.js?v=16"></script>
+<script src="js/ads.js?v=16"></script>
+<script src="js/admin.js?v=16"></script>
 <!-- HEIC/HEIF client-side converter for Apple camera photos -->
 <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-<script src="js/publish.js?v=15"></script>
-<script src="js/feed.js?v=15"></script>
-<script src="js/app.js?v=15"></script>
+<script src="js/publish.js?v=16"></script>
+<script src="js/feed.js?v=16"></script>
+<script src="js/app.js?v=16"></script>
 
 </body>
 </html>
